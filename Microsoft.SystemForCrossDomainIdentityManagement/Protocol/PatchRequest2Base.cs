@@ -1,72 +1,66 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
-
     [DataContract]
-    public abstract class PatchRequest2Base<TOperation> : PatchRequestBase
-        where TOperation : PatchOperation2Base
+    public abstract class PatchRequest2Base<TOperation> : PatchRequestBase where TOperation : PatchOperation2Base
     {
-        [DataMember(Name = ProtocolAttributeNames.Operations, Order = 2)]
-        private List<TOperation> operationsValue;
-        private IReadOnlyCollection<TOperation> operationsWrapper;
+        [DataMember(Name = ProtocolAttributeNames.OPERATIONS, Order = 2)]
+        private List<TOperation> _operationsValue;
+        private IReadOnlyCollection<TOperation> _operationsWrapper;
 
         protected PatchRequest2Base()
         {
-            this.OnInitialization();
-            this.OnInitialized();
-            this.AddSchema(ProtocolSchemaIdentifiers.Version2PatchOperation);
+            OnInitialization();
+            OnInitialized();
+            AddSchema(ProtocolSchemaIdentifiers.VERSION_2_PATCH_OPERATION);
         }
 
-        protected PatchRequest2Base(IReadOnlyCollection<TOperation> operations)
-            : this()
+        protected PatchRequest2Base(IReadOnlyCollection<TOperation> operations) : this()
         {
-            this.operationsValue.AddRange(operations);
+            _operationsValue.AddRange(operations);
         }
 
         public IReadOnlyCollection<TOperation> Operations
         {
-            get
-            {
-                return this.operationsWrapper;
-            }
+            get { return _operationsWrapper; }
         }
 
         public void AddOperation(TOperation operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            this.operationsValue.Add(operation);
+            _operationsValue.Add(operation);
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext _)
         {
-            this.OnInitialized();
+            OnInitialized();
         }
 
         [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        private void OnDeserializing(StreamingContext _)
         {
-            this.OnInitialization();
+            OnInitialization();
         }
 
         private void OnInitialization()
         {
-            this.operationsValue = new List<TOperation>();
+            _operationsValue = new List<TOperation>();
         }
 
         private void OnInitialized()
         {
-            this.operationsWrapper = this.operationsValue.AsReadOnly();
+            _operationsWrapper = _operationsValue.AsReadOnly();
         }
     }
 }

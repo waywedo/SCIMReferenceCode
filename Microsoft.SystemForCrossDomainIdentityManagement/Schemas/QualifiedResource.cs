@@ -1,70 +1,62 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Globalization;
-    using System.Linq;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class QualifiedResource : Resource
     {
-        private const string ResourceSchemaIdentifierTemplateSuffix = "{0}";
-
-        private string resourceSchemaIdentifierTemplate;
+        private const string RESOURCE_SCHEMA_IDENTIFIER_TEMPLATE_SUFFIX = "{0}";
+        private string _resourceSchemaIdentifierTemplate;
 
         protected QualifiedResource(string schemaIdentifier, string resourceSchemaPrefix)
         {
-            this.OnInitialized(schemaIdentifier, resourceSchemaPrefix);
+            OnInitialized(schemaIdentifier, resourceSchemaPrefix);
         }
 
-        private string ResourceSchemaPrefix
-        {
-            get;
-            set;
-        }
+        private string ResourceSchemaPrefix { get; set; }
 
         public virtual void AddResourceSchemaIdentifier(string resourceTypeName)
         {
-            if (this.TryGetResourceTypeName(out string value))
+            if (TryGetResourceTypeName(out _))
             {
-                string typeName = this.GetType().Name;
-                string errorMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionMultipleQualifiedResourceTypeIdentifiersTemplate,
-                        typeName);
+                var typeName = GetType().Name;
+                var errorMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionMultipleQualifiedResourceTypeIdentifiersTemplate,
+                    typeName
+                );
                 throw new InvalidOperationException(errorMessage);
             }
-            string schemaIdentifier =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    this.resourceSchemaIdentifierTemplate,
-                    resourceTypeName);
-            this.AddSchema(schemaIdentifier);
+
+            var schemaIdentifier = string.Format(CultureInfo.InvariantCulture, _resourceSchemaIdentifierTemplate,
+                resourceTypeName);
+
+            AddSchema(schemaIdentifier);
         }
 
         public void OnDeserialized(string schemaIdentifier, string resourceSchemaPrefix)
         {
-            this.OnInitialized(schemaIdentifier, resourceSchemaPrefix);
-            int countResourceSchemaIdentifiers =
-                this
-                .Schemas
-                .Where(
-                    (string item) =>
-                        item.StartsWith(this.ResourceSchemaPrefix, StringComparison.Ordinal))
-                .Count();
+            OnInitialized(schemaIdentifier, resourceSchemaPrefix);
+
+            var countResourceSchemaIdentifiers = Schemas.Count(
+                item => item.StartsWith(ResourceSchemaPrefix, StringComparison.Ordinal)
+            );
+
             if (countResourceSchemaIdentifiers > 1)
             {
-                string typeName = this.GetType().Name;
-                string errorMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionMultipleQualifiedResourceTypeIdentifiersTemplate,
-                        typeName);
+                var typeName = GetType().Name;
+                var errorMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionMultipleQualifiedResourceTypeIdentifiersTemplate,
+                    typeName
+                );
+
                 throw new InvalidOperationException(errorMessage);
             }
         }
@@ -81,31 +73,32 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(resourceSchemaPrefix));
             }
 
-            this.ResourceSchemaPrefix = resourceSchemaPrefix;
-            this.resourceSchemaIdentifierTemplate =
-                this.ResourceSchemaPrefix + QualifiedResource.ResourceSchemaIdentifierTemplateSuffix;
+            ResourceSchemaPrefix = resourceSchemaPrefix;
+            _resourceSchemaIdentifierTemplate = ResourceSchemaPrefix + RESOURCE_SCHEMA_IDENTIFIER_TEMPLATE_SUFFIX;
         }
 
         public virtual bool TryGetResourceTypeName(out string resourceTypeName)
         {
             resourceTypeName = null;
 
-            string resourceSchemaIdentifier =
-                this
-                .Schemas
-                .SingleOrDefault(
-                    (string item) =>
-                        item.StartsWith(this.ResourceSchemaPrefix, StringComparison.Ordinal));
+            var resourceSchemaIdentifier = Schemas.SingleOrDefault(
+                item => item.StartsWith(ResourceSchemaPrefix, StringComparison.Ordinal)
+            );
+
             if (string.IsNullOrWhiteSpace(resourceSchemaIdentifier))
             {
                 return false;
             }
-            string buffer = resourceSchemaIdentifier.Substring(this.ResourceSchemaPrefix.Length);
-            if (buffer.Length <= 0)
+
+            var buffer = resourceSchemaIdentifier[ResourceSchemaPrefix.Length..];
+
+            if (buffer.Length == 0)
             {
                 return false;
             }
+
             resourceTypeName = buffer;
+
             return true;
         }
     }

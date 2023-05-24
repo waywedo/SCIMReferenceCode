@@ -1,11 +1,10 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+    using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class MemberBase
     {
@@ -13,18 +12,10 @@ namespace Microsoft.SCIM
         {
         }
 
-        [DataMember(Name = AttributeNames.Type, IsRequired = false, EmitDefaultValue = false)]
-        public string TypeName
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.TYPE, IsRequired = false, EmitDefaultValue = false)]
+        public string TypeName { get; set; }
 
-        [DataMember(Name = AttributeNames.Value)]
-        public string Value
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.VALUE)]
+        public string Value { get; set; }
     }
 }

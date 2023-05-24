@@ -51,13 +51,13 @@
 //                                item.Key,
 //                            (KeyValuePair<string, string[]> item) =>
 //                                string.Join(
-//                                        SystemForCrossDomainIdentityManagementServiceResources.SeparatorHeaderValues,
+//                                        ServiceResources.SeparatorHeaderValues,
 //                                        item.Value))
 //                        .Select(
 //                            (KeyValuePair<string, string> item) =>
 //                                string.Format(
 //                                    CultureInfo.InvariantCulture,
-//                                    SystemForCrossDomainIdentityManagementServiceResources.HeaderTemplate,
+//                                    ServiceResources.HeaderTemplate,
 //                                    item.Key,
 //                                    item.Value))
 //                        .Aggregate(
@@ -71,7 +71,7 @@
 //            string result =
 //                string.Format(
 //                    CultureInfo.InvariantCulture,
-//                    SystemForCrossDomainIdentityManagementServiceResources.MessageTemplate,
+//                    ServiceResources.MessageTemplate,
 //                    method,
 //                    resource,
 //                    headers);
@@ -88,7 +88,7 @@
 
 //            if (null == context.Request)
 //            {
-//                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidContext);
+//                throw new ArgumentException(ServiceResources.ExceptionInvalidContext);
 //            }
 
 //            string requestIdentifier = context.Request.Identify();
@@ -97,7 +97,7 @@
 
 //            IInformationNotification receptionNotification =
 //                InformationNotificationFactory.Instance.FormatNotification(
-//                    SystemForCrossDomainIdentityManagementServiceResources.InformationRequestReceivedTemplate,
+//                    ServiceResources.InformationRequestReceivedTemplate,
 //                    requestIdentifier,
 //                    ServiceNotificationIdentifiers.MonitoringMiddlewareReception,
 //                    message);
@@ -134,7 +134,7 @@
 
 //            IInformationNotification processedNotification =
 //                InformationNotificationFactory.Instance.FormatNotification(
-//                    SystemForCrossDomainIdentityManagementServiceResources.InformationRequestProcessedTemplate,
+//                    ServiceResources.InformationRequestProcessedTemplate,
 //                    requestIdentifier,
 //                    ServiceNotificationIdentifiers.MonitoringMiddlewareRequestProcessed,
 //                    message,

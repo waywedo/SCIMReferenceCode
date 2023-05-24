@@ -6,50 +6,23 @@ namespace Microsoft.SCIM
 {
     public static class SchemaIdentifiers
     {
-        public const string Extension = "extension:";
+        public const string EXTENSION = "extension:";
 
-        private const string ExtensionEnterprise2 = SchemaIdentifiers.Extension + "enterprise:2.0:";
+        private const string EXTENSION_ENTERPRISE_2 = EXTENSION + "enterprise:2.0:";
 
-        public const string None = "/";
+        public const string NONE = "/";
 
-        public const string PrefixTypes1 = "urn:scim:schemas:";
-        private const string PrefixTypes2 = "urn:ietf:params:scim:schemas:";
+        public const string PREFIX_TYPES_1 = "urn:scim:schemas:";
+        private const string PREFIX_TYPES_2 = "urn:ietf:params:scim:schemas:";
 
-        private const string VersionSchemasCore2 = "core:2.0:";
+        private const string VERSION_SCHEMAS_CORE_2 = "core:2.0:";
 
-        public const string Core2EnterpriseUser =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.ExtensionEnterprise2 +
-            Types.User;
-
-        public const string Core2Group =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.VersionSchemasCore2 +
-            Types.Group;
-
-        public const string Core2ResourceType =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.ExtensionEnterprise2 +
-            Types.ResourceType;
-
-        public const string Core2ServiceConfiguration =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.VersionSchemasCore2 +
-            Types.ServiceProviderConfiguration;
-
-        public const string Core2User =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.VersionSchemasCore2 +
-            Types.User;
-
-        public const string Core2Schema =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.VersionSchemasCore2 +
-            Types.Schema;
-
-        public const string PrefixExtension =
-            SchemaIdentifiers.PrefixTypes2 +
-            SchemaIdentifiers.Extension;
-
+        public const string CORE_2_ENTERPRISE_USER = PREFIX_TYPES_2 + EXTENSION_ENTERPRISE_2 + Types.USER;
+        public const string CORE_2_GROUP = PREFIX_TYPES_2 + VERSION_SCHEMAS_CORE_2 + Types.GROUP;
+        public const string CORE_2_RESOURCE_TYPE = PREFIX_TYPES_2 + EXTENSION_ENTERPRISE_2 + Types.RESOURCE_TYPE;
+        public const string CORE_2_SERVICE_CONFIGURATION = PREFIX_TYPES_2 + VERSION_SCHEMAS_CORE_2 + Types.SERVICE_PROVIDER_CONFIGURATION;
+        public const string CORE_2_USER = PREFIX_TYPES_2 + VERSION_SCHEMAS_CORE_2 + Types.USER;
+        public const string CORE_2_SCHEMA = PREFIX_TYPES_2 + VERSION_SCHEMAS_CORE_2 + Types.SCHEMA;
+        public const string PREFIX_EXTENSION = PREFIX_TYPES_2 + EXTENSION;
     }
 }

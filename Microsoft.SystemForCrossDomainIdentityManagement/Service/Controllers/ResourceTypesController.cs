@@ -1,106 +1,74 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Web.Http;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-
-    [Route(ServiceConstants.RouteResourceTypes)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_RESOURCE_TYPES)]
+    //[Authorize]
     [ApiController]
     public sealed class ResourceTypesController : ControllerTemplate
     {
-        public ResourceTypesController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        private readonly IProvider _provider;
+        private readonly ILogger<ResourceTypesController> _logger;
+
+        public ResourceTypesController(IProvider provider, ILogger<ResourceTypesController> logger) : base()
         {
+            _provider = provider;
+            _logger = logger;
         }
 
-        public QueryResponseBase Get()
+        [HttpGet]
+        public ActionResult<QueryResponseBase> Get()
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProvider provider = this.provider;
-                if (null == provider)
+                var provider = _provider;
+
+                if (provider == null)
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IReadOnlyCollection<Resource> resources = provider.ResourceTypes;
-                QueryResponseBase result = new QueryResponse(resources);
+                var resources = provider.ResourceTypes;
+                var result = new QueryResponse(resources);
 
-                result.TotalResults =
-                    result.ItemsPerPage =
-                        resources.Count;
+                result.TotalResults = result.ItemsPerPage = resources.Count;
                 result.StartIndex = 1;
-                return result;
 
+                return result;
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ResourceTypesControllerGetArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Resource types controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                return StatusCode(StatusCodes.Status400BadRequest);
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ResourceTypesControllerGetNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Resource types controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                       ExceptionNotificationFactory.Instance.CreateNotification(
-                           notSupportedException,
-                           correlationIdentifier,
-                           ServiceNotificationIdentifiers.ResourceTypesControllerGetNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Resource types controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                       ExceptionNotificationFactory.Instance.CreateNotification(
-                           exception,
-                           correlationIdentifier,
-                           ServiceNotificationIdentifiers.ResourceTypesControllerGetException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Resource types controller get", requestId);
 
                 throw;
             }

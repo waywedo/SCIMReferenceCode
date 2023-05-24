@@ -1,28 +1,23 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Text;
-    using System.Text.RegularExpressions;
-
     internal static class StringExtension
     {
-        private const string PatternEscapedDoubleQuote = @"\\*" + StringExtension.QuoteDouble;
-        private const string PatternEscapedSingleQuote = @"\\*" + StringExtension.QuoteSingle;
-        private const string QuoteDouble = "\"";
-        private const string QuoteSingle = "'";
+        private const string PATTERN_ESCAPED_DOUBLE_QUOTE = @"\\*" + QUOTE_DOUBLE;
+        private const string PATTERN_ESCAPED_SINGLE_QUOTE = @"\\*" + QUOTE_SINGLE;
+        private const string QUOTE_DOUBLE = "\"";
+        private const string QUOTE_SINGLE = "'";
 
         private static readonly Lazy<Regex> ExpressionEscapedDoubleQuote =
-            new Lazy<Regex>(
-                () =>
-                    new Regex(StringExtension.PatternEscapedDoubleQuote, RegexOptions.Compiled | RegexOptions.CultureInvariant));
+            new(() => new Regex(PATTERN_ESCAPED_DOUBLE_QUOTE, RegexOptions.Compiled | RegexOptions.CultureInvariant));
         private static readonly Lazy<Regex> ExpressionEscapedSingleQuote =
-            new Lazy<Regex>(
-                () =>
-                    new Regex(StringExtension.PatternEscapedSingleQuote, RegexOptions.Compiled | RegexOptions.CultureInvariant));
+            new(() => new Regex(PATTERN_ESCAPED_SINGLE_QUOTE, RegexOptions.Compiled | RegexOptions.CultureInvariant));
 
         public static string Unquote(this string input)
         {
@@ -31,37 +26,40 @@ namespace Microsoft.SCIM
                 return input;
             }
 
-            int indexQuoteDouble = input.Trim().IndexOf(StringExtension.QuoteDouble, 0, StringComparison.OrdinalIgnoreCase);
-            int indexQuoteSingle = input.Trim().IndexOf(StringExtension.QuoteSingle, 0, StringComparison.OrdinalIgnoreCase);
+            var indexQuoteDouble = input.Trim().IndexOf(QUOTE_DOUBLE, 0, StringComparison.OrdinalIgnoreCase);
+            var indexQuoteSingle = input.Trim().IndexOf(QUOTE_SINGLE, 0, StringComparison.OrdinalIgnoreCase);
             Regex expression;
-            if (0 == indexQuoteDouble)
+
+            if (indexQuoteDouble == 0)
             {
-                expression = StringExtension.ExpressionEscapedDoubleQuote.Value;
+                expression = ExpressionEscapedDoubleQuote.Value;
             }
-            else if (0 == indexQuoteSingle)
+            else if (indexQuoteSingle == 0)
             {
-                expression = StringExtension.ExpressionEscapedSingleQuote.Value;
+                expression = ExpressionEscapedSingleQuote.Value;
             }
             else
             {
                 return input;
             }
 
-            MatchCollection matches = expression.Matches(input);
-            if (matches.Count <= 0)
+            var matches = expression.Matches(input);
+
+            if (matches.Count == 0)
             {
                 return input;
             }
 
-            StringBuilder buffer = new StringBuilder(input);
+            var buffer = new StringBuilder(input);
+
             for (int matchIndex = matches.Count - 1; matchIndex >= 0; matchIndex--)
             {
-                Match match = matches[matchIndex];
-                int index = match.Index;
+                var match = matches[matchIndex];
+                var index = match.Index;
                 buffer.Remove(index, 1);
             }
-            string result = buffer.ToString();
-            return result;
+
+            return buffer.ToString();
         }
     }
 }

@@ -1,49 +1,39 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Web;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Web;
-
     public sealed class Filter : IFilter
     {
-        private const string ComparisonValueTemplate = "\"{0}\"";
+        private const string COMPARISON_VALUE_TEMPLATE = "\"{0}\"";
 
-        private const string EncodingSpacePer2396 = "+";
+        private const string ENCODING_SPACE_PER_2396 = "+";
 
-        public const string NullValue = "null";
+        public const string NULL_VALUE = "null";
 
-        private const string ReservedPerRfc2396 = ";/?:@&=+$,";
-        private const string ReservedPerRfc3986 = Filter.ReservedPerRfc2396 + "#[]!'()*";
+        private const string RESERVED_PER_RFC_2396 = ";/?:@&=+$,";
+        private const string RESERVED_PER_RFC_3986 = RESERVED_PER_RFC_2396 + "#[]!'()*";
 
-        private const string Space = " ";
+        private const string SPACE = " ";
 
-        private const string Template = "filter={0}";
-        private const string TemplateComparison = "{0} {1} {2}";
-        private const string TemplateConjunction = "{0} {1} {2}";
-        private const string TemplateNesting = "({0})";
+        private const string TEMPLATE = "filter={0}";
+        private const string TEMPLATE_COMPARISON = "{0} {1} {2}";
+        private const string TEMPLATE_CONJUNCTION = "{0} {1} {2}";
+        private const string TEMPLATE_NESTING = "({0})";
 
-        private static readonly Lazy<char[]> ReservedCharactersPerRfc3986 =
-            new Lazy<char[]>(
-                () =>
-                    Filter.ReservedPerRfc3986.ToCharArray());
-        private static readonly Lazy<IReadOnlyDictionary<string, string>> ReservedCharacterEncodingsPerRfc3986 =
-            new Lazy<IReadOnlyDictionary<string, string>>(
-                () =>
-                    Filter.InitializeReservedCharacter3986Encodings());
-        private static readonly Lazy<IReadOnlyDictionary<string, string>> ReservedCharacterEncodingsPerRfc2396 =
-            new Lazy<IReadOnlyDictionary<string, string>>(
-                () =>
-                    Filter.InitializeReservedCharacter2396Encodings());
+        private static readonly Lazy<char[]> ReservedCharactersPerRfc3986 = new(() => RESERVED_PER_RFC_3986.ToCharArray());
+        private static readonly Lazy<IReadOnlyDictionary<string, string>> ReservedCharacterEncodingsPerRfc3986 = new(() => InitializeReservedCharacter3986Encodings());
+        private static readonly Lazy<IReadOnlyDictionary<string, string>> ReservedCharacterEncodingsPerRfc2396 = new(() => InitializeReservedCharacter2396Encodings());
 
-        private string comparisonValue;
-        private string comparisonValueEncoded;
-        private AttributeDataType? dataType;
+        private string _comparisonValue;
+        private string _comparisonValueEncoded;
+        private AttributeDataType? _dataType;
 
         private Filter()
         {
@@ -61,25 +51,24 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(comparisonValue));
             }
 
-            this.AttributePath = attributePath;
-            this.FilterOperator = filterOperator;
-            this.ComparisonValue = comparisonValue;
-            this.DataType = AttributeDataType.@string;
+            AttributePath = attributePath;
+            FilterOperator = filterOperator;
+            ComparisonValue = comparisonValue;
+            DataType = AttributeDataType.@string;
         }
 
-        public Filter(IFilter other)
-            : this(other?.AttributePath, other.FilterOperator, other?.ComparisonValue)
+        public Filter(IFilter other) : this(other?.AttributePath, other.FilterOperator, other?.ComparisonValue)
         {
-            if (null == other)
+            if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
 
-            this.DataType = other.DataType;
+            DataType = other.DataType;
 
             if (other.AdditionalFilter != null)
             {
-                this.AdditionalFilter = new Filter(other.AdditionalFilter);
+                AdditionalFilter = new Filter(other.AdditionalFilter);
             }
         }
 
@@ -108,94 +97,82 @@ namespace Microsoft.SCIM
             or
         }
 
-        public IFilter AdditionalFilter
-        {
-            get;
-            set;
-        }
+        public IFilter AdditionalFilter { get; set; }
 
-        public string AttributePath
-        {
-            get;
-            private set;
-        }
+        public string AttributePath { get; }
 
         public string ComparisonValue
         {
             get
             {
-                return this.comparisonValue;
+                return _comparisonValue;
             }
-
             private set
             {
-                Filter.Validate(this.DataType, value);
-                this.comparisonValue = value;
-                string encodedValue = this.comparisonValue;
-                foreach (KeyValuePair<string, string> encoding in Filter.ReservedCharacterEncodingsPerRfc2396.Value)
+                Validate(DataType, value);
+
+                _comparisonValue = value;
+
+                var encodedValue = _comparisonValue;
+
+                foreach (KeyValuePair<string, string> encoding in ReservedCharacterEncodingsPerRfc2396.Value)
                 {
                     encodedValue = encodedValue.Replace(encoding.Key, encoding.Value, StringComparison.InvariantCulture);
                 }
-                this.comparisonValueEncoded = encodedValue;
+
+                _comparisonValueEncoded = encodedValue;
             }
         }
 
-        public string ComparisonValueEncoded
-        {
-            get
-            {
-                return this.comparisonValueEncoded;
-            }
-        }
+        public string ComparisonValueEncoded { get { return _comparisonValueEncoded; } }
 
         public AttributeDataType? DataType
         {
-            get
-            {
-                return this.dataType;
-            }
-
+            get { return _dataType; }
             set
             {
-                Filter.Validate(value, this.ComparisonValue);
-                this.dataType = value;
+                Validate(value, ComparisonValue);
+                _dataType = value;
             }
         }
 
-        public ComparisonOperator FilterOperator
-        {
-            get;
-            set;
-        }
+        public ComparisonOperator FilterOperator { get; set; }
+
+        public static Lazy<IReadOnlyDictionary<string, string>> ReservedCharacterEncodingsPerRfc39861 => ReservedCharacterEncodingsPerRfc3986;
 
         private static IReadOnlyDictionary<string, string> InitializeReservedCharacter2396Encodings()
         {
-            Dictionary<string, string> result =
-                Filter.ReservedCharacterEncodingsPerRfc3986.Value
+            var result = ReservedCharacterEncodingsPerRfc39861.Value
                 .ToDictionary(
                     (KeyValuePair<string, string> item) => item.Key,
-                    (KeyValuePair<string, string> item) => item.Value);
-            result.Add(Filter.Space, Filter.EncodingSpacePer2396);
+                    (KeyValuePair<string, string> item) => item.Value
+                );
+
+            result.Add(SPACE, ENCODING_SPACE_PER_2396);
+
             return result;
         }
 
         private static IReadOnlyDictionary<string, string> InitializeReservedCharacter3986Encodings()
         {
-            Dictionary<string, string> result =
-                new Dictionary<string, string>(Filter.ReservedCharactersPerRfc3986.Value.Length);
-            foreach (char character in Filter.ReservedCharactersPerRfc3986.Value)
+            var result = new Dictionary<string, string>(ReservedCharactersPerRfc3986.Value.Length);
+
+            foreach (char character in ReservedCharactersPerRfc3986.Value)
             {
-                string from = character.ToString(CultureInfo.InvariantCulture);
-                string to = HttpUtility.UrlEncode(from);
+                var from = character.ToString(CultureInfo.InvariantCulture);
+                var to = HttpUtility.UrlEncode(from);
+
                 result.Add(from, to);
             }
+
             return result;
         }
 
         public string Serialize()
         {
             ComparisonOperatorValue operatorValue;
-            switch (this.FilterOperator)
+
+            switch (FilterOperator)
             {
                 case ComparisonOperator.BitAnd:
                     operatorValue = ComparisonOperatorValue.bitAnd;
@@ -237,112 +214,82 @@ namespace Microsoft.SCIM
                     operatorValue = ComparisonOperatorValue.notMatchesExpression;
                     break;
                 default:
-                    string notSupportedValue = Enum.GetName(typeof(ComparisonOperator), this.FilterOperator);
+                    string notSupportedValue = Enum.GetName(typeof(ComparisonOperator), FilterOperator);
                     throw new NotSupportedException(notSupportedValue);
             }
 
             string rightHandSide;
-            AttributeDataType effectiveDataType = this.DataType ?? AttributeDataType.@string;
-            switch (effectiveDataType)
+
+            switch (DataType ?? AttributeDataType.@string)
             {
                 case AttributeDataType.boolean:
                 case AttributeDataType.@decimal:
                 case AttributeDataType.integer:
-                    rightHandSide = this.ComparisonValue;
+                    rightHandSide = ComparisonValue;
                     break;
                 default:
-                    rightHandSide =
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            Filter.ComparisonValueTemplate,
-                            this.ComparisonValue);
+                    rightHandSide = string.Format( CultureInfo.InvariantCulture, COMPARISON_VALUE_TEMPLATE, ComparisonValue);
                     break;
             }
 
-            string filter =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    Filter.TemplateComparison,
-                    this.AttributePath,
-                    operatorValue,
-                    rightHandSide);
-            string result;
-            if (this.AdditionalFilter != null)
+            var filter = string.Format(CultureInfo.InvariantCulture, TEMPLATE_COMPARISON, AttributePath, operatorValue, rightHandSide);
+
+            if (AdditionalFilter != null)
             {
-                string additionalFilter = this.AdditionalFilter.Serialize();
-                result =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        Filter.TemplateConjunction,
-                        filter,
-                        Filter.LogicalOperatorValue.and,
-                        additionalFilter);
+                var additionalFilter = AdditionalFilter.Serialize();
+
+                return string.Format(CultureInfo.InvariantCulture, TEMPLATE_CONJUNCTION, filter, LogicalOperatorValue.and, additionalFilter);
             }
             else
             {
-                result = filter;
+                return filter;
             }
-            return result;
         }
 
         public override string ToString()
         {
-            string result = this.Serialize();
-            return result;
+            return Serialize();
         }
 
         public static string ToString(IReadOnlyCollection<IFilter> filters)
         {
-            if (null == filters)
+            if (filters == null)
             {
                 throw new ArgumentNullException(nameof(filters));
             }
 
-            string placeholder = Guid.NewGuid().ToString();
+            var placeholder = Guid.NewGuid().ToString();
             string allFilters = null;
+
             foreach (IFilter filter in filters)
             {
-                Filter clone = new Filter(filter);
-                clone.ComparisonValue = placeholder;
-                string currentFilter = clone.Serialize();
-                string encodedFilter = 
-                    HttpUtility
-                    .UrlEncode(currentFilter)
-                    .Replace(placeholder, filter.ComparisonValueEncoded, StringComparison.InvariantCulture);
+                var clone = new Filter(filter)
+                {
+                    ComparisonValue = placeholder
+                };
+                var currentFilter = clone.Serialize();
+                var encodedFilter = HttpUtility.UrlEncode(currentFilter).Replace(placeholder, filter.ComparisonValueEncoded, StringComparison.InvariantCulture);
+
                 if (string.IsNullOrWhiteSpace(allFilters))
                 {
-                    allFilters =
-                        filters.Count > 1 ?
-                            string.Format(CultureInfo.InvariantCulture, Filter.TemplateNesting, encodedFilter) :
-                            encodedFilter;
+                    allFilters = filters.Count > 1 ? string.Format(CultureInfo.InvariantCulture, TEMPLATE_NESTING, encodedFilter) : encodedFilter;
                 }
                 else
                 {
-                    string rightHandSide =
-                        filter.AdditionalFilter != null || filters.Count > 1 ?
-                            string.Format(CultureInfo.InvariantCulture, Filter.TemplateNesting, encodedFilter) :
-                            encodedFilter;
-                    allFilters =
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            Filter.TemplateConjunction,
-                            allFilters,
-                            Filter.LogicalOperatorValue.or,
-                            rightHandSide);
+                    var rightHandSide = filter.AdditionalFilter != null || filters.Count > 1
+                        ? string.Format(CultureInfo.InvariantCulture, TEMPLATE_NESTING, encodedFilter)
+                        : encodedFilter;
+
+                    allFilters = string.Format(CultureInfo.InvariantCulture, TEMPLATE_CONJUNCTION, allFilters, LogicalOperatorValue.or, rightHandSide);
                 }
             }
 
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    Filter.Template,
-                    allFilters);
-            return result;
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, allFilters);
         }
 
         public static bool TryParse(string filterExpression, out IReadOnlyCollection<IFilter> filters)
         {
-            string expression = filterExpression?.Trim()?.Unquote();
+            var expression = filterExpression?.Trim()?.Unquote();
 
             if (string.IsNullOrWhiteSpace(expression))
             {
@@ -351,8 +298,7 @@ namespace Microsoft.SCIM
 
             try
             {
-                IReadOnlyCollection<IFilter> buffer = new FilterExpression(expression).ToFilters();
-                filters = buffer;
+                filters = new FilterExpression(expression).ToFilters();
                 return true;
             }
             catch (ArgumentOutOfRangeException)
@@ -384,22 +330,19 @@ namespace Microsoft.SCIM
                 case AttributeDataType.boolean:
                     if (!bool.TryParse(value, out bool _))
                     {
-                        throw new InvalidOperationException(
-                            SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                        throw new InvalidOperationException(ProtocolResources.ExceptionInvalidValue);
                     }
                     break;
                 case AttributeDataType.@decimal:
                     if (!double.TryParse(value, out double _))
                     {
-                        throw new InvalidOperationException(
-                            SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                        throw new InvalidOperationException(ProtocolResources.ExceptionInvalidValue);
                     }
                     break;
                 case AttributeDataType.integer:
                     if (!long.TryParse(value, out long _))
                     {
-                        throw new InvalidOperationException(
-                            SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                        throw new InvalidOperationException(ProtocolResources.ExceptionInvalidValue);
                     }
                     break;
                 case AttributeDataType.binary:

@@ -1,225 +1,184 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.SCIM.Service;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Net;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-    using Newtonsoft.Json;
-
     public sealed class SampleProvider : ProviderBase, ISampleProvider
     {
-        public const string ElectronicMailAddressHome = "babs@jensen.org";
-        public const string ElectronicMailAddressWork = "bjensen@example.com";
+        public const string ELECTRONIC_MAIL_ADDRESS_HOME = "babs@jensen.org";
+        public const string ELECTRONIC_MAIL_ADDRESS_WORK = "bjensen@example.com";
 
-        public const string ExtensionAttributeEnterpriseUserCostCenter = "4130";
-        public const string ExtensionAttributeEnterpriseUserDepartment = "Tour Operations";
-        public const string ExtensionAttributeEnterpriseUserDivision = "Theme Park";
-        public const string ExtensionAttributeEnterpriseUserEmployeeNumber = "701984";
-        public const string ExtensionAttributeEnterpriseUserOrganization = "Universal Studios";
+        public const string EXTENSION_ATTRIBUTE_ENTERPRISE_USER_COST_CENTER = "4130";
+        public const string EXTENSION_ATTRIBUTE_ENTERPRISE_USER_DEPARTMENT = "Tour Operations";
+        public const string EXTENSION_ATTRIBUTE_ENTERPRISE_USER_DIVISION = "Theme Park";
+        public const string EXTENSION_ATTRIBUTE_ENTERPRISE_USER_EMPLOYEE_NUMBER = "701984";
+        public const string EXTENSION_ATTRIBUTE_ENTERPRISE_USER_ORGANIZATION = "Universal Studios";
 
-        public const string GroupName = "Creative & Skinning";
-        public const string IdentifierGroup = "acbf3ae7-8463-4692-b4fd-9b4da3f908ce";
-        public const string IdentifierRole = "DA3B77DF-F495-45C7-9AAC-EC083B99A9D3";
-        public const string IdentifierUser = "2819c223-7f76-453a-919d-413861904646";
-        public const string IdentifierExternal = "bjensen";
+        public const string GROUP_NAME = "Creative & Skinning";
+        public const string IDENTIFIER_GROUP = "acbf3ae7-8463-4692-b4fd-9b4da3f908ce";
+        public const string IDENTIFIER_ROLE = "DA3B77DF-F495-45C7-9AAC-EC083B99A9D3";
+        public const string IDENTIFIER_USER = "2819c223-7f76-453a-919d-413861904646";
+        public const string IDENTIFIER_EXTERNAL = "bjensen";
 
-        public const int LimitPageSize = 6;
+        public const int LIMIT_PAGE_SIZE = 6;
 
-        public const string Locale = "en-Us";
-        public const string ManagerDisplayName = "John Smith";
-        public const string ManagerIdentifier = "26118915-6090-4610-87e4-49d8ca9f808d";
-        private const string NameFamily = "Jensen";
-        private const string NameFormatted = "Ms. Barbara J Jensen III";
-        private const string NameGiven = "Barbara";
-        private const string NameHonorificPrefix = "Ms.";
-        private const string NameHonorificSuffix = "III";
-        private const string NameUser = "bjensen";
-        public const string PhotoValue = "https://photos.example.com/profilephoto/72930000000Ccne/F";
-        public const string ProfileUrl = "https://login.example.com/bjensen";
-        public const string RoleDescription = "Attends an educational institution";
-        public const string RoleDisplay = "Student";
-        public const string RoleValue = "student";
-        public const string TimeZone = "America/Los_Angeles";
-        public const string UserType = "Employee";
+        public const string LOCALE = "en-Us";
+        public const string MANAGER_DISPLAY_NAME = "John Smith";
+        public const string MANAGER_IDENTIFIER = "26118915-6090-4610-87e4-49d8ca9f808d";
+        private const string NAME_FAMILY = "Jensen";
+        private const string NAME_FORMATTED = "Ms. Barbara J Jensen III";
+        private const string NAME_GIVEN = "Barbara";
+        private const string NAME_HONORIFIC_PREFIX = "Ms.";
+        private const string NAME_HONORIFIC_SUFFIX = "III";
+        private const string NAME_USER = "bjensen";
+        public const string PHOTO_VALUE = "https://photos.example.com/profilephoto/72930000000Ccne/F";
+        public const string PROFILE_URL = "https://login.example.com/bjensen";
+        public const string ROLE_DESCRIPTION = "Attends an educational institution";
+        public const string ROLE_DISPLAY = "Student";
+        public const string ROLE_VALUE = "student";
+        public const string TIME_ZONE = "America/Los_Angeles";
+        public const string USER_TYPE = "Employee";
 
-        private readonly ElectronicMailAddress sampleElectronicMailAddressHome;
-        private readonly ElectronicMailAddress sampleElectronicMailAddressWork;
+        private readonly ElectronicMailAddress _sampleElectronicMailAddressHome;
+        private readonly ElectronicMailAddress _sampleElectronicMailAddressWork;
 
-        private readonly IReadOnlyCollection<ElectronicMailAddress> sampleElectronicMailAddresses;
-        private readonly Manager sampleManager;
-        private readonly Name sampleName;
-        private readonly OperationValue sampleOperationValue;
-        private readonly PatchOperation2Combined sampleOperation;
-        private readonly PatchRequest2 samplePatch;
-
-        private readonly Core2Group sampleGroup;
-        private readonly Core2EnterpriseUser sampleUser;
+        private readonly IReadOnlyCollection<ElectronicMailAddress> _sampleElectronicMailAddresses;
+        private readonly Manager _sampleManager;
+        private readonly Name _sampleName;
+        private readonly OperationValue _sampleOperationValue;
+        private readonly PatchOperation2Combined _sampleOperation;
 
         public SampleProvider()
         {
-            this.sampleElectronicMailAddressHome =
-                new ElectronicMailAddress
-                {
-                    ItemType = ElectronicMailAddress.Home,
-                    Value = SampleProvider.ElectronicMailAddressHome
-                };
+            _sampleElectronicMailAddressHome = new ElectronicMailAddress
+            {
+                ItemType = ElectronicMailAddressBase.HOME,
+                Value = ELECTRONIC_MAIL_ADDRESS_HOME
+            };
 
-            this.sampleElectronicMailAddressWork =
-                new ElectronicMailAddress
-                {
-                    ItemType = ElectronicMailAddressWork,
-                    Primary = true,
-                    Value = SampleProvider.ElectronicMailAddressWork
-                };
+            _sampleElectronicMailAddressWork = new ElectronicMailAddress
+            {
+                ItemType = ELECTRONIC_MAIL_ADDRESS_WORK,
+                Primary = true,
+                Value = ELECTRONIC_MAIL_ADDRESS_WORK
+            };
 
-            this.sampleElectronicMailAddresses =
-                new ElectronicMailAddress[]
+            _sampleElectronicMailAddresses = new ElectronicMailAddress[]
                     {
-                        this.sampleElectronicMailAddressHome,
-                        this.sampleElectronicMailAddressWork
+                        _sampleElectronicMailAddressHome,
+                        _sampleElectronicMailAddressWork
                     };
 
-            this.sampleManager =
-                new Manager()
-                {
-                    Value = SampleProvider.ManagerIdentifier,
-                };
-
-            this.sampleName =
-                new Name()
-                {
-                    FamilyName = SampleProvider.NameFamily,
-                    Formatted = SampleProvider.NameFormatted,
-                    GivenName = SampleProvider.NameGiven,
-                    HonorificPrefix = SampleProvider.NameHonorificPrefix,
-                    HonorificSuffix = SampleProvider.NameHonorificSuffix
-                };
-
-            this.sampleOperationValue =
-                new OperationValue()
-                {
-                    Value = SampleProvider.IdentifierUser
-                };
-
-            this.sampleOperation = this.ConstructOperation();
-
-            this.samplePatch = this.ConstructPatch();
-
-            this.sampleUser =
-                new Core2EnterpriseUser()
-                {
-                    Active = true,
-                    ElectronicMailAddresses = this.sampleElectronicMailAddresses,
-                    ExternalIdentifier = SampleProvider.IdentifierExternal,
-                    Identifier = SampleProvider.IdentifierUser,
-                    Name = this.sampleName,
-                    UserName = SampleProvider.NameUser
-                };
-
-            ExtensionAttributeEnterpriseUser2 enterpriseExtensionAttributeEnterpriseUser2 =
-                new ExtensionAttributeEnterpriseUser2()
-                {
-                    CostCenter = SampleProvider.ExtensionAttributeEnterpriseUserCostCenter,
-                    Department = SampleProvider.ExtensionAttributeEnterpriseUserDepartment,
-                    Division = SampleProvider.ExtensionAttributeEnterpriseUserDivision,
-                    EmployeeNumber = SampleProvider.ExtensionAttributeEnterpriseUserEmployeeNumber,
-                    Manager = this.sampleManager,
-                    Organization = SampleProvider.ExtensionAttributeEnterpriseUserOrganization
-                };
-
-            this.SampleUser.EnterpriseExtension = enterpriseExtensionAttributeEnterpriseUser2;
-
-            this.sampleGroup =
-                new Core2Group()
-                {
-                    DisplayName = SampleProvider.GroupName,
-                };
-        }
-
-        public Core2Group SampleGroup
-        {
-            get
+            _sampleManager = new Manager
             {
-                return this.sampleGroup;
-            }
+                Value = MANAGER_IDENTIFIER,
+            };
+
+            _sampleName = new Name
+            {
+                FamilyName = NAME_FAMILY,
+                Formatted = NAME_FORMATTED,
+                GivenName = NAME_GIVEN,
+                HonorificPrefix = NAME_HONORIFIC_PREFIX,
+                HonorificSuffix = NAME_HONORIFIC_SUFFIX
+            };
+
+            _sampleOperationValue = new OperationValue
+            {
+                Value = IDENTIFIER_USER
+            };
+
+            _sampleOperation = ConstructOperation();
+
+            SamplePatch = ConstructPatch();
+
+            SampleUser = new Core2EnterpriseUser
+            {
+                Active = true,
+                ElectronicMailAddresses = _sampleElectronicMailAddresses,
+                ExternalIdentifier = IDENTIFIER_EXTERNAL,
+                Identifier = IDENTIFIER_USER,
+                Name = _sampleName,
+                UserName = NAME_USER,
+                EnterpriseExtension = new ExtensionAttributeEnterpriseUser2
+                {
+                    CostCenter = EXTENSION_ATTRIBUTE_ENTERPRISE_USER_COST_CENTER,
+                    Department = EXTENSION_ATTRIBUTE_ENTERPRISE_USER_DEPARTMENT,
+                    Division = EXTENSION_ATTRIBUTE_ENTERPRISE_USER_DIVISION,
+                    EmployeeNumber = EXTENSION_ATTRIBUTE_ENTERPRISE_USER_EMPLOYEE_NUMBER,
+                    Manager = _sampleManager,
+                    Organization = EXTENSION_ATTRIBUTE_ENTERPRISE_USER_ORGANIZATION
+                }
+            };
+
+            SampleGroup = new Core2Group
+            {
+                DisplayName = GROUP_NAME,
+            };
         }
 
-        public PatchRequest2 SamplePatch
-        {
-            get
-            {
-                return this.samplePatch;
-            }
-        }
+        public Core2Group SampleGroup { get; }
+
+        public PatchRequest2 SamplePatch { get; }
 
         public Core2EnterpriseUser SampleResource
         {
-            get
-            {
-                return this.SampleUser;
-            }
+            get { return SampleUser; }
         }
 
-        public Core2EnterpriseUser SampleUser
-        {
-            get
-            {
-                return this.sampleUser;
-            }
-        }
+        public Core2EnterpriseUser SampleUser { get; }
 
         public override Task<Resource> CreateAsync(Resource resource, string correlationIdentifier)
         {
-            if (null == resource)
+            if (resource == null)
             {
                 throw new ArgumentNullException(nameof(resource));
             }
 
-            resource.Identifier = SampleProvider.IdentifierUser;
+            resource.Identifier = IDENTIFIER_USER;
 
-            Task<Resource> result = Task.FromResult(resource);
-            return result;
+            return Task.FromResult(resource);
         }
 
         private PatchOperation2Combined ConstructOperation()
         {
-            IPath path = Path.Create(AttributeNames.Members);
-            PatchOperation2Combined result =
-                new PatchOperation2Combined()
-                {
-                    Name = OperationName.Add,
-                    Path = path
-                };
-            result.Value = JsonConvert.SerializeObject(this.sampleOperationValue);
-            return result;
+            var path = Path.Create(AttributeNames.MEMBERS);
+
+            return new PatchOperation2Combined
+            {
+                Name = OperationName.Add,
+                Path = path,
+                Value = JsonConvert.SerializeObject(_sampleOperationValue)
+            };
         }
 
         private PatchRequest2 ConstructPatch()
         {
-            PatchRequest2 result = new PatchRequest2();
-            result.AddOperation(this.sampleOperation);
+            var result = new PatchRequest2();
+            result.AddOperation(_sampleOperation);
             return result;
         }
 
         public override Task DeleteAsync(IResourceIdentifier resourceIdentifier, string correlationIdentifier)
         {
-            if (null == resourceIdentifier)
+            if (resourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(resourceIdentifier));
             }
 
-            Task result = Task.WhenAll();
-            return result;
+            return Task.WhenAll();
         }
 
         private static bool HasMember(IResourceIdentifier containerIdentifier, string memberAttributePath, string memberIdentifier)
         {
-            if (null == containerIdentifier)
+            if (containerIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(containerIdentifier));
             }
@@ -236,303 +195,234 @@ namespace Microsoft.SCIM
 
             if (string.IsNullOrWhiteSpace(containerIdentifier.Identifier))
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidIdentifier);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidIdentifier);
             }
 
-            if (!string.Equals(memberAttributePath, AttributeNames.Members, StringComparison.Ordinal))
+            if (!string.Equals(memberAttributePath, AttributeNames.MEMBERS, StringComparison.Ordinal))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
-                        memberAttributePath);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
+                    memberAttributePath);
+
                 throw new NotSupportedException(exceptionMessage);
             }
 
-            if (!string.Equals(SchemaIdentifiers.Core2Group, containerIdentifier.SchemaIdentifier, StringComparison.Ordinal))
+            if (!string.Equals(SchemaIdentifiers.CORE_2_GROUP, containerIdentifier.SchemaIdentifier, StringComparison.Ordinal))
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionFilterNotSupported);
             }
 
-            bool result =
-                    string.Equals(SampleProvider.IdentifierGroup, containerIdentifier.Identifier, StringComparison.OrdinalIgnoreCase)
-                && string.Equals(SampleProvider.IdentifierUser, memberIdentifier, StringComparison.OrdinalIgnoreCase);
-
-            return result;
-        }
-
-        public override async Task<QueryResponseBase> PaginateQueryAsync(IRequest<IQueryParameters> request)
-        {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (null == request.Payload)
-            {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
-            }
-
-            if (string.IsNullOrWhiteSpace(request.CorrelationIdentifier))
-            {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
-            }
-
-            IReadOnlyCollection<Resource> resources = await this.QueryAsync(request).ConfigureAwait(false);
-            QueryResponseBase result = new QueryResponse(resources);
-            if (null == request.Payload.PaginationParameters)
-            {
-                result.TotalResults =
-                    result.ItemsPerPage =
-                        resources.Count;
-            }
-
-            return result;
+            return string.Equals(IDENTIFIER_GROUP, containerIdentifier.Identifier, StringComparison.OrdinalIgnoreCase)
+                && string.Equals(IDENTIFIER_USER, memberIdentifier, StringComparison.OrdinalIgnoreCase);
         }
 
         private Resource[] Query(IQueryParameters parameters)
         {
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
             if (parameters.AlternateFilters.Count != 1)
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterCount);
+                throw new NotSupportedException(ServiceResources.ExceptionFilterCount);
             }
 
             if (parameters.PaginationParameters != null)
             {
-                string exceptionMessage =
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            SystemForCrossDomainIdentityManagementServiceResources.ExceptionPaginationIsNotSupportedTemplate,
-                            parameters.SchemaIdentifier);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ServiceResources.ExceptionPaginationIsNotSupportedTemplate,
+                    parameters.SchemaIdentifier);
+
                 throw new NotSupportedException(exceptionMessage);
             }
 
-            IFilter filter = parameters.AlternateFilters.Single();
+            var filter = parameters.AlternateFilters.Single();
+
             if (filter.AdditionalFilter != null)
             {
-                Resource[] result = SampleProvider.QueryMember(parameters, filter);
-                return result;
+                return QueryMember(parameters, filter);
             }
-            else if (string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.Core2EnterpriseUser, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.CORE_2_ENTERPRISE_USER, StringComparison.OrdinalIgnoreCase))
             {
-                Resource[] result = this.QueryUsers(parameters, filter);
-                return result;
+                return QueryUsers(parameters, filter);
             }
-            else if (string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.Core2Group, StringComparison.OrdinalIgnoreCase))
+            else if (string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.CORE_2_GROUP, StringComparison.OrdinalIgnoreCase))
             {
-                Resource[] result = this.QueryGroups(parameters, filter);
-                return result;
+                return QueryGroups(parameters, filter);
             }
             else
             {
-                string exceptionMessage =
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
-                            filter.AttributePath);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
+                    filter.AttributePath);
+
                 throw new NotSupportedException(exceptionMessage);
             }
         }
 
-        public override Task<Resource[]> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
+        public override Task<QueryResponseBase> QueryAsync(IQueryParameters parameters, string correlationIdentifier)
         {
-            Resource[] resources = this.Query(parameters);
-            Task<Resource[]> result = Task.FromResult(resources);
-            return result;
+            var resources = Query(parameters);
+
+            var result = new QueryResponse(resources.ToList() as IList<Resource>);
+
+            result.TotalResults = result.ItemsPerPage = resources.Length;
+
+            return Task.FromResult(result as QueryResponseBase);
         }
 
         private Resource[] QueryGroups(IQueryParameters parameters, IFilter filter)
         {
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (null == filter)
+            if (filter == null)
             {
                 throw new ArgumentNullException(nameof(filter));
             }
 
-            if
-            (
-                    null == parameters.ExcludedAttributePaths
-                || !parameters.ExcludedAttributePaths.Any()
+            if (parameters.ExcludedAttributePaths?.Any() != true
                 || parameters.ExcludedAttributePaths.Count != 1
-                || !parameters.ExcludedAttributePaths.Single().Equals(AttributeNames.Members, StringComparison.Ordinal)
-            )
+                || !parameters.ExcludedAttributePaths.Single().Equals(AttributeNames.MEMBERS, StringComparison.Ordinal))
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new ArgumentException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            if (
-                       !string.Equals(filter.AttributePath, AttributeNames.ExternalIdentifier, StringComparison.OrdinalIgnoreCase)
-                    && !string.Equals(filter.AttributePath, AttributeNames.DisplayName, StringComparison.OrdinalIgnoreCase)
-               )
+            if (!string.Equals(filter.AttributePath, AttributeNames.EXTERNAL_IDENTIFIER, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(filter.AttributePath, AttributeNames.DISPLAY_NAME, StringComparison.OrdinalIgnoreCase))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
-                        filter.AttributePath);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
+                    filter.AttributePath);
+
                 throw new NotSupportedException(exceptionMessage);
             }
 
             if (filter.FilterOperator != ComparisonOperator.Equals)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate,
-                        filter.FilterOperator);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ServiceResources.ExceptionFilterOperatorNotSupportedTemplate,
+                    filter.FilterOperator);
+
                 throw new NotSupportedException(exceptionMessage);
             }
 
-            Resource[] results;
-            if (!string.Equals(filter.ComparisonValue, SampleProvider.GroupName, StringComparison.OrdinalIgnoreCase))
-            {
-                results = Enumerable.Empty<Resource>().ToArray();
-            }
-            else
-            {
-                results = this.sampleGroup.ToCollection().ToArray();
-            }
-
-            return results;
+            return !string.Equals(filter.ComparisonValue, GROUP_NAME, StringComparison.OrdinalIgnoreCase)
+                ? Enumerable.Empty<Resource>().ToArray()
+                : SampleGroup.ToCollection().ToArray();
         }
 
         private static Resource[] QueryMember(IQueryParameters parameters, IFilter filter)
         {
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (null == filter)
+            if (filter == null)
             {
                 throw new ArgumentNullException(nameof(filter));
             }
 
-            if (null == filter.AdditionalFilter)
+            if (filter.AdditionalFilter == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new ArgumentException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            Resource[] results = null;
-
-            if (parameters.ExcludedAttributePaths != null && parameters.ExcludedAttributePaths.Any())
+            if (parameters.ExcludedAttributePaths?.Any() == true)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new ArgumentException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            if (!string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.Core2Group, StringComparison.Ordinal))
+            if (!string.Equals(parameters.SchemaIdentifier, SchemaIdentifiers.CORE_2_GROUP, StringComparison.Ordinal))
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            if (null == parameters.RequestedAttributePaths || !parameters.RequestedAttributePaths.Any())
+            if (parameters.RequestedAttributePaths?.Any() != true)
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
             }
 
             if (filter.AdditionalFilter.AdditionalFilter != null)
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            string selectedAttribute = parameters.RequestedAttributePaths.SingleOrDefault();
+            var selectedAttribute = parameters.RequestedAttributePaths.SingleOrDefault();
+
             if (string.IsNullOrWhiteSpace(selectedAttribute))
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            if (!string.Equals(selectedAttribute, AttributeNames.Identifier, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(selectedAttribute, AttributeNames.IDENTIFIER, StringComparison.OrdinalIgnoreCase))
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            IReadOnlyCollection<IFilter> filters =
-                new IFilter[]
-                        {
-                            filter,
-                            filter.AdditionalFilter
-                        };
-
-            IFilter filterIdentifier =
-                filters
-                .SingleOrDefault(
-                    (IFilter item) =>
-                        item.AttributePath.Equals(AttributeNames.Identifier, StringComparison.OrdinalIgnoreCase));
-            if (null == filterIdentifier)
+            IReadOnlyCollection<IFilter> filters = new IFilter[]
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
-            }
+                filter,
+                filter.AdditionalFilter
+            };
 
-            IFilter filterMembers =
-                filters
-                .SingleOrDefault(
-                    (IFilter item) =>
-                        item.AttributePath.Equals(AttributeNames.Members, StringComparison.OrdinalIgnoreCase));
-            if (null == filterMembers)
+            var filterIdentifier = filters.SingleOrDefault(
+                item => item.AttributePath.Equals(AttributeNames.IDENTIFIER, StringComparison.OrdinalIgnoreCase))
+                ?? throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
+
+            var filterMembers = filters.SingleOrDefault(
+                item => item.AttributePath.Equals(AttributeNames.MEMBERS, StringComparison.OrdinalIgnoreCase))
+                ?? throw new NotSupportedException(ServiceResources.ExceptionQueryNotSupported);
+
+            var containerIdentifier = new ResourceIdentifier
             {
-                throw new NotSupportedException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
-            }
+                SchemaIdentifier = parameters.SchemaIdentifier,
+                Identifier = filterIdentifier.ComparisonValue
+            };
 
-            IResourceIdentifier containerIdentifier =
-                new ResourceIdentifier()
-                {
-                    SchemaIdentifier = parameters.SchemaIdentifier,
-                    Identifier = filterIdentifier.ComparisonValue
-                };
-
-            if (!SampleProvider.HasMember(containerIdentifier, filterMembers.AttributePath, filterMembers.ComparisonValue))
+            if (!HasMember(containerIdentifier, filterMembers.AttributePath, filterMembers.ComparisonValue))
             {
-                results = Array.Empty<Resource>();
+                return Array.Empty<Resource>();
             }
             else
             {
-                Resource container =
-                    new Core2Group()
-                    {
-                        Identifier = containerIdentifier.Identifier
-                    };
-                results = container.ToCollection().ToArray();
-            }
+                var container = new Core2Group
+                {
+                    Identifier = containerIdentifier.Identifier
+                };
 
-            return results;
+                return container.ToCollection().ToArray();
+            }
         }
 
         private Resource[] QueryUsers(IQueryParameters parameters, IFilter filter)
         {
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (null == filter)
+            if (filter == null)
             {
                 throw new ArgumentNullException(nameof(filter));
             }
 
-            if (parameters.ExcludedAttributePaths != null && parameters.ExcludedAttributePaths.Any())
+            if (parameters.ExcludedAttributePaths?.Any() == true)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionQueryNotSupported);
+                throw new ArgumentException(ServiceResources.ExceptionQueryNotSupported);
             }
 
-            if
-            (
-                    !string.Equals(filter.AttributePath, AttributeNames.ExternalIdentifier, StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(filter.AttributePath, AttributeNames.UserName, StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(filter.AttributePath, AttributeNames.EXTERNAL_IDENTIFIER, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(filter.AttributePath, AttributeNames.USER_NAME, StringComparison.OrdinalIgnoreCase))
             {
                 string exceptionMessage =
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
+                        ServiceResources.ExceptionFilterAttributePathNotSupportedTemplate,
                         filter.AttributePath);
                 throw new NotSupportedException(exceptionMessage);
             }
@@ -542,94 +432,69 @@ namespace Microsoft.SCIM
                 string exceptionMessage =
                     string.Format(
                         CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterOperatorNotSupportedTemplate,
+                        ServiceResources.ExceptionFilterOperatorNotSupportedTemplate,
                         filter.FilterOperator);
                 throw new NotSupportedException(exceptionMessage);
             }
 
-            Resource[] results;
-            if
-            (
-                   !string.Equals(filter.ComparisonValue, SampleProvider.IdentifierExternal, StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(filter.ComparisonValue, this.SampleUser.UserName, StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                results = Enumerable.Empty<Resource>().ToArray();
-            }
-            else
-            {
-                results = this.SampleUser.ToCollection().ToArray();
-            }
-
-            return results;
+            return !string.Equals(filter.ComparisonValue, IDENTIFIER_EXTERNAL, StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(filter.ComparisonValue, SampleUser.UserName, StringComparison.OrdinalIgnoreCase)
+                ? Enumerable.Empty<Resource>().ToArray()
+                : SampleUser.ToCollection().ToArray();
         }
 
         public override Task<Resource> ReplaceAsync(Resource resource, string correlationIdentifier)
         {
-            if (null == resource)
+            if (resource == null)
             {
                 throw new ArgumentNullException(nameof(resource));
             }
 
-            if (null == resource.Identifier)
+            if (resource.Identifier == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidResource);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidResource);
             }
 
-            if
-            (
-                    resource.Is(SchemaIdentifiers.Core2EnterpriseUser)
-                && string.Equals(resource.Identifier, SampleProvider.IdentifierUser, StringComparison.OrdinalIgnoreCase)
-            )
+            if (resource.Is(SchemaIdentifiers.CORE_2_ENTERPRISE_USER)
+                && string.Equals(resource.Identifier, IDENTIFIER_USER, StringComparison.OrdinalIgnoreCase))
             {
-                Task<Resource> result = Task.FromResult(resource);
-                return result;
+                return Task.FromResult(resource);
             }
 
-            throw new HttpResponseException(HttpStatusCode.NotFound);
+            throw new ResourceNotFoundException();
         }
 
         public override Task<Resource> RetrieveAsync(IResourceRetrievalParameters parameters, string correlationIdentifier)
         {
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            if (null == parameters.ResourceIdentifier)
+            if (parameters.ResourceIdentifier == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidParameters);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidParameters);
             }
 
             Resource resource = null;
-            if
-            (
-                    string.Equals(
-                        parameters.ResourceIdentifier.SchemaIdentifier,
-                        SchemaIdentifiers.Core2EnterpriseUser,
-                        StringComparison.Ordinal)
-                && string.Equals(
-                        parameters.ResourceIdentifier.Identifier,
-                        SampleProvider.IdentifierUser,
-                        StringComparison.OrdinalIgnoreCase)
-            )
+
+            if (string.Equals(parameters.ResourceIdentifier.SchemaIdentifier, SchemaIdentifiers.CORE_2_ENTERPRISE_USER, StringComparison.Ordinal)
+                && string.Equals(parameters.ResourceIdentifier.Identifier, IDENTIFIER_USER, StringComparison.OrdinalIgnoreCase))
             {
-                resource = this.SampleUser;
+                resource = SampleUser;
             }
 
-            Task<Resource> result = Task.FromResult(resource);
-            return result;
+            return Task.FromResult(resource);
         }
 
         public override Task UpdateAsync(IPatch patch, string correlationIdentifier)
         {
-            if (null == patch)
+            if (patch == null)
             {
                 throw new ArgumentNullException(nameof(patch));
             }
 
-            Task result = Task.WhenAll();
-            return result;
+            return Task.WhenAll();
         }
     }
 }

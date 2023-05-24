@@ -1,31 +1,26 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Microsoft.IdentityModel.Tokens;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IdentityModel.Tokens.Jwt;
-    using System.Linq;
-    using Microsoft.IdentityModel.Tokens;
-
     // Implements https://tools.ietf.org/html/draft-ietf-secevent-token
     public class EventToken : IEventToken
     {
-        public const string HeaderKeyAlgorithm = "alg";
-        public const string JwtAlgorithmNone = "none";
+        public const string HEADER_KEY_ALGORITHM = "alg";
+        public const string JWT_ALGORITHM_NONE = "none";
 
         private static readonly Lazy<JwtHeader> HeaderDefault =
-            new Lazy<JwtHeader>(
-                () =>
-                    EventToken.ComposeDefaultHeader());
+            new(() => ComposeDefaultHeader());
 
         private static readonly Lazy<SecurityTokenHandler> TokenSerializer =
-            new Lazy<SecurityTokenHandler>(
-                    () =>
-                        new JwtSecurityTokenHandler());
+            new(() => new JwtSecurityTokenHandler());
 
         private EventToken(string issuer, JwtHeader header)
         {
@@ -34,21 +29,19 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(issuer));
             }
 
-            this.Issuer = issuer;
-            this.Header = header ?? throw new ArgumentNullException(nameof(header));
+            Issuer = issuer;
+            Header = header ?? throw new ArgumentNullException(nameof(header));
 
-            this.Identifier = Guid.NewGuid().ToString();
-            this.IssuedAt = DateTime.UtcNow;
+            Identifier = Guid.NewGuid().ToString();
+            IssuedAt = DateTime.UtcNow;
         }
 
-        public EventToken(string issuer, JwtHeader header, IDictionary<string, object> events)
-            : this(issuer, header)
+        public EventToken(string issuer, JwtHeader header, IDictionary<string, object> events) : this(issuer, header)
         {
-            this.Events = events ?? throw new ArgumentNullException(nameof(events));
+            Events = events ?? throw new ArgumentNullException(nameof(events));
         }
 
-        public EventToken(string issuer, Dictionary<string, object> events)
-            : this(issuer, EventToken.HeaderDefault.Value, events)
+        public EventToken(string issuer, Dictionary<string, object> events) : this(issuer, HeaderDefault.Value, events)
         {
         }
 
@@ -59,408 +52,374 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(serialized));
             }
 
-            JwtSecurityToken token = new JwtSecurityToken(serialized);
-            this.Header = token.Header;
+            var token = new JwtSecurityToken(serialized);
 
-            this.ParseIdentifier(token.Payload);
-            this.ParseIssuer(token.Payload);
-            this.ParseAudience(token.Payload);
-            this.ParseIssuedAt(token.Payload);
-            this.ParseNotBefore(token.Payload);
-            this.ParseSubject(token.Payload);
-            this.ParseExpiration(token.Payload);
-            this.ParseEvents(token.Payload);
-            this.ParseTransaction(token.Payload);
+            Header = token.Header;
+
+            ParseIdentifier(token.Payload);
+            ParseIssuer(token.Payload);
+            ParseAudience(token.Payload);
+            ParseIssuedAt(token.Payload);
+            ParseNotBefore(token.Payload);
+            ParseSubject(token.Payload);
+            ParseExpiration(token.Payload);
+            ParseEvents(token.Payload);
+            ParseTransaction(token.Payload);
         }
 
-        public IReadOnlyCollection<string> Audience
-        {
-            get;
-            set;
-        }
+        public IReadOnlyCollection<string> Audience { get; set; }
 
-        public IDictionary<string, object> Events
-        {
-            get;
-            private set;
-        }
+        public IDictionary<string, object> Events { get; private set; }
 
-        public DateTime? Expiration
-        {
-            get;
-            set;
-        }
+        public DateTime? Expiration { get; set; }
 
-        public JwtHeader Header
-        {
-            get;
-            private set;
-        }
+        public JwtHeader Header { get; }
 
-        public string Identifier
-        {
-            get;
-            private set;
-        }
+        public string Identifier { get; private set; }
 
-        public DateTime IssuedAt
-        {
-            get;
-            private set;
-        }
+        public DateTime IssuedAt { get; private set; }
 
-        public string Issuer
-        {
-            get;
-            private set;
-        }
+        public string Issuer { get; private set; }
 
-        public DateTime? NotBefore
-        {
-            get;
-            private set;
-        }
+        public DateTime? NotBefore { get; private set; }
 
-        public string Subject
-        {
-            get;
-            set;
-        }
+        public string Subject { get; set; }
 
-        public string Transaction
-        {
-            get;
-            set;
-        }
+        public string Transaction { get; set; }
 
         private static JwtHeader ComposeDefaultHeader()
         {
-            JwtHeader result = new JwtHeader();
-            result.Add(EventToken.HeaderKeyAlgorithm, EventToken.JwtAlgorithmNone);
-            return result;
+            return new JwtHeader
+            {
+                { HEADER_KEY_ALGORITHM, JWT_ALGORITHM_NONE }
+            };
         }
 
         private void ParseAudience(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Audience, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.AUDIENCE, out object value) || value == null)
             {
                 return;
             }
 
-            object[] values = value as object[];
-            if (null == values)
+            if (value is not object[] values)
             {
-                string exceptionMessage =
-                string.Format(
+                var exceptionMessage = string.Format(
                     CultureInfo.InvariantCulture,
-                    SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                    EventTokenClaimTypes.Audience,
-                    value);
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.AUDIENCE,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            IReadOnlyCollection<string> audience =
-                values
-                .OfType<string>()
-                .ToArray();
+            IReadOnlyCollection<string> audience = values.OfType<string>().ToArray();
+
             if (audience.Count != values.Length)
             {
-                string exceptionMessage =
-                string.Format(
+                var exceptionMessage = string.Format(
                     CultureInfo.InvariantCulture,
-                    SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                    EventTokenClaimTypes.Audience,
-                    value);
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.AUDIENCE,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            this.Audience = audience;
+            Audience = audience;
         }
 
         private void ParseEvents(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Events, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.EVENTS, out object value) || value == null)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenMissingClaimTemplate,
-                        EventTokenClaimTypes.Events);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenMissingClaimTemplate,
+                    EventTokenClaimTypes.EVENTS
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
             IDictionary<string, object> events = value as Dictionary<string, object>;
-            if (null == events)
+
+            if (events == null)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.Events,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.EVENTS,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
-            this.Events = events;
+            Events = events;
         }
 
         private void ParseExpiration(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Expiration, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.EXPIRATION, out object value) || value == null)
             {
                 return;
             }
 
-            string serializedValue = value.ToString();
+            var serializedValue = value.ToString();
+
             if (!long.TryParse(serializedValue, out long expiration))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.Expiration,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.EXPIRATION,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            this.Expiration = new UnixTime(expiration).ToUniversalTime();
-            if (this.Expiration > DateTime.UtcNow)
+            Expiration = new UnixTime(expiration).ToUniversalTime();
+
+            if (Expiration > DateTime.UtcNow)
             {
-                throw new SecurityTokenExpiredException(SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenExpired);
+                throw new SecurityTokenExpiredException(SchemasResources.ExceptionEventTokenExpired);
             }
         }
 
         private void ParseIdentifier(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Identifier, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.IDENTIFIER, out object value) || value == null)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenMissingClaimTemplate,
-                        EventTokenClaimTypes.Identifier);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenMissingClaimTemplate,
+                    EventTokenClaimTypes.IDENTIFIER
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            string identifier = value as string;
+            var identifier = value as string;
+
             if (string.IsNullOrWhiteSpace(identifier))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.Identifier,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.IDENTIFIER,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
-            this.Identifier = identifier;
+
+            Identifier = identifier;
         }
 
         private void ParseIssuedAt(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.IssuedAt, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.ISSUED_AT, out object value) || value == null)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenMissingClaimTemplate,
-                        EventTokenClaimTypes.IssuedAt);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenMissingClaimTemplate,
+                    EventTokenClaimTypes.ISSUED_AT
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            string serializedValue = value.ToString();
+            var serializedValue = value.ToString();
+
             if (!long.TryParse(serializedValue, out long issuedAt))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenMissingClaimTemplate,
-                        EventTokenClaimTypes.IssuedAt);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenMissingClaimTemplate,
+                    EventTokenClaimTypes.ISSUED_AT
+                );
                 throw new ArgumentException(exceptionMessage);
             }
-            this.IssuedAt = new UnixTime(issuedAt).ToUniversalTime();
+
+            IssuedAt = new UnixTime(issuedAt).ToUniversalTime();
         }
 
         private void ParseIssuer(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Issuer, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.ISSUER, out object value) || value == null)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenMissingClaimTemplate,
-                        EventTokenClaimTypes.Issuer);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenMissingClaimTemplate,
+                    EventTokenClaimTypes.ISSUER
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            string issuer = value as string;
+            var issuer = value as string;
+
             if (string.IsNullOrWhiteSpace(issuer))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.Issuer,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.ISSUER,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
-            this.Issuer = issuer;
+            Issuer = issuer;
         }
 
         private void ParseNotBefore(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.NotBefore, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.NOT_BEFORE, out object value) || value == null)
             {
                 return;
             }
 
-            string serializedValue = value.ToString();
+            var serializedValue = value.ToString();
+
             if (!long.TryParse(serializedValue, out long notBefore))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.NotBefore,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.NOT_BEFORE,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            this.NotBefore = new UnixTime(notBefore).ToUniversalTime();
+            NotBefore = new UnixTime(notBefore).ToUniversalTime();
         }
 
         private void ParseSubject(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Subject, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.SUBJECT, out object value) || value == null)
             {
                 return;
             }
 
-            string subject = value as string;
-            if (null == subject)
+            if (value is not string subject)
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                        EventTokenClaimTypes.Subject,
-                        value);
+                var exceptionMessage = string.Format(
+                    CultureInfo.InvariantCulture,
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.SUBJECT,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            this.Subject = subject;
+            Subject = subject;
         }
 
         private void ParseTransaction(JwtPayload payload)
         {
-            if (null == payload)
+            if (payload == null)
             {
                 throw new ArgumentNullException(nameof(payload));
             }
 
-            if (!payload.TryGetValue(EventTokenClaimTypes.Transaction, out object value) || null == value)
+            if (!payload.TryGetValue(EventTokenClaimTypes.TRANSACTION, out object value) || value == null)
             {
                 return;
             }
 
-            string transaction = value as string;
-            if (null == transaction)
+            if (value is not string transaction)
             {
-                string exceptionMessage =
-                string.Format(
+                var exceptionMessage = string.Format(
                     CultureInfo.InvariantCulture,
-                    SystemForCrossDomainIdentityManagementSchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
-                    EventTokenClaimTypes.Transaction,
-                    value);
+                    SchemasResources.ExceptionEventTokenInvalidClaimValueTemplate,
+                    EventTokenClaimTypes.TRANSACTION,
+                    value
+                );
                 throw new ArgumentException(exceptionMessage);
             }
 
-            this.Transaction = transaction;
+            Transaction = transaction;
         }
 
         public override string ToString()
         {
-            JwtPayload payload = new JwtPayload();
-
-            payload.Add(EventTokenClaimTypes.Identifier, this.Identifier);
-
-            payload.Add(EventTokenClaimTypes.Issuer, this.Issuer);
-
-            if (this.Audience != null && this.Audience.Any())
+            var payload = new JwtPayload
             {
-                string[] audience = this.Audience.ToArray();
-                payload.Add(EventTokenClaimTypes.Audience, audience);
+                { EventTokenClaimTypes.IDENTIFIER, Identifier },
+                { EventTokenClaimTypes.ISSUER, Issuer }
+            };
+
+            if (Audience?.Any() == true)
+            {
+                var audience = Audience.ToArray();
+                payload.Add(EventTokenClaimTypes.AUDIENCE, audience);
             }
 
-            long issuedAt = new UnixTime(this.IssuedAt).EpochTimestamp;
-            payload.Add(EventTokenClaimTypes.IssuedAt, issuedAt);
+            var issuedAt = new UnixTime(IssuedAt).EpochTimestamp;
+            payload.Add(EventTokenClaimTypes.ISSUED_AT, issuedAt);
 
-            if (this.NotBefore.HasValue)
+            if (NotBefore.HasValue)
             {
-                long notBefore = new UnixTime(this.NotBefore.Value).EpochTimestamp;
-                payload.Add(EventTokenClaimTypes.NotBefore, notBefore);
+                var notBefore = new UnixTime(NotBefore.Value).EpochTimestamp;
+                payload.Add(EventTokenClaimTypes.NOT_BEFORE, notBefore);
             }
 
-            if (!string.IsNullOrWhiteSpace(this.Subject))
+            if (!string.IsNullOrWhiteSpace(Subject))
             {
-                payload.Add(EventTokenClaimTypes.Subject, this.Subject);
+                payload.Add(EventTokenClaimTypes.SUBJECT, Subject);
             }
 
-            if (this.Expiration.HasValue)
+            if (Expiration.HasValue)
             {
-                long expiration = new UnixTime(this.Expiration.Value).EpochTimestamp;
-                payload.Add(EventTokenClaimTypes.Expiration, expiration);
+                var expiration = new UnixTime(Expiration.Value).EpochTimestamp;
+                payload.Add(EventTokenClaimTypes.EXPIRATION, expiration);
             }
 
-            payload.Add(EventTokenClaimTypes.Events, this.Events);
+            payload.Add(EventTokenClaimTypes.EVENTS, Events);
 
-            if (!string.IsNullOrWhiteSpace(this.Transaction))
+            if (!string.IsNullOrWhiteSpace(Transaction))
             {
-                payload.Add(EventTokenClaimTypes.Transaction, this.Transaction);
+                payload.Add(EventTokenClaimTypes.TRANSACTION, Transaction);
             }
 
-            SecurityToken token = new JwtSecurityToken(this.Header, payload);
-            string result = EventToken.TokenSerializer.Value.WriteToken(token);
-            return result;
+            var token = new JwtSecurityToken(Header, payload);
+
+            return TokenSerializer.Value.WriteToken(token);
         }
     }
 }

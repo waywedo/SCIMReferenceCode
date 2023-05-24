@@ -1,11 +1,10 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public class PhotoBase : TypedValue
     {
@@ -13,7 +12,7 @@ namespace Microsoft.SCIM
         {
         }
 
-        public const string Photo = "photo";
-        public const string Thumbnail = "thumbnail";
+        public const string PHOTO = "photo";
+        public const string THUMBNAIL = "thumbnail";
     }
 }

@@ -1,20 +1,19 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class PhoneNumberBase : TypedValue
     {
-        public const string Fax = "fax";
-        public const string Home = "home";
-        public const string Mobile = "mobile";
-        public const string Other = "other";
-        public const string Pager = "pager";
-        public const string Work = "work";
+        public const string FAX = "fax";
+        public const string HOME = "home";
+        public const string MOBILE = "mobile";
+        public const string OTHER = "other";
+        public const string PAGER = "pager";
+        public const string WORK = "work";
 
         internal PhoneNumberBase()
         {

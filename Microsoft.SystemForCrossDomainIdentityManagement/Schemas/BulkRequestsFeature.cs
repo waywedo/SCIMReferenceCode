@@ -1,11 +1,10 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class BulkRequestsFeature : FeatureBase
     {
@@ -13,34 +12,20 @@ namespace Microsoft.SCIM
         {
         }
 
-        public int ConcurrentOperations
-        {
-            get;
-            private set;
-        }
+        public int ConcurrentOperations { get; }
 
-        [DataMember(Name = AttributeNames.MaximumOperations)]
-        public int MaximumOperations
-        {
-            get;
-            private set;
-        }
+        [DataMember(Name = AttributeNames.MAXIMUM_OPERATIONS)]
+        public int MaximumOperations { get; }
 
-        [DataMember(Name = AttributeNames.MaximumPayloadSize)]
-        public int MaximumPayloadSize
-        {
-            get;
-            private set;
-        }
+        [DataMember(Name = AttributeNames.MAXIMUM_PAYLOAD_SIZE)]
+        public int MaximumPayloadSize { get; }
 
         public static BulkRequestsFeature CreateUnsupportedFeature()
         {
-            BulkRequestsFeature result =
-                new BulkRequestsFeature()
-                {
-                    Supported = false
-                };
-            return result;
+            return new BulkRequestsFeature()
+            {
+                Supported = false
+            };
         }
     }
 }

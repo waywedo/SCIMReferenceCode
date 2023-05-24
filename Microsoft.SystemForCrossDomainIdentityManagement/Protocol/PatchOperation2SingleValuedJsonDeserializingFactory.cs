@@ -3,8 +3,8 @@
 //------------------------------------------------------------
 namespace Microsoft.SCIM
 {
-    internal class PatchOperation2SingleValuedJsonDeserializingFactory :
-        ProtocolJsonDeserializingFactory<PatchOperation2SingleValued>
+    internal class PatchOperation2SingleValuedJsonDeserializingFactory
+        : ProtocolJsonDeserializingFactory<PatchOperation2SingleValued>
     {
     }
 }

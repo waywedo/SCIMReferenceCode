@@ -1,42 +1,31 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class Core2ServiceConfiguration : ServiceConfigurationBase
     {
-        public Core2ServiceConfiguration(
-            BulkRequestsFeature bulkRequestsSupport,
-            bool supportsEntityTags,
-            bool supportsFiltering,
-            bool supportsPasswordChange,
-            bool supportsPatching,
-            bool supportsSorting)
+        public Core2ServiceConfiguration(BulkRequestsFeature bulkRequestsSupport, bool supportsEntityTags,
+            bool supportsFiltering, bool supportsPasswordChange, bool supportsPatching, bool supportsSorting)
         {
-            this.AddSchema(SchemaIdentifiers.Core2ServiceConfiguration);
-            this.Metadata =
-                new Core2Metadata()
-                {
-                    ResourceType = Types.ServiceProviderConfiguration
-                };
+            AddSchema(SchemaIdentifiers.CORE_2_SERVICE_CONFIGURATION);
+            Metadata = new Core2Metadata()
+            {
+                ResourceType = Types.SERVICE_PROVIDER_CONFIGURATION
+            };
 
-            this.BulkRequests = bulkRequestsSupport;
-            this.EntityTags = new Feature(supportsEntityTags);
-            this.Filtering = new Feature(supportsFiltering);
-            this.PasswordChange = new Feature(supportsPasswordChange);
-            this.Patching = new Feature(supportsPatching);
-            this.Sorting = new Feature(supportsSorting);
+            BulkRequests = bulkRequestsSupport;
+            EntityTags = new Feature(supportsEntityTags);
+            Filtering = new Feature(supportsFiltering);
+            PasswordChange = new Feature(supportsPasswordChange);
+            Patching = new Feature(supportsPatching);
+            Sorting = new Feature(supportsSorting);
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
-        public Core2Metadata Metadata
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.METADATA)]
+        public Core2Metadata Metadata { get; set; }
     }
 }

@@ -1,29 +1,28 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Serialization;
-
     public static class ProtocolConstants
     {
-        public const string ContentType = "application/scim+json";
-        public const string PathGroups = "Groups";
-        public const string PathUsers = "Users";
-        public const string PathBulk = "Bulk";
-        public const string PathWebBatchInterface = SchemaConstants.PathInterface + "/batch";
+        public const string CONTENT_TYPE = "application/scim+json";
+        public const string PATH_GROUPS = "Groups";
+        public const string PATH_USERS = "Users";
+        public const string PATH_BULK = "Bulk";
+        public const string PATH_WEB_BATCH_INTERFACE = SchemaConstants.PATH_INTERFACE + "/batch";
 
-        public readonly static Lazy<JsonSerializerSettings> JsonSettings =
-            new Lazy<JsonSerializerSettings>(() => ProtocolConstants.InitializeSettings());
+        public static readonly Lazy<JsonSerializerSettings> JsonSettings = new(() => InitializeSettings());
 
         private static JsonSerializerSettings InitializeSettings()
         {
-            JsonSerializerSettings result = new JsonSerializerSettings();
-            result.Error = delegate (object sender, ErrorEventArgs args) { args.ErrorContext.Handled = true; };
-            return result;
+            return new JsonSerializerSettings
+            {
+                Error = (object sender, ErrorEventArgs args) => args.ErrorContext.Handled = true
+            };
         }
     }
 }

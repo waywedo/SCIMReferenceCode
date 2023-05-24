@@ -1,52 +1,50 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class PatchOperation2 : PatchOperation2Base
     {
-        private const string Template = "{0}: [{1}]";
+        private const string TEMPLATE = "{0}: [{1}]";
 
-        [DataMember(Name = AttributeNames.Value, Order = 2)]
-        private List<OperationValue> values;
-        private IReadOnlyCollection<OperationValue> valuesWrapper;
+        [DataMember(Name = AttributeNames.VALUE, Order = 2)]
+        private List<OperationValue> _values;
+        private IReadOnlyCollection<OperationValue> _valuesWrapper;
 
         public PatchOperation2()
         {
-            this.OnInitialization();
-            this.OnInitialized();
+            OnInitialization();
+            OnInitialized();
         }
 
-        public PatchOperation2(OperationName operationName, string pathExpression)
-            : base(operationName, pathExpression)
+        public PatchOperation2(OperationName operationName, string pathExpression) : base(operationName, pathExpression)
         {
-            this.OnInitialization();
-            this.OnInitialized();
+            OnInitialization();
+            OnInitialized();
         }
 
         public IReadOnlyCollection<OperationValue> Value
         {
             get
             {
-                return this.valuesWrapper;
+                return _valuesWrapper;
             }
         }
 
         public void AddValue(OperationValue value)
         {
-            if (null == value)
+            if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
             }
 
-            this.values.Add(value);
+            _values.Add(value);
         }
 
         public static PatchOperation2 Create(OperationName operationName, string pathExpression, string value)
@@ -61,55 +59,53 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(value));
             }
 
-            OperationValue operationValue = new OperationValue();
-            operationValue.Value = value;
+            var operationValue = new OperationValue
+            {
+                Value = value
+            };
 
-            PatchOperation2 result = new PatchOperation2(operationName, pathExpression);
+            var result = new PatchOperation2(operationName, pathExpression);
+
             result.AddValue(operationValue);
 
             return result;
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext _)
         {
-            this.OnInitialized();
+            OnInitialized();
         }
 
         [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        private void OnDeserializing(StreamingContext _)
         {
-            this.OnInitialization();
+            OnInitialization();
         }
 
         private void OnInitialization()
         {
-            this.values = new List<OperationValue>();
+            _values = new List<OperationValue>();
         }
 
         private void OnInitialized()
         {
-            switch (this.values)
+            switch (_values)
             {
                 case List<OperationValue> valueList:
-                    this.valuesWrapper = valueList.AsReadOnly();
+                    _valuesWrapper = valueList.AsReadOnly();
                     break;
                 default:
-                    throw new NotSupportedException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidValue);
+                    throw new NotSupportedException(ProtocolResources.ExceptionInvalidValue);
             }
         }
 
         public override string ToString()
         {
-            string allValues = string.Join(Environment.NewLine, this.Value);
-            string operation = base.ToString();
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    PatchOperation2.Template,
-                    operation,
-                    allValues);
-            return result;
+            var allValues = string.Join(Environment.NewLine, Value);
+            var operation = base.ToString();
+
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, operation, allValues);
         }
     }
 }

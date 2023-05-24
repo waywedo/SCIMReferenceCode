@@ -1,43 +1,34 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Newtonsoft.Json;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Web;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.IO;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Net.Http.Formatting;
-    using System.Text;
-    using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
-    using System.Web;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "None")]
     public static class ProtocolExtensions
     {
-        private const string BulkIdentifierPattern =
-            @"^((\s*)bulkId(\s*):(\s*)(?<" +
-            ProtocolExtensions.ExpressionGroupNameBulkIdentifier +
-            @">[^\s]*))";
+        private const string BULK_IDENTIFIER_PATTERN = $@"^((\s*)bulkId(\s*):(\s*)(?<{EXPRESSION_GROUP_NAME_BULK_IDENTIFIER}>[^\s]*))";
+        private const string EXPRESSION_GROUP_NAME_BULK_IDENTIFIER = "identifier";
 
-        private const string ExpressionGroupNameBulkIdentifier = "identifier";
-        public const string MethodNameDelete = "DELETE";
-        public const string MethodNamePatch = "PATCH";
-        private static readonly Lazy<HttpMethod> MethodPatch =
-            new Lazy<HttpMethod>(
-                () =>
-                    new HttpMethod(ProtocolExtensions.MethodNamePatch));
-        private static readonly Lazy<Regex> BulkIdentifierExpression =
-            new Lazy<Regex>(
-                () =>
-                    new Regex(ProtocolExtensions.BulkIdentifierPattern, RegexOptions.IgnoreCase | RegexOptions.Compiled));
+        public const string METHOD_NAME_DELETE = "DELETE";
+        public const string METHOD_NAME_PATCH = "PATCH";
+
+        private static readonly Lazy<HttpMethod> MethodPatch = new(() => new HttpMethod(METHOD_NAME_PATCH));
+        private static readonly Lazy<Regex> BulkIdentifierExpression = new(() => new Regex(BULK_IDENTIFIER_PATTERN, RegexOptions.IgnoreCase | RegexOptions.Compiled));
+
         private interface IHttpRequestMessageWriter : IDisposable
         {
             void Close();
@@ -47,63 +38,60 @@ namespace Microsoft.SCIM
 
         public static HttpMethod PatchMethod
         {
-            get
-            {
-                return ProtocolExtensions.MethodPatch.Value;
-            }
+            get { return MethodPatch.Value; }
         }
 
         public static void Apply(this Core2Group group, PatchRequest2 patch)
         {
-            if (null == group)
+            if (group == null)
             {
                 throw new ArgumentNullException(nameof(group));
             }
 
-            if (null == patch)
+            if (patch == null)
             {
                 return;
             }
 
-            if (null == patch.Operations || !patch.Operations.Any())
+            if (patch.Operations?.Any() != true)
             {
                 return;
             }
 
             foreach (PatchOperation2Combined operation in patch.Operations)
             {
-                PatchOperation2 operationInternal = new PatchOperation2()
+                var operationInternal = new PatchOperation2()
                 {
                     OperationName = operation.OperationName,
                     Path = operation.Path
                 };
 
                 OperationValue[] values = null;
+
                 if (operation?.Value != null)
                 {
-                    values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
+                    values = JsonConvert.DeserializeObject<OperationValue[]>(operation.Value, ProtocolConstants.JsonSettings.Value);
                 }
 
                 if (values == null)
                 {
                     string value = null;
+
                     if (operation?.Value != null)
                     {
                         value = JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
                     }
 
-                    OperationValue valueSingle = new OperationValue()
+                    var valueSingle = new OperationValue()
                     {
                         Value = value
                     };
+
                     operationInternal.AddValue(valueSingle);
                 }
                 else
                 {
-                    foreach(OperationValue value in values)
+                    foreach (OperationValue value in values)
                     {
                         operationInternal.AddValue(value);
                     }
@@ -115,22 +103,21 @@ namespace Microsoft.SCIM
 
         private static void Apply(this Core2Group group, PatchOperation2 operation)
         {
-            if (null == operation || null == operation.Path || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
+            if (operation == null || operation.Path == null || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
             {
                 return;
             }
 
             OperationValue value;
+
             switch (operation.Path.AttributePath)
             {
-                case AttributeNames.DisplayName:
+                case AttributeNames.DISPLAY_NAME:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if (
-                            null == value
-                            || string.Equals(group.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(group.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -140,7 +127,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         group.DisplayName = null;
                     }
@@ -150,28 +137,17 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.Members:
+                case AttributeNames.MEMBERS:
                     if (operation.Value != null)
                     {
                         switch (operation.Name)
                         {
                             case OperationName.Add:
-                                IEnumerable<Member> membersToAdd =
-                                     operation
-                                     .Value
-                                     .Select(
-                                         (OperationValue item) =>
-                                             new Member()
-                                             {
-                                                 Value = item.Value
-                                             })
-                                     .ToArray();
+                                var membersToAdd = operation.Value.Select((item) => new Member() { Value = item.Value }).ToArray();
+                                var buffer = new List<Member>();
 
-                                IList<Member> buffer = new List<Member>();
-                                if(null == group.Members)
-                                {
-                                    group.Members = new List<Member>();
-                                }
+                                group.Members ??= new List<Member>();
+
                                 foreach (Member member in membersToAdd)
                                 {
                                     //O(n) with the number of group members, so for large groups this is not optimal
@@ -186,7 +162,7 @@ namespace Microsoft.SCIM
                                 break;
 
                             case OperationName.Remove:
-                                if (null == group.Members)
+                                if (group.Members == null)
                                 {
                                     break;
                                 }
@@ -197,8 +173,8 @@ namespace Microsoft.SCIM
                                     break;
                                 }
 
-                                IDictionary<string, Member> members =
-                                    new Dictionary<string, Member>(group.Members.Count());
+                                var members = new Dictionary<string, Member>(group.Members.Count());
+
                                 foreach (Member item in group.Members)
                                 {
                                     members.Add(item.Value, item);
@@ -217,23 +193,29 @@ namespace Microsoft.SCIM
                         }
                     }
                     break;
+                case AttributeNames.EXTERNAL_IDENTIFIER:
+
+                    value = operation.Value?.SingleOrDefault();
+
+                    group.ExternalIdentifier = value?.Value;
+
+                    break;
             }
         }
 
         public static HttpRequestMessage ComposeDeleteRequest(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            Uri resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
-
+            var resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
             HttpRequestMessage result = null;
+
             try
             {
-                result = new HttpRequestMessage(HttpMethod.Delete, resourceIdentifier);
-                return result;
+                return new HttpRequestMessage(HttpMethod.Delete, resourceIdentifier);
             }
             catch
             {
@@ -249,47 +231,37 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-        public static HttpRequestMessage ComposeGetRequest(
-            this Schematized schematized,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<IFilter> filters,
-            IReadOnlyCollection<string> requestedAttributePaths,
-            IReadOnlyCollection<string> excludedAttributePaths,
-            IPaginationParameters paginationParameters)
+        public static HttpRequestMessage ComposeGetRequest(this Schematized schematized, Uri baseResourceIdentifier, IReadOnlyCollection<IFilter> filters,
+            IReadOnlyCollection<string> requestedAttributePaths, IReadOnlyCollection<string> excludedAttributePaths, IPaginationParameters paginationParameters)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == filters)
+            if (filters == null)
             {
                 throw new ArgumentNullException(nameof(filters));
             }
 
-            if (null == requestedAttributePaths)
+            if (requestedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(requestedAttributePaths));
             }
 
-            if (null == excludedAttributePaths)
+            if (excludedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(excludedAttributePaths));
             }
 
-            Uri resourceIdentifier =
-                schematized.ComposeResourceIdentifier(
-                    baseResourceIdentifier,
-                    filters,
-                    requestedAttributePaths,
-                    excludedAttributePaths,
-                    paginationParameters);
+            var resourceIdentifier = schematized.ComposeResourceIdentifier(baseResourceIdentifier, filters, requestedAttributePaths,
+                excludedAttributePaths, paginationParameters);
+
             HttpRequestMessage result = null;
+
             try
             {
-                result = new HttpRequestMessage(HttpMethod.Get, resourceIdentifier);
-                return result;
+                return new HttpRequestMessage(HttpMethod.Get, resourceIdentifier);
             }
             catch
             {
@@ -305,26 +277,14 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-        public static HttpRequestMessage ComposeGetRequest(
-            this Schematized schematized,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<IFilter> filters,
-            IReadOnlyCollection<string> requestedAttributePaths,
-            IReadOnlyCollection<string> excludedAttributePaths)
+        public static HttpRequestMessage ComposeGetRequest(this Schematized schematized, Uri baseResourceIdentifier,
+            IReadOnlyCollection<IFilter> filters, IReadOnlyCollection<string> requestedAttributePaths, IReadOnlyCollection<string> excludedAttributePaths)
         {
             HttpRequestMessage result = null;
+
             try
             {
-                result =
-                    schematized
-                    .ComposeGetRequest(
-                        baseResourceIdentifier,
-                        filters,
-                        requestedAttributePaths,
-                        excludedAttributePaths,
-                        null);
-                return result;
+                return schematized.ComposeGetRequest(baseResourceIdentifier, filters, requestedAttributePaths, excludedAttributePaths, null);
             }
             catch
             {
@@ -340,38 +300,31 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-        public static HttpRequestMessage ComposeGetRequest(
-            this Resource resource,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<string> requestedAttributePaths,
+        public static HttpRequestMessage ComposeGetRequest(this Resource resource, Uri baseResourceIdentifier, IReadOnlyCollection<string> requestedAttributePaths,
             IReadOnlyCollection<string> excludedAttributePaths)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == requestedAttributePaths)
+            if (requestedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(requestedAttributePaths));
             }
 
-            if (null == excludedAttributePaths)
+            if (excludedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(excludedAttributePaths));
             }
 
-            Uri resourceIdentifier =
-                resource.ComposeResourceIdentifier(
-                    baseResourceIdentifier,
-                    requestedAttributePaths,
-                    excludedAttributePaths);
+            var resourceIdentifier = resource.ComposeResourceIdentifier(baseResourceIdentifier, requestedAttributePaths, excludedAttributePaths);
+
             HttpRequestMessage result = null;
+
             try
             {
-                result = new HttpRequestMessage(HttpMethod.Get, resourceIdentifier);
-                return result;
+                return new HttpRequestMessage(HttpMethod.Get, resourceIdentifier);
             }
             catch
             {
@@ -389,7 +342,7 @@ namespace Microsoft.SCIM
 
         public static HttpRequestMessage ComposeGetRequest(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
@@ -397,10 +350,10 @@ namespace Microsoft.SCIM
             HttpRequestMessage result = null;
             try
             {
-                IReadOnlyCollection<string> requestedAttributePaths = Array.Empty<string>();
-                IReadOnlyCollection<string> excludedAttributePaths = Array.Empty<string>();
-                result = resource.ComposeGetRequest(baseResourceIdentifier, requestedAttributePaths, excludedAttributePaths);
-                return result;
+                var requestedAttributePaths = Array.Empty<string>();
+                var excludedAttributePaths = Array.Empty<string>();
+
+                return resource.ComposeGetRequest(baseResourceIdentifier, requestedAttributePaths, excludedAttributePaths);
             }
             catch
             {
@@ -416,43 +369,37 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "The parameter must be a patch for the operation to produce a semantically valid result")]
-        public static HttpRequestMessage ComposePatchRequest(
-            this Resource resource,
-            Uri baseResourceIdentifier,
-            PatchRequestBase patch)
+        public static HttpRequestMessage ComposePatchRequest(this Resource resource, Uri baseResourceIdentifier, PatchRequestBase patch)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == patch)
+            if (patch == null)
             {
                 throw new ArgumentNullException(nameof(patch));
             }
 
-            Dictionary<string, object> json = patch.ToJson();
-
-            Uri resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
-
+            var json = patch.ToJson();
+            var resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
             HttpRequestMessage result = null;
+
             try
             {
                 HttpContent requestContent = null;
+
                 try
                 {
-                    string contentType = MediaTypes.Protocol;
+                    requestContent = JsonContent.Create(json, new MediaTypeHeaderValue(MediaTypes.PROTOCOL));
 
-                    MediaTypeFormatter contentFormatter = new JsonMediaTypeFormatter();
-                    requestContent =
-                        new ObjectContent<Dictionary<string, object>>(
-                            json,
-                            contentFormatter,
-                            contentType);
-                    result = new HttpRequestMessage(ProtocolExtensions.PatchMethod, resourceIdentifier);
-                    result.Content = requestContent;
+                    result = new HttpRequestMessage(PatchMethod, resourceIdentifier)
+                    {
+                        Content = requestContent
+                    };
+
                     requestContent = null;
+
                     return result;
                 }
                 finally
@@ -478,36 +425,35 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-        public static HttpRequestMessage ComposePatchRequest(
-            this Resource patch,
-            Uri baseResourceIdentifier)
+        public static HttpRequestMessage ComposePatchRequest(this Resource patch, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            Dictionary<string, object> json = patch.ToJson();
+            var json = patch.ToJson();
+
             json.Trim();
 
-            Uri resourceIdentifier = patch.GetResourceIdentifier(baseResourceIdentifier);
+            var resourceIdentifier = patch.GetResourceIdentifier(baseResourceIdentifier);
 
             HttpRequestMessage result = null;
+
             try
             {
                 HttpContent requestContent = null;
                 try
                 {
-                    MediaTypeFormatter contentFormatter = new JsonMediaTypeFormatter();
-                    requestContent =
-                        new ObjectContent<Dictionary<string, object>>(
-                            json,
-                            contentFormatter,
-                            MediaTypes.Json);
-                    result = new HttpRequestMessage(ProtocolExtensions.PatchMethod, resourceIdentifier);
-                    result.Content = requestContent;
+                    requestContent = JsonContent.Create(json, new MediaTypeHeaderValue(MediaTypes.JSON));
+
+                    result = new HttpRequestMessage(PatchMethod, resourceIdentifier)
+                    {
+                        Content = requestContent
+                    };
+
                     requestContent = null;
+
                     return result;
                 }
                 finally
@@ -533,21 +479,18 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of extension method")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Performing the operation on the base type would be invalid")]
         public static HttpRequestMessage ComposePutRequest(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            string contentType = MediaTypes.Protocol;
+            var json = resource.ToJson();
 
-            Dictionary<string, object> json = resource.ToJson();
             json.Trim();
 
-            Uri resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
+            var resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
 
             HttpRequestMessage result = null;
             try
@@ -555,15 +498,15 @@ namespace Microsoft.SCIM
                 HttpContent requestContent = null;
                 try
                 {
-                    MediaTypeFormatter contentFormatter = new JsonMediaTypeFormatter();
-                    requestContent =
-                        new ObjectContent<Dictionary<string, object>>(
-                            json,
-                            contentFormatter,
-                            contentType);
-                    result = new HttpRequestMessage(HttpMethod.Put, resourceIdentifier);
-                    result.Content = requestContent;
+                    requestContent = JsonContent.Create(json, new MediaTypeHeaderValue(MediaTypes.PROTOCOL));
+
+                    result = new HttpRequestMessage(HttpMethod.Put, resourceIdentifier)
+                    {
+                        Content = requestContent
+                    };
+
                     requestContent = null;
+
                     return result;
                 }
                 finally
@@ -589,21 +532,18 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of extension method")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "Performing the operation on the base type would be invalid")]
         public static HttpRequestMessage ComposePostRequest(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            string contentType = MediaTypes.Protocol;
+            var json = resource.ToJson();
 
-            Dictionary<string, object> json = resource.ToJson();
             json.Trim();
 
-            Uri typeResourceIdentifier = resource.GetTypeIdentifier(baseResourceIdentifier);
+            var typeResourceIdentifier = resource.GetTypeIdentifier(baseResourceIdentifier);
 
             HttpRequestMessage result = null;
             try
@@ -611,15 +551,15 @@ namespace Microsoft.SCIM
                 HttpContent requestContent = null;
                 try
                 {
-                    MediaTypeFormatter contentFormatter = new JsonMediaTypeFormatter();
-                    requestContent =
-                        new ObjectContent<Dictionary<string, object>>(
-                            json,
-                            contentFormatter,
-                            contentType);
-                    result = new HttpRequestMessage(HttpMethod.Post, typeResourceIdentifier);
-                    result.Content = requestContent;
+                    requestContent = JsonContent.Create(json, new MediaTypeHeaderValue(MediaTypes.PROTOCOL));
+
+                    result = new HttpRequestMessage(HttpMethod.Post, typeResourceIdentifier)
+                    {
+                        Content = requestContent
+                    };
+
                     requestContent = null;
+
                     return result;
                 }
                 finally
@@ -645,42 +585,37 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static UriBuilder ComposeResourceIdentifier(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
             if (string.IsNullOrWhiteSpace(resource.Identifier))
             {
-                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidResource);
+                throw new InvalidOperationException(ProtocolResources.ExceptionInvalidResource);
             }
 
-            Uri foundation = resource.GetResourceIdentifier(baseResourceIdentifier);
-            UriBuilder result = new UriBuilder(foundation);
-            return result;
+            var foundation = resource.GetResourceIdentifier(baseResourceIdentifier);
+
+            return new UriBuilder(foundation);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-        public static Uri ComposeResourceIdentifier(
-            this Resource resource,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<string> requestedAttributePaths,
+        public static Uri ComposeResourceIdentifier(this Resource resource, Uri baseResourceIdentifier, IReadOnlyCollection<string> requestedAttributePaths,
             IReadOnlyCollection<string> excludedAttributePaths)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == requestedAttributePaths)
+            if (requestedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(requestedAttributePaths));
             }
 
-            if (null == excludedAttributePaths)
+            if (excludedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(excludedAttributePaths));
             }
@@ -695,67 +630,55 @@ namespace Microsoft.SCIM
                 path = resource.GetPath();
             }
 
-            IResourceRetrievalParameters retrievalParameters =
-                new ResourceRetrievalParameters(
-                    schemaIdentifier,
-                    path,
-                    resource.Identifier,
-                    requestedAttributePaths,
-                    excludedAttributePaths);
-            string query = retrievalParameters.ToString();
-            UriBuilder resourceIdentifier = resource.ComposeResourceIdentifier(baseResourceIdentifier);
+            var retrievalParameters = new ResourceRetrievalParameters(schemaIdentifier, path, resource.Identifier, requestedAttributePaths, excludedAttributePaths);
+            var query = retrievalParameters.ToString();
+            var resourceIdentifier = resource.ComposeResourceIdentifier(baseResourceIdentifier);
+
             resourceIdentifier.Query = query;
-            Uri result = resourceIdentifier.Uri;
-            return result;
+
+            return resourceIdentifier.Uri;
         }
 
-        public static Uri ComposeResourceIdentifier(
-            this Schematized schematized,
-            Uri baseResourceIdentifier,
-            IQueryParameters parameters)
+        public static Uri ComposeResourceIdentifier(this Schematized schematized, Uri baseResourceIdentifier, IQueryParameters parameters)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == parameters)
+            if (parameters == null)
             {
                 throw new ArgumentNullException(nameof(parameters));
             }
 
-            Uri typeIdentifier = schematized.GetTypeIdentifier(baseResourceIdentifier);
-            UriBuilder resourceIdentifier = new UriBuilder(typeIdentifier);
-            resourceIdentifier.Query = parameters.ToString();
-            Uri result = resourceIdentifier.Uri;
-            return result;
+            var typeIdentifier = schematized.GetTypeIdentifier(baseResourceIdentifier);
+            var resourceIdentifier = new UriBuilder(typeIdentifier)
+            {
+                Query = parameters.ToString()
+            };
+
+            return resourceIdentifier.Uri;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of an extension method")]
-        public static Uri ComposeResourceIdentifier(
-            this Schematized schematized,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<IFilter> filters,
-            IReadOnlyCollection<string> requestedAttributePaths,
-            IReadOnlyCollection<string> excludedAttributePaths,
-            IPaginationParameters paginationParameters)
+        public static Uri ComposeResourceIdentifier(this Schematized schematized, Uri baseResourceIdentifier, IReadOnlyCollection<IFilter> filters,
+            IReadOnlyCollection<string> requestedAttributePaths, IReadOnlyCollection<string> excludedAttributePaths, IPaginationParameters paginationParameters)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == filters)
+            if (filters == null)
             {
                 throw new ArgumentNullException(nameof(filters));
             }
 
-            if (null == requestedAttributePaths)
+            if (requestedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(requestedAttributePaths));
             }
 
-            if (null == excludedAttributePaths)
+            if (excludedAttributePaths == null)
             {
                 throw new ArgumentNullException(nameof(excludedAttributePaths));
             }
@@ -770,60 +693,38 @@ namespace Microsoft.SCIM
                 path = schematized.GetPath();
             }
 
-            IQueryParameters queryParameters =
-                new QueryParameters(
-                    schemaIdentifier,
-                    path,
-                    filters,
-                    requestedAttributePaths,
-                    excludedAttributePaths);
-            queryParameters.PaginationParameters = paginationParameters;
-            Uri result = schematized.ComposeResourceIdentifier(baseResourceIdentifier, queryParameters);
-            return result;
+            var queryParameters = new QueryParameters(schemaIdentifier, path, filters, requestedAttributePaths, excludedAttributePaths)
+            {
+                PaginationParameters = paginationParameters
+            };
+
+            return schematized.ComposeResourceIdentifier(baseResourceIdentifier, queryParameters);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of an extension method")]
-        public static Uri ComposeResourceIdentifier(
-            this Schematized schematized,
-            Uri baseResourceIdentifier,
-            IReadOnlyCollection<IFilter> filters,
-            IReadOnlyCollection<string> requestedAttributePaths,
-            IReadOnlyCollection<string> excludedAttributePaths)
+        public static Uri ComposeResourceIdentifier(this Schematized schematized, Uri baseResourceIdentifier, IReadOnlyCollection<IFilter> filters,
+            IReadOnlyCollection<string> requestedAttributePaths, IReadOnlyCollection<string> excludedAttributePaths)
         {
-            Uri result =
-                schematized.ComposeResourceIdentifier(
-                    baseResourceIdentifier,
-                    filters,
-                    requestedAttributePaths,
-                    excludedAttributePaths,
-                    null);
-            return result;
+            return schematized.ComposeResourceIdentifier(baseResourceIdentifier, filters, requestedAttributePaths, excludedAttributePaths, null);
         }
 
         private static Uri ComposeTypeIdentifier(Uri baseResourceIdentifier, string path)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == path)
+            if (path == null)
             {
                 throw new ArgumentNullException(nameof(path));
             }
 
-            string baseResourceIdentifierValue = baseResourceIdentifier.ToString();
-            string resultValue =
-                baseResourceIdentifierValue +
-                SchemaConstants.PathInterface +
-                ServiceConstants.SeparatorSegments +
-                path;
+            var baseResourceIdentifierValue = baseResourceIdentifier.ToString();
+            var resultValue = baseResourceIdentifierValue + SchemaConstants.PATH_INTERFACE + ServiceConstants.SEPARATOR_SEGMENTS + path;
 
-            Uri result = new Uri(resultValue);
-            return result;
+            return new Uri(resultValue);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static IResourceIdentifier GetIdentifier(this Resource resource)
         {
             if (!resource.TryGetSchemaIdentifier(out string schemaIdentifier))
@@ -831,8 +732,7 @@ namespace Microsoft.SCIM
                 schemaIdentifier = resource.GetSchemaIdentifier();
             }
 
-            IResourceIdentifier result = new ResourceIdentifier(schemaIdentifier, resource.Identifier);
-            return result;
+            return new ResourceIdentifier(schemaIdentifier, resource.Identifier);
         }
 
         private static string GetPath(this Schematized schematized)
@@ -842,44 +742,43 @@ namespace Microsoft.SCIM
                 return path;
             }
 
-            if (schematized.Is(SchemaIdentifiers.Core2EnterpriseUser))
+            if (schematized.Is(SchemaIdentifiers.CORE_2_ENTERPRISE_USER))
             {
-                return ProtocolConstants.PathUsers;
+                return ProtocolConstants.PATH_USERS;
             }
 
-            if (schematized.Is(SchemaIdentifiers.Core2User))
+            if (schematized.Is(SchemaIdentifiers.CORE_2_USER))
             {
-                return ProtocolConstants.PathUsers;
+                return ProtocolConstants.PATH_USERS;
             }
 
-            if (schematized.Is(SchemaIdentifiers.Core2Group))
+            if (schematized.Is(SchemaIdentifiers.CORE_2_GROUP))
             {
-                return ProtocolConstants.PathGroups;
+                return ProtocolConstants.PATH_GROUPS;
             }
 
             switch (schematized)
             {
-                case UserBase _:
-                    return ProtocolConstants.PathUsers;
-                case GroupBase _:
-                    return ProtocolConstants.PathGroups;
+                case UserBase:
+                    return ProtocolConstants.PATH_USERS;
+                case GroupBase:
+                    return ProtocolConstants.PATH_GROUPS;
                 default:
                     string unsupportedTypeName = schematized.GetType().FullName;
                     throw new NotSupportedException(unsupportedTypeName);
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static Uri GetResourceIdentifier(this Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
             if (string.IsNullOrWhiteSpace(resource.Identifier))
             {
-                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidResource);
+                throw new InvalidOperationException(ProtocolResources.ExceptionInvalidResource);
             }
 
             if (resource.TryGetIdentifier(baseResourceIdentifier, out Uri result))
@@ -887,103 +786,87 @@ namespace Microsoft.SCIM
                 return result;
             }
 
-            Uri typeResource = resource.GetTypeIdentifier(baseResourceIdentifier);
-            string escapedIdentifier = Uri.EscapeDataString(resource.Identifier);
-            string resultValue =
-                typeResource.ToString() +
-                ServiceConstants.SeparatorSegments + 
-                escapedIdentifier;
-            result = new Uri(resultValue);
-            return result;
+            var typeResource = resource.GetTypeIdentifier(baseResourceIdentifier);
+            var escapedIdentifier = Uri.EscapeDataString(resource.Identifier);
+            var resultValue = typeResource.ToString() + ServiceConstants.SEPARATOR_SEGMENTS + escapedIdentifier;
+
+            return new Uri(resultValue);
         }
 
         private static string GetSchemaIdentifier(IReadOnlyCollection<string> schemaIdentifiers)
         {
-            if (null == schemaIdentifiers)
+            if (schemaIdentifiers == null)
             {
                 throw new ArgumentNullException(nameof(schemaIdentifiers));
             }
 
             if (!schemaIdentifiers.Any())
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionUnidentifiableSchema);
+                throw new ArgumentException(ProtocolResources.ExceptionUnidentifiableSchema);
             }
 
             foreach (string schema in schemaIdentifiers)
             {
                 switch (schema)
                 {
-                    case SchemaIdentifiers.Core2User:
-                    case SchemaIdentifiers.Core2EnterpriseUser:
-                        return SchemaIdentifiers.Core2EnterpriseUser;
-                    case SchemaIdentifiers.Core2Group:
-                        return SchemaIdentifiers.Core2Group;
+                    case SchemaIdentifiers.CORE_2_USER:
+                    case SchemaIdentifiers.CORE_2_ENTERPRISE_USER:
+                        return SchemaIdentifiers.CORE_2_ENTERPRISE_USER;
+                    case SchemaIdentifiers.CORE_2_GROUP:
+                        return SchemaIdentifiers.CORE_2_GROUP;
                 }
             }
 
-            string schemas = string.Join(Environment.NewLine, schemaIdentifiers);
+            var schemas = string.Join(Environment.NewLine, schemaIdentifiers);
+
             throw new NotSupportedException(schemas);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static string GetSchemaIdentifier(this Schematized schematized)
         {
             if (!schematized.TryGetSchemaIdentifier(out string result))
             {
-                result = ProtocolExtensions.GetSchemaIdentifier(schematized.Schemas);
+                result = GetSchemaIdentifier(schematized.Schemas);
             }
             return result;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static Uri GetTypeIdentifier(this Schematized schematized, Uri baseResourceIdentifier)
         {
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            if (null == schematized.Schemas)
+            if (schematized.Schemas == null)
             {
-                throw new InvalidOperationException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidResource);
+                throw new InvalidOperationException(ProtocolResources.ExceptionInvalidResource);
             }
 
-            Uri result;
-            string path = schematized.GetPath();
-            result = ProtocolExtensions.ComposeTypeIdentifier(baseResourceIdentifier, path);
+            var path = schematized.GetPath();
 
-            return result;
+            return ComposeTypeIdentifier(baseResourceIdentifier, path);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
         public static bool Matches(this IExtension extension, string schemaIdentifier)
         {
-            bool result = string.Equals(schemaIdentifier, extension.SchemaIdentifier, StringComparison.OrdinalIgnoreCase);
-            return result;
+            return string.Equals(schemaIdentifier, extension.SchemaIdentifier, StringComparison.OrdinalIgnoreCase);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "None")]
-        internal static IEnumerable<ElectronicMailAddress> PatchElectronicMailAddresses(
-            IEnumerable<ElectronicMailAddress> electronicMailAddresses,
+        internal static IEnumerable<ElectronicMailAddress> PatchElectronicMailAddresses(IEnumerable<ElectronicMailAddress> electronicMailAddresses,
             PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 return electronicMailAddresses;
             }
 
-            if
-            (
-                !string.Equals(
-                    AttributeNames.ElectronicMailAddresses,
-                    operation.Path.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.ELECTRONIC_MAIL_ADDRESSES, operation.Path.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return electronicMailAddresses;
             }
 
-            if (null == operation.Path.ValuePath)
+            if (operation.Path.ValuePath == null)
             {
                 return electronicMailAddresses;
             }
@@ -993,97 +876,77 @@ namespace Microsoft.SCIM
                 return electronicMailAddresses;
             }
 
-            IFilter subAttribute = operation.Path.SubAttributes.SingleOrDefault();
-            if (null == subAttribute)
+            var subAttribute = operation.Path.SubAttributes.SingleOrDefault();
+
+            if (subAttribute == null)
             {
                 return electronicMailAddresses;
             }
 
-            if
-            (
-                    (
-                            operation.Value != null
-                        && operation.Value.Count != 1
-                    )
-                || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
-            )
+            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
             {
                 return electronicMailAddresses;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Type,
-                    subAttribute.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.TYPE, subAttribute.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return electronicMailAddresses;
             }
 
-            string electronicMailAddressType = subAttribute.ComparisonValue;
-            if
-            (
-                    !string.Equals(electronicMailAddressType, ElectronicMailAddress.Home, StringComparison.Ordinal)
-                && !string.Equals(electronicMailAddressType, ElectronicMailAddress.Work, StringComparison.Ordinal)
-            )
+            var electronicMailAddressType = subAttribute.ComparisonValue;
+
+            if (!string.Equals(electronicMailAddressType, ElectronicMailAddressBase.HOME, StringComparison.Ordinal)
+                && !string.Equals(electronicMailAddressType, ElectronicMailAddressBase.WORK, StringComparison.Ordinal))
             {
                 return electronicMailAddresses;
             }
 
             ElectronicMailAddress electronicMailAddress;
             ElectronicMailAddress electronicMailAddressExisting;
+
             if (electronicMailAddresses != null)
             {
-                electronicMailAddressExisting =
-                    electronicMailAddress =
-                        electronicMailAddresses
-                        .SingleOrDefault(
-                            (ElectronicMailAddress item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
+                electronicMailAddressExisting = electronicMailAddress = electronicMailAddresses.SingleOrDefault(
+                    (item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                );
             }
             else
             {
                 electronicMailAddressExisting = null;
-                electronicMailAddress =
-                    new ElectronicMailAddress()
-                    {
-                        ItemType = electronicMailAddressType
-                    };
+                electronicMailAddress = new ElectronicMailAddress { ItemType = electronicMailAddressType };
             }
 
-            string value = operation.Value?.Single().Value;
-            if
-            (
-                    value != null
-                && OperationName.Remove == operation.Name
-                && string.Equals(value, electronicMailAddress.Value, StringComparison.OrdinalIgnoreCase)
-            )
+            var value = operation.Value?.Single().Value;
+
+            if (value != null && OperationName.Remove == operation.Name)
             {
-                value = null;
+                if (string.Equals(value, electronicMailAddress.Value, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = null;
+                }
+                else // when the value not match, should skip remove anything, return the original emails
+                {
+                    return electronicMailAddresses;
+                }
             }
+
             electronicMailAddress.Value = value;
 
             IEnumerable<ElectronicMailAddress> result;
+
             if (string.IsNullOrWhiteSpace(electronicMailAddress.Value))
             {
                 if (electronicMailAddressExisting != null)
                 {
-                    result =
-                        electronicMailAddresses
-                        .Where(
-                            (ElectronicMailAddress item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                    result = electronicMailAddresses.Where(
+                        item => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                    ).ToArray();
                 }
                 else
                 {
                     result = electronicMailAddresses;
                 }
+
                 return result;
             }
 
@@ -1092,39 +955,29 @@ namespace Microsoft.SCIM
                 return electronicMailAddresses;
             }
 
-            result =
-                new ElectronicMailAddress[]
-                    {
-                        electronicMailAddress
-                    };
-            if (null == electronicMailAddresses)
+            result = new ElectronicMailAddress[] { electronicMailAddress };
+
+            if (electronicMailAddresses == null)
             {
                 return result;
             }
 
-            result = electronicMailAddresses.Union(electronicMailAddresses).ToArray();
-            return result;
+            return electronicMailAddresses.Union(electronicMailAddresses).ToArray();
         }
 
         internal static IEnumerable<Role> PatchRoles(IEnumerable<Role> roles, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 return roles;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Roles,
-                    operation.Path.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.ROLES, operation.Path.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return roles;
             }
 
-            if (null == operation.Path.ValuePath)
+            if (operation.Path.ValuePath == null)
             {
                 return roles;
             }
@@ -1134,71 +987,47 @@ namespace Microsoft.SCIM
                 return roles;
             }
 
-            IFilter subAttribute = operation.Path.SubAttributes.SingleOrDefault();
-            if (null == subAttribute)
+            var subAttribute = operation.Path.SubAttributes.SingleOrDefault();
+
+            if (subAttribute == null)
             {
                 return roles;
             }
 
-            if
-            (
-                    (
-                           operation.Value != null
-                        && operation.Value.Count != 1
-                    )
-                || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
-            )
+            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
             {
                 return roles;
             }
 
             Role role;
             Role roleExisting;
+
             if (roles != null)
             {
-                roleExisting =
-                    role =
-                        roles
-                        .SingleOrDefault(
-                            (Role item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
+                roleExisting = role = roles.SingleOrDefault(item => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
             }
             else
             {
                 roleExisting = null;
-                role =
-                    new Role()
-                    {
-                        Primary = true
-                    };
+                role = new Role() { Primary = true };
             }
 
-            string value = operation.Value?.Single().Value;
-            if
-            (
-                    value != null
-                && OperationName.Remove == operation.Name
-                && string.Equals(value, role.Value, StringComparison.OrdinalIgnoreCase)
-            )
+            var value = operation.Value?.Single().Value;
+
+            if (value != null && OperationName.Remove == operation.Name && string.Equals(value, role.Value, StringComparison.OrdinalIgnoreCase))
             {
                 value = null;
             }
+
             role.Value = value;
 
             IEnumerable<Role> result;
+
             if (string.IsNullOrWhiteSpace(role.Value))
             {
                 if (roleExisting != null)
                 {
-                    result =
-                        roles
-                        .Where(
-                            (Role item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                    result = roles.Where(item => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)).ToArray();
                 }
                 else
                 {
@@ -1212,73 +1041,57 @@ namespace Microsoft.SCIM
                 return roles;
             }
 
-            result =
-                new Role[]
-                    {
-                        role
-                    };
+            result = new Role[] { role };
 
-            if (null == roles)
+            if (roles == null)
             {
                 return result;
             }
 
-            result = roles.Union(roles).ToArray();
-            return result;
+            return roles.Union(roles).ToArray();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "resourceIdentifier", Justification = "False analysis of extension method")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of 'this' parameter of an extension method")]
-#pragma warning disable IDE0060 // Remove unused parameter
-        public static Uri Serialize(this IResourceIdentifier resourceIdentifier, Resource resource, Uri baseResourceIdentifier)
-#pragma warning restore IDE0060 // Remove unused parameter
+        public static Uri Serialize(this IResourceIdentifier _, Resource resource, Uri baseResourceIdentifier)
         {
-            if (null == resource)
+            if (resource == null)
             {
                 throw new ArgumentNullException(nameof(resource));
             }
 
-            if (null == baseResourceIdentifier)
+            if (baseResourceIdentifier == null)
             {
                 throw new ArgumentNullException(nameof(baseResourceIdentifier));
             }
 
-            Uri typeResource = resource.GetTypeIdentifier(baseResourceIdentifier);
-            string escapedIdentifier = Uri.EscapeDataString(resource.Identifier);
-            string resultValue =
-                typeResource.ToString() +
-                ServiceConstants.SeparatorSegments +
-                escapedIdentifier;
+            var typeResource = resource.GetTypeIdentifier(baseResourceIdentifier);
+            var escapedIdentifier = Uri.EscapeDataString(resource.Identifier);
+            var resultValue = typeResource.ToString() + ServiceConstants.SEPARATOR_SEGMENTS + escapedIdentifier;
 
-            Uri result = new Uri(resultValue);
-            return result;
+            return new Uri(resultValue);
         }
 
         public static async Task<string> SerializeAsync(this HttpRequestMessage request, bool acceptLargeObjects)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            StringBuilder buffer = new StringBuilder();
+            var buffer = new StringBuilder();
             TextWriter textWriter = null;
+
             try
             {
-
-#pragma warning disable CA2000 // Dispose objects before losing scope
                 textWriter = new StringWriter(buffer);
-#pragma warning restore CA2000 // Dispose objects before losing scope
-
                 IHttpRequestMessageWriter requestWriter = null;
+
                 try
                 {
                     requestWriter = new HttpRequestMessageWriter(request, textWriter, acceptLargeObjects);
                     textWriter = null;
                     await requestWriter.WriteAsync().ConfigureAwait(false);
                     await requestWriter.FlushAsync().ConfigureAwait(false);
-                    string result = buffer.ToString();
-                    return result;
+                    return buffer.ToString();
                 }
                 finally
                 {
@@ -1302,74 +1115,68 @@ namespace Microsoft.SCIM
             }
         }
 
-        public static async Task<string> SerializeAsync(this HttpRequestMessage request)
+        public static Task<string> SerializeAsync(this HttpRequestMessage request)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            string result = await request.SerializeAsync(false).ConfigureAwait(false);
-            return result;
+            return request.SerializeAsync(false);
         }
 
         public static IReadOnlyCollection<T> ToCollection<T>(this IEnumerable enumerable)
         {
-            if (null == enumerable)
+            if (enumerable == null)
             {
                 throw new ArgumentNullException(nameof(enumerable));
             }
 
             IList<T> list = new List<T>();
+
             foreach (object item in enumerable)
             {
                 T typed = (T)item;
                 list.Add(typed);
             }
-            IReadOnlyCollection<T> result = list.ToArray();
-            return result;
+
+            return list.ToArray();
         }
 
         public static IReadOnlyCollection<T> ToCollection<T>(this ArrayList array)
         {
-            if (null == array)
+            if (array == null)
             {
                 throw new ArgumentNullException(nameof(array));
             }
 
             IList<T> list = new List<T>(array.Count);
+
             foreach (object item in array)
             {
                 T typed = (T)item;
                 list.Add(typed);
             }
-            IReadOnlyCollection<T> result = list.ToArray();
-            return result;
+
+            return list.ToArray();
         }
 
         public static IReadOnlyCollection<T> ToCollection<T>(this T item)
         {
-            IReadOnlyCollection<T> result =
-                new T[]
-                    {
-                        item
-                    };
-            return result;
+            return new T[] { item };
         }
 
-        private static bool TryMatch(
-            IReadOnlyCollection<string> schemaIdentifiers,
-            IReadOnlyCollection<IExtension> extensions,
+        private static bool TryMatch(IReadOnlyCollection<string> schemaIdentifiers, IReadOnlyCollection<IExtension> extensions,
             out IExtension matchingExtension)
         {
             matchingExtension = null;
 
-            if (null == extensions)
+            if (extensions == null)
             {
                 return false;
             }
 
-            if (null == schemaIdentifiers)
+            if (schemaIdentifiers == null)
             {
                 return false;
             }
@@ -1389,33 +1196,28 @@ namespace Microsoft.SCIM
             return false;
         }
 
-        public static bool TryMatch(
-            this IReadOnlyCollection<IExtension> extensions,
-            IReadOnlyCollection<string> schemaIdentifiers,
+        public static bool TryMatch(this IReadOnlyCollection<IExtension> extensions, IReadOnlyCollection<string> schemaIdentifiers,
             out IExtension matchingExtension)
         {
-            bool result = ProtocolExtensions.TryMatch(schemaIdentifiers, extensions, out matchingExtension);
-            return result;
+            return TryMatch(schemaIdentifiers, extensions, out matchingExtension);
         }
 
-        public static bool TryMatch(
-            this IReadOnlyCollection<IExtension> extensions,
-            string schemaIdentifier,
-            out IExtension matchingExtension)
+        public static bool TryMatch(this IReadOnlyCollection<IExtension> extensions, string schemaIdentifier, out IExtension matchingExtension)
         {
             if (string.IsNullOrWhiteSpace(schemaIdentifier))
             {
                 matchingExtension = null;
                 return false;
             }
-            IReadOnlyCollection<string> schemaIdentifiers = schemaIdentifier.ToCollection();
-            bool result = extensions.TryMatch(schemaIdentifiers, out matchingExtension);
-            return result;
+
+            var schemaIdentifiers = schemaIdentifier.ToCollection();
+
+            return extensions.TryMatch(schemaIdentifiers, out matchingExtension);
         }
 
         public static bool References(this PatchRequest2Base<PatchOperation2Combined> patch, string referee)
         {
-            if (null == patch)
+            if (patch == null)
             {
                 throw new ArgumentNullException(nameof(patch));
             }
@@ -1425,17 +1227,12 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(referee));
             }
 
-            bool result = patch.TryFindReference(referee, out IReadOnlyCollection<OperationValue> _);
-            return result;
+            return patch.TryFindReference(referee, out IReadOnlyCollection<OperationValue> _);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of the 'this' parameter of an extension method")]
-        public static bool TryFindReference(
-            this PatchRequest2Base<PatchOperation2Combined> patch,
-            string referee,
-            out IReadOnlyCollection<OperationValue> references)
+        public static bool TryFindReference(this PatchRequest2Base<PatchOperation2Combined> patch, string referee, out IReadOnlyCollection<OperationValue> references)
         {
-            if (null == patch)
+            if (patch == null)
             {
                 throw new ArgumentNullException(nameof(patch));
             }
@@ -1447,17 +1244,14 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(referee));
             }
 
-            List<OperationValue> patchOperation2Values = new List<OperationValue>();
+            var patchOperation2Values = new List<OperationValue>();
 
             foreach (PatchOperation2Combined operation in patch.Operations)
             {
                 OperationValue[] values = null;
                 if (operation?.Value != null)
                 {
-                    values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
+                    values = JsonConvert.DeserializeObject<OperationValue[]>(operation.Value, ProtocolConstants.JsonSettings.Value);
                 }
 
                 if (values == null)
@@ -1468,7 +1262,7 @@ namespace Microsoft.SCIM
                         value = JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
                     }
 
-                    OperationValue valueSingle = new OperationValue()
+                    var valueSingle = new OperationValue
                     {
                         Value = value
                     };
@@ -1476,17 +1270,13 @@ namespace Microsoft.SCIM
                 }
                 else
                 {
-                    foreach (OperationValue value in values)
-                    {
-                        patchOperation2Values.Add(value);
-                    }
+                    patchOperation2Values.AddRange(values);
                 }
-
             }
 
-            IReadOnlyCollection<OperationValue> patchOperationValues = patchOperation2Values.AsReadOnly();
+            var patchOperationValues = patchOperation2Values.AsReadOnly();
+            var referencesBuffer = new List<OperationValue>(patchOperationValues.Count);
 
-            IList<OperationValue> referencesBuffer = new List<OperationValue>(patchOperationValues.Count);
             foreach (OperationValue patchOperationValue in patchOperationValues)
             {
                 if (!patchOperationValue.TryParseBulkIdentifierReferenceValue(out string value))
@@ -1494,15 +1284,15 @@ namespace Microsoft.SCIM
                     value = patchOperationValue.Value;
                 }
 
-                if (string.Equals(referee, value,StringComparison.InvariantCulture))
+                if (string.Equals(referee, value, StringComparison.InvariantCulture))
                 {
                     referencesBuffer.Add(patchOperationValue);
                 }
             }
 
             references = referencesBuffer.ToArray();
-            bool result = references.Any();
-            return result;
+
+            return references.Any();
         }
 
         private static bool TryParseBulkIdentifierReferenceValue(string value, out string bulkIdentifier)
@@ -1514,11 +1304,12 @@ namespace Microsoft.SCIM
                 return false;
             }
 
-            Match match = ProtocolExtensions.BulkIdentifierExpression.Value.Match(value);
-            bool result = match.Success;
+            var match = BulkIdentifierExpression.Value.Match(value);
+            var result = match.Success;
+
             if (result)
             {
-                bulkIdentifier = match.Groups[ProtocolExtensions.ExpressionGroupNameBulkIdentifier].Value;
+                bulkIdentifier = match.Groups[EXPRESSION_GROUP_NAME_BULK_IDENTIFIER].Value;
             }
 
             return result;
@@ -1528,79 +1319,69 @@ namespace Microsoft.SCIM
         {
             bulkIdentifier = null;
 
-            if (null == value)
+            if (value == null)
             {
                 return false;
             }
 
-            bool result = ProtocolExtensions.TryParseBulkIdentifierReferenceValue(value.Value, out bulkIdentifier);
-            return result;
+            return TryParseBulkIdentifierReferenceValue(value.Value, out bulkIdentifier);
         }
-
 
         private sealed class HttpRequestMessageWriter : IHttpRequestMessageWriter
         {
-            private const string TemplateHeader = "{0}: {1}";
-
-            private readonly object thisLock = new object();
-
-            private TextWriter innerWriter;
+            private const string TEMPLATE_HEADER = "{0}: {1}";
+            private readonly object _thisLock = new();
+            private TextWriter _innerWriter;
 
             public HttpRequestMessageWriter(HttpRequestMessage message, TextWriter writer, bool acceptLargeObjects)
             {
-                this.Message = message ?? throw new ArgumentNullException(nameof(message));
-                this.innerWriter = writer ?? throw new ArgumentNullException(nameof(writer));
-                this.AcceptLargeObjects = acceptLargeObjects;
+                Message = message ?? throw new ArgumentNullException(nameof(message));
+                _innerWriter = writer ?? throw new ArgumentNullException(nameof(writer));
+
+                AcceptLargeObjects = acceptLargeObjects;
             }
 
-            private bool AcceptLargeObjects
-            {
-                get;
-            }
+            private bool AcceptLargeObjects { get; }
 
-            private HttpRequestMessage Message
-            {
-                get;
-                set;
-            }
+            private HttpRequestMessage Message { get; }
 
             public void Close()
             {
-                this.innerWriter.Flush();
-                this.innerWriter.Close();
+                _innerWriter.Flush();
+                _innerWriter.Close();
             }
 
             public void Dispose()
             {
-                if (this.innerWriter != null)
+                if (_innerWriter != null)
                 {
-                    lock (this.thisLock)
+                    lock (_thisLock)
                     {
-                        if (this.innerWriter != null)
+                        if (_innerWriter != null)
                         {
-                            this.Close();
-                            this.innerWriter = null;
+                            Close();
+                            _innerWriter = null;
                         }
                     }
                 }
             }
 
-            public async Task FlushAsync()
+            public Task FlushAsync()
             {
-                await this.innerWriter.FlushAsync().ConfigureAwait(false);
+                return _innerWriter.FlushAsync();
             }
 
             public async Task WriteAsync()
             {
-                if (this.Message.RequestUri != null)
+                if (Message.RequestUri != null)
                 {
-                    string line = HttpUtility.UrlDecode(this.Message.RequestUri.AbsoluteUri);
-                    await this.innerWriter.WriteLineAsync(line).ConfigureAwait(false);
+                    var line = HttpUtility.UrlDecode(Message.RequestUri.AbsoluteUri);
+                    await _innerWriter.WriteLineAsync(line).ConfigureAwait(false);
                 }
 
-                if (this.Message.Headers != null)
+                if (Message.Headers != null)
                 {
-                    foreach (KeyValuePair<string, IEnumerable<string>> header in this.Message.Headers)
+                    foreach (KeyValuePair<string, IEnumerable<string>> header in Message.Headers)
                     {
                         if (!header.Value.Any())
                         {
@@ -1608,33 +1389,28 @@ namespace Microsoft.SCIM
                         }
 
                         string value;
-                        if (1 == header.Value.LongCount())
+                        if (header.Value.LongCount() == 1)
                         {
                             value = header.Value.Single();
                         }
                         else
                         {
-                            string[] values = header.Value.ToArray();
-                            value = JsonFactory.Instance.Create(values, this.AcceptLargeObjects);
+                            var values = header.Value.ToArray();
+                            value = JsonFactory.Instance.Create(values, AcceptLargeObjects);
                         }
 
-                        string line =
-                            string.Format(
-                                CultureInfo.InvariantCulture,
-                                HttpRequestMessageWriter.TemplateHeader,
-                                header.Key,
-                                value);
-                        await this.innerWriter.WriteLineAsync(line).ConfigureAwait(false);
+                        var line = string.Format( CultureInfo.InvariantCulture, TEMPLATE_HEADER, header.Key, value);
+
+                        await _innerWriter.WriteLineAsync(line).ConfigureAwait(false);
                     }
                 }
 
-                if (this.Message.Content != null)
+                if (Message.Content != null)
                 {
-                    string line = await this.Message.Content.ReadAsStringAsync().ConfigureAwait(false);
-                    await this.innerWriter.WriteLineAsync(line).ConfigureAwait(false);
+                    var line = await Message.Content.ReadAsStringAsync().ConfigureAwait(false);
+                    await _innerWriter.WriteLineAsync(line).ConfigureAwait(false);
                 }
             }
-
         }
     }
 }

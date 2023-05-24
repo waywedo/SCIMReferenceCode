@@ -1,15 +1,13 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-
     public abstract class SchematizedJsonDeserializingFactoryBase :
-        ProtocolJsonDeserializingFactory,
-        ISchematizedJsonDeserializingFactory
+        ProtocolJsonDeserializingFactory, ISchematizedJsonDeserializingFactory
     {
         public abstract IReadOnlyCollection<IExtension> Extensions { get; set; }
         public abstract IResourceJsonDeserializingFactory<GroupBase> GroupDeserializationBehavior { get; set; }

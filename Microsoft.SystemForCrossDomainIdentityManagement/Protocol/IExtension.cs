@@ -1,12 +1,11 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Net.Http;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net.Http;
-
     public interface IExtension
     {
         Type Controller { get; }

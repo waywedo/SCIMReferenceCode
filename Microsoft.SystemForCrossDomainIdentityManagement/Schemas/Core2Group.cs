@@ -9,9 +9,5 @@ namespace Microsoft.SCIM
     [DataContract]
     public sealed class Core2Group : Core2GroupBase
     {
-        public Core2Group()
-            : base()
-        {
-        }
     }
 }

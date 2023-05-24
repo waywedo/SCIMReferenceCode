@@ -1,88 +1,74 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class Core2ResourceType : Resource
     {
-        private Uri endpoint;
+        private Uri _endpoint;
 
-        [DataMember(Name = AttributeNames.Endpoint)]
-        private string endpointValue;
+        [DataMember(Name = AttributeNames.ENDPOINT)]
+        private string _endpointValue;
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1823:AvoidUnusedPrivateFields", Justification = "Serialized")]
-        [DataMember(Name = AttributeNames.Name)]
-        private string name;
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Serialization")]
+        [DataMember(Name = AttributeNames.NAME)]
+        private string _name;
 
         public Core2ResourceType()
         {
-            this.AddSchema(SchemaIdentifiers.Core2ResourceType);
-            this.Metadata =
-                new Core2Metadata()
-                {
-                    ResourceType = Types.ResourceType
-                };
+            AddSchema(SchemaIdentifiers.CORE_2_RESOURCE_TYPE);
+            Metadata = new Core2Metadata()
+            {
+                ResourceType = Types.RESOURCE_TYPE
+            };
         }
 
         public Uri Endpoint
         {
-            get
-            {
-                return this.endpoint;
-            }
-
+            get { return _endpoint; }
             set
             {
-                this.endpoint = value;
-                this.endpointValue = new SystemForCrossDomainIdentityManagementResourceIdentifier(value).RelativePath;
+                _endpoint = value;
+                _endpointValue = new SCIMResourceIdentifier(value).RelativePath;
             }
         }
 
-        [DataMember(Name = AttributeNames.Metadata)]
-        public Core2Metadata Metadata
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.METADATA)]
+        public Core2Metadata Metadata { get; set; }
 
-        [DataMember(Name = AttributeNames.Schema)]
-        public string Schema
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.SCHEMA)]
+        public string Schema { get; set; }
 
         private void InitializeEndpoint(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                this.endpoint = null;
+                _endpoint = null;
                 return;
             }
 
-            this.endpoint = new Uri(value, UriKind.Relative);
+            _endpoint = new Uri(value, UriKind.Relative);
         }
 
         private void InitializeEndpoint()
         {
-            this.InitializeEndpoint(this.endpointValue);
+            InitializeEndpoint(_endpointValue);
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext _)
         {
-            this.InitializeEndpoint();
+            InitializeEndpoint();
         }
 
         [OnSerializing]
-        private void OnSerializing(StreamingContext context)
+        private void OnSerializing(StreamingContext _)
         {
-            this.name = this.Identifier;
+            _name = Identifier;
         }
     }
 }

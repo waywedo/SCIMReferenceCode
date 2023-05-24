@@ -1,22 +1,20 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class BulkOperations<TOperation> : Schematized where TOperation : BulkOperation
     {
-        [DataMember(Name = ProtocolAttributeNames.Operations, Order = 2)]
-        private List<TOperation> operations;
-        private IReadOnlyCollection<TOperation> operationsWrapper;
-
-        private object thisLock;
+        [DataMember(Name = ProtocolAttributeNames.OPERATIONS, Order = 2)]
+        private List<TOperation> _operations;
+        private IReadOnlyCollection<TOperation> _operationsWrapper;
+        private object _thisLock;
 
         protected BulkOperations(string schemaIdentifier)
         {
@@ -25,53 +23,55 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(schemaIdentifier));
             }
 
-            this.AddSchema(schemaIdentifier);
-            this.OnInitialization();
-            this.OnInitialized();
+            AddSchema(schemaIdentifier);
+            OnInitialization();
+            OnInitialized();
         }
 
-        public IReadOnlyCollection<TOperation> Operations => this.operationsWrapper;
+        public IReadOnlyCollection<TOperation> Operations => _operationsWrapper;
 
         public void AddOperation(TOperation operation)
         {
-            if (null == operation)
-            {
-                throw new ArgumentNullException(nameof(operation));
-            }
+            ArgumentNullException.ThrowIfNull(operation, nameof(operation));
 
             if (string.IsNullOrWhiteSpace(operation.Identifier))
             {
                 throw new ArgumentException(
-                    SystemForCrossDomainIdentityManagementProtocolResources.ExceptionUnidentifiableOperation);
+                    ProtocolResources.ExceptionUnidentifiableOperation);
             }
 
-            bool Contains() => this.operations.Any((BulkOperation item) => string.Equals(item.Identifier, operation.Identifier,
-                StringComparison.OrdinalIgnoreCase));
-
-            if (!Contains())
+            if (!OperationExists(operation.Identifier))
             {
-                lock (this.thisLock)
+                lock (_thisLock)
                 {
-                    if (!Contains())
+                    if (!OperationExists(operation.Identifier))
                     {
-                        this.operations.Add(operation);
+                        _operations.Add(operation);
                     }
                 }
             }
         }
 
-        [OnDeserialized]
-        private void OnDeserialized(StreamingContext _) => this.OnInitialized();
-
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext _) => this.OnInitialization();
-       
-        private void OnInitialization()
+        private bool OperationExists(string identifier)
         {
-            this.thisLock = new object();
-            this.operations = new List<TOperation>();
+            return _operations.Any((BulkOperation item) => string.Equals(item.Identifier, identifier, StringComparison.OrdinalIgnoreCase));
         }
 
-        private void OnInitialized() => this.operationsWrapper = this.operations.AsReadOnly();
+        [OnDeserialized]
+        private void OnDeserialized(StreamingContext _) => OnInitialized();
+
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext _) => OnInitialization();
+
+        private void OnInitialization()
+        {
+            _thisLock = new object();
+            _operations = new List<TOperation>();
+        }
+
+        private void OnInitialized()
+        {
+            _operationsWrapper = _operations.AsReadOnly();
+        }
     }
 }

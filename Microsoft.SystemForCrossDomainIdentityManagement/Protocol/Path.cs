@@ -1,102 +1,69 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Text.RegularExpressions;
-
     public sealed class Path : IPath
     {
-        private const string ArgumentNamePathExpression = "pathExpression";
+        private const string ARGUMENT_NAME_PATH_EXPRESSION = "pathExpression";
 
-        private const string ConstructNameSubAttributes = "subAttr";
-        private const string ConstructNameValuePath = "valuePath";
-        private const string PatternTemplate = @"(?<{0}>.*)\[(?<{1}>.*)\]";
-        private const string SchemaIdentifierSubnamespace =
-            "urn:ietf:params:scim:schemas:";
+        private const string CONSTRUCT_NAME_SUB_ATTRIBUTES = "subAttr";
+        private const string CONSTRUCT_NAME_VALUE_PATH = "valuePath";
+        private const string PATTERN_TEMPLATE = @"(?<{0}>.*)\[(?<{1}>.*)\]";
+        private const string SCHEMA_IDENTIFIER_SUBNAMESPACE = "urn:ietf:params:scim:schemas:";
 
-        private static readonly string Pattern =
-            string.Format(
-                CultureInfo.InvariantCulture,
-                Path.PatternTemplate,
-                Path.ConstructNameValuePath,
-                Path.ConstructNameSubAttributes);
+        private static readonly string Pattern = string.Format(
+            CultureInfo.InvariantCulture, PATTERN_TEMPLATE, CONSTRUCT_NAME_VALUE_PATH, CONSTRUCT_NAME_SUB_ATTRIBUTES);
 
         private static readonly Lazy<string[]> ObsoleteSchemaPrefixPatterns =
-            new Lazy<string[]>(
-                () =>
-                    new string[]
-                    {
-                        "urn:scim:schemas:extension:enterprise:1.0.",
-                        "urn:scim:schemas:extension:enterprise:2.0."
-                    });
+            new(() => new string[]
+            {
+                "urn:scim:schemas:extension:enterprise:1.0.",
+                "urn:scim:schemas:extension:enterprise:2.0."
+            });
 
         private static readonly Lazy<Regex> RegularExpression =
-            new Lazy<Regex>(
-                () =>
-                    new Regex(Path.Pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
+            new(() => new Regex(Pattern, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant));
 
-        private const char SeperatorAttributes = '.';
+        private const char SEPERATOR_ATTRIBUTES = '.';
 
         private Path(string pathExpression)
         {
             if (string.IsNullOrWhiteSpace(pathExpression))
             {
-                throw new ArgumentNullException(Path.ArgumentNamePathExpression);
+                throw new ArgumentNullException(ARGUMENT_NAME_PATH_EXPRESSION);
             }
 
-            this.Expression = pathExpression;
+            Expression = pathExpression;
         }
 
-        public string AttributePath
-        {
-            get;
-            private set;
-        }
+        public string AttributePath { get; private set; }
 
-        private string Expression
-        {
-            get;
-            set;
-        }
+        private string Expression { get; }
 
-        public string SchemaIdentifier
-        {
-            get;
-            private set;
-        }
+        public string SchemaIdentifier { get; private set; }
 
-        public IReadOnlyCollection<IFilter> SubAttributes
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyCollection<IFilter> SubAttributes { get; private set; }
 
-        public IPath ValuePath
-        {
-            get;
-            private set;
-        }
-
+        public IPath ValuePath { get; private set; }
 
         public static IPath Create(string pathExpression)
         {
             if (string.IsNullOrWhiteSpace(pathExpression))
             {
-                throw new ArgumentNullException(Path.ArgumentNamePathExpression);
+                throw new ArgumentNullException(ARGUMENT_NAME_PATH_EXPRESSION);
             }
 
-            if (!Path.TryParse(pathExpression, out IPath result))
+            if (!TryParse(pathExpression, out IPath result))
             {
-                string exceptionMessage =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidPathTemplate,
-                        pathExpression);
+                var exceptionMessage = string.Format(CultureInfo.InvariantCulture,
+                    ProtocolResources.ExceptionInvalidPathTemplate, pathExpression);
+
                 throw new ArgumentException(exceptionMessage);
             }
 
@@ -112,12 +79,12 @@ namespace Microsoft.SCIM
                 return false;
             }
 
-            if (!pathExpression.StartsWith(Path.SchemaIdentifierSubnamespace, StringComparison.OrdinalIgnoreCase))
+            if (!pathExpression.StartsWith(SCHEMA_IDENTIFIER_SUBNAMESPACE, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            foreach (string item in Path.ObsoleteSchemaPrefixPatterns.Value)
+            foreach (var item in ObsoleteSchemaPrefixPatterns.Value)
             {
                 if (pathExpression.StartsWith(item, StringComparison.OrdinalIgnoreCase))
                 {
@@ -125,16 +92,15 @@ namespace Microsoft.SCIM
                 }
             }
 
-            int seperatorIndex =
-                pathExpression.LastIndexOf(
-                    SchemaConstants.SeparatorSchemaIdentifierAttribute,
-                    StringComparison.OrdinalIgnoreCase);
+            var seperatorIndex = pathExpression.LastIndexOf(SchemaConstants.SEPARATOR_SCHEMA_IDENTIFIER_ATTRIBUTE, StringComparison.OrdinalIgnoreCase);
+
             if (-1 == seperatorIndex)
             {
                 return false;
             }
 
-            schemaIdentifier = pathExpression.Substring(0, seperatorIndex);
+            schemaIdentifier = pathExpression[..seperatorIndex];
+
             return true;
         }
 
@@ -144,35 +110,36 @@ namespace Microsoft.SCIM
 
             if (string.IsNullOrWhiteSpace(pathExpression))
             {
-                throw new ArgumentNullException(Path.ArgumentNamePathExpression);
+                throw new ArgumentNullException(ARGUMENT_NAME_PATH_EXPRESSION);
             }
 
-            Path buffer = new Path(pathExpression);
-
+            var buffer = new Path(pathExpression);
             string expression = pathExpression;
 
-            if (Path.TryExtractSchemaIdentifier(pathExpression, out string schemaIdentifier))
+            if (TryExtractSchemaIdentifier(pathExpression, out string schemaIdentifier))
             {
-                expression = expression.Substring(schemaIdentifier.Length + 1);
+                expression = expression[(schemaIdentifier.Length + 1)..];
                 buffer.SchemaIdentifier = schemaIdentifier;
             }
 
-            int seperatorIndex = expression.IndexOf(Path.SeperatorAttributes, StringComparison.InvariantCulture);
+            int seperatorIndex = expression.IndexOf(SEPERATOR_ATTRIBUTES, StringComparison.InvariantCulture);
             if (seperatorIndex >= 0)
             {
-                string valuePathExpression = expression.Substring(seperatorIndex + 1);
+                var valuePathExpression = expression[(seperatorIndex + 1)..];
 
-                expression = expression.Substring(0, seperatorIndex);
+                expression = expression[..seperatorIndex];
 
-                if (!Path.TryParse(valuePathExpression, out IPath valuePath))
+                if (!TryParse(valuePathExpression, out IPath valuePath))
                 {
                     return false;
                 }
+
                 buffer.ValuePath = valuePath;
                 buffer.SubAttributes = Array.Empty<IFilter>();
             }
 
-            Match match = Path.RegularExpression.Value.Match(expression);
+            var match = RegularExpression.Value.Match(expression);
+
             if (!match.Success)
             {
                 buffer.AttributePath = expression;
@@ -180,22 +147,26 @@ namespace Microsoft.SCIM
             }
             else
             {
-                buffer.AttributePath = match.Groups[Path.ConstructNameValuePath].Value;
-                string filterExpression = match.Groups[Path.ConstructNameSubAttributes].Value;
+                buffer.AttributePath = match.Groups[CONSTRUCT_NAME_VALUE_PATH].Value;
+
+                var filterExpression = match.Groups[CONSTRUCT_NAME_SUB_ATTRIBUTES].Value;
+
                 if (!Filter.TryParse(filterExpression, out IReadOnlyCollection<IFilter> filters))
                 {
                     return false;
                 }
+
                 buffer.SubAttributes = filters;
             }
 
             path = buffer;
+
             return true;
         }
 
         public override string ToString()
         {
-            return this.Expression;
+            return Expression;
         }
     }
 }

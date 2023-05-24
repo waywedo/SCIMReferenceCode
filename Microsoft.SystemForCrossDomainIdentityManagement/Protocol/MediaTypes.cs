@@ -6,9 +6,9 @@ namespace Microsoft.SCIM
 {
     public static class MediaTypes
     {
-        public const string JavaWebToken = "application/jwt";
-        public const string Json = "application/json";
-        public const string Protocol = ProtocolConstants.ContentType;
-        public const string Stream = "application/octet-stream";
+        public const string JAVA_WEB_TOKEN = "application/jwt";
+        public const string JSON = "application/json";
+        public const string PROTOCOL = ProtocolConstants.CONTENT_TYPE;
+        public const string STREAM = "application/octet-stream";
     }
 }

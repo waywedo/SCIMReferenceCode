@@ -6,32 +6,20 @@ namespace Microsoft.SCIM
 {
     public static class ProtocolSchemaIdentifiers
     {
-        private const string Error = "Error";
+        private const string ERROR = "Error";
+        private const string OPERATION_PATCH = "PatchOp";
+        private const string VERSION_MESSAGES_2 = "2.0:";
+        private const string PREFIX_MESSAGES = "urn:ietf:params:scim:api:messages:";
+        private const string RESPONSE_LIST = "ListResponse";
+        private const string REQUEST_BULK = "BulkRequest";
+        private const string RESPONSE_BULK = "BulkResponse";
 
-        private const string OperationPatch = "PatchOp";
+        public const string PREFIX_MESSAGES_2 = PREFIX_MESSAGES + VERSION_MESSAGES_2;
 
-        private const string VersionMessages2 = "2.0:";
-
-        private const string PrefixMessages = "urn:ietf:params:scim:api:messages:";
-        public const string PrefixMessages2 = ProtocolSchemaIdentifiers.PrefixMessages + ProtocolSchemaIdentifiers.VersionMessages2;
-
-        private const string ResponseList = "ListResponse";
-        private const string RequestBulk = "BulkRequest";
-
-        private const string ResponseBulk = "BulkResponse";
-
-        public const string Version2Error =
-            ProtocolSchemaIdentifiers.PrefixMessages2 + ProtocolSchemaIdentifiers.Error;
-
-        public const string Version2ListResponse =
-            ProtocolSchemaIdentifiers.PrefixMessages2 + ProtocolSchemaIdentifiers.ResponseList;
-
-        public const string Version2PatchOperation =
-            ProtocolSchemaIdentifiers.PrefixMessages2 + ProtocolSchemaIdentifiers.OperationPatch;
-        public const string Version2BulkRequest =
-             ProtocolSchemaIdentifiers.PrefixMessages2 + ProtocolSchemaIdentifiers.RequestBulk;
-
-        public const string Version2BulkResponse =
-            ProtocolSchemaIdentifiers.PrefixMessages2 + ProtocolSchemaIdentifiers.ResponseBulk;
+        public const string VERSION_2_ERROR = PREFIX_MESSAGES_2 + ERROR;
+        public const string VERSION_2_LIST_RESPONSE = PREFIX_MESSAGES_2 + RESPONSE_LIST;
+        public const string VERSION_2_PATCH_OPERATION = PREFIX_MESSAGES_2 + OPERATION_PATCH;
+        public const string VERSION_2_BULK_REQUEST = PREFIX_MESSAGES_2 + REQUEST_BULK;
+        public const string VERSION_2_BULK_RESPONSE = PREFIX_MESSAGES_2 + RESPONSE_BULK;
     }
 }

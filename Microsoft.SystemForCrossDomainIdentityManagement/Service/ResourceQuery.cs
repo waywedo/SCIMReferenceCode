@@ -1,151 +1,109 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Net;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Globalization;
-    using System.Linq;
-    using System.Net;
-    using System.Web;
-    using System.Web.Http;
-
     public sealed class ResourceQuery : IResourceQuery
     {
-        private const char SeperatorAttributes = ',';
+        private const char SEPERATOR_ATTRIBUTES = ',';
 
         private static readonly Lazy<char[]> SeperatorsAttributes =
-            new Lazy<char[]>(
-                () =>
-                    new char[]
-                        {
-                            ResourceQuery.SeperatorAttributes
-                        });
+            new(() => new char[] { SEPERATOR_ATTRIBUTES });
 
         public ResourceQuery()
         {
-            this.Filters = Array.Empty<Filter>();
-            this.Attributes = Array.Empty<string>();
-            this.ExcludedAttributes = Array.Empty<string>();
+            Filters = Array.Empty<Filter>();
+            Attributes = Array.Empty<string>();
+            ExcludedAttributes = Array.Empty<string>();
         }
 
-        public ResourceQuery(
-            IReadOnlyCollection<IFilter> filters,
-            IReadOnlyCollection<string> attributes,
+        public ResourceQuery(IReadOnlyCollection<IFilter> filters, IReadOnlyCollection<string> attributes,
             IReadOnlyCollection<string> excludedAttributes)
         {
-            this.Filters = filters ?? throw new ArgumentNullException(nameof(filters));
-            this.Attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
-            this.ExcludedAttributes = excludedAttributes ?? throw new ArgumentNullException(nameof(excludedAttributes));
+            Filters = filters ?? throw new ArgumentNullException(nameof(filters));
+            Attributes = attributes ?? throw new ArgumentNullException(nameof(attributes));
+            ExcludedAttributes = excludedAttributes ?? throw new ArgumentNullException(nameof(excludedAttributes));
         }
 
-        public ResourceQuery(Uri resource)
+        public ResourceQuery(IQueryCollection query)
         {
-            if (null == resource)
+            if (query == null)
             {
-                throw new ArgumentNullException(nameof(resource));
+                throw new ArgumentNullException(nameof(query));
             }
 
-            string query = resource.Query;
-            if (!string.IsNullOrWhiteSpace(query))
+            foreach (string key in query.Keys)
             {
-                NameValueCollection keyedValues = HttpUtility.ParseQueryString(query);
-                IEnumerable<string> keys = keyedValues.AllKeys;
-                foreach (string key in keys)
+                if (string.Equals(key, QueryKeys.ATTRIBUTES, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (string.Equals(key, QueryKeys.Attributes, StringComparison.OrdinalIgnoreCase))
-                    {
-                        string attributeExpression = keyedValues[key];
-                        if (!string.IsNullOrWhiteSpace(attributeExpression))
-                        {
-                            this.Attributes = ResourceQuery.ParseAttributes(attributeExpression);
-                        }
-                    }
+                    var attributeExpression = query[key];
 
-                    if (string.Equals(key, QueryKeys.Count, StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrWhiteSpace(attributeExpression))
                     {
-                        Action<IPaginationParameters, int> action =
-                            new Action<IPaginationParameters, int>(
-                                (IPaginationParameters pagination, int paginationValue) =>
-                                    pagination.Count = paginationValue);
-                        this.ApplyPaginationParameter(keyedValues[key], action);
+                        Attributes = ParseAttributes(attributeExpression);
                     }
+                }
 
-                    if (string.Equals(key, QueryKeys.ExcludedAttributes, StringComparison.OrdinalIgnoreCase))
-                    {
-                        string attributeExpression = keyedValues[key];
-                        if (!string.IsNullOrWhiteSpace(attributeExpression))
-                        {
-                            this.ExcludedAttributes = ResourceQuery.ParseAttributes(attributeExpression);
-                        }
-                    }
+                if (string.Equals(key, QueryKeys.COUNT, StringComparison.OrdinalIgnoreCase))
+                {
+                    var action = new Action<IPaginationParameters, int>(
+                        (IPaginationParameters pagination, int paginationValue) => pagination.Count = paginationValue
+                    );
+                    ApplyPaginationParameter(query[key], action);
+                }
 
-                    if (string.Equals(key, QueryKeys.Filter, StringComparison.OrdinalIgnoreCase))
-                    {
-                        string filterExpression = keyedValues[key];
-                        if (!string.IsNullOrWhiteSpace(filterExpression))
-                        {
-                            this.Filters = ResourceQuery.ParseFilters(filterExpression);
-                        }
-                    }
+                if (string.Equals(key, QueryKeys.EXCLUDED_ATTRIBUTES, StringComparison.OrdinalIgnoreCase))
+                {
+                    var attributeExpression = query[key];
 
-                    if (string.Equals(key, QueryKeys.StartIndex, StringComparison.OrdinalIgnoreCase))
+                    if (!string.IsNullOrWhiteSpace(attributeExpression))
                     {
-                        Action<IPaginationParameters, int> action =
-                            new Action<IPaginationParameters, int>(
-                                (IPaginationParameters pagination, int paginationValue) =>
-                                    pagination.StartIndex = paginationValue);
-                        this.ApplyPaginationParameter(keyedValues[key], action);
+                        ExcludedAttributes = ParseAttributes(attributeExpression);
                     }
+                }
+
+                if (string.Equals(key, QueryKeys.FILTER, StringComparison.OrdinalIgnoreCase))
+                {
+                    var filterExpression = query[key];
+
+                    if (!string.IsNullOrWhiteSpace(filterExpression))
+                    {
+                        Filters = ParseFilters(filterExpression);
+                    }
+                }
+
+                if (string.Equals(key, QueryKeys.START_INDEX, StringComparison.OrdinalIgnoreCase))
+                {
+                    var action = new Action<IPaginationParameters, int>(
+                        (IPaginationParameters pagination, int paginationValue) => pagination.StartIndex = paginationValue
+                    );
+                    ApplyPaginationParameter(query[key], action);
                 }
             }
 
-            if (null == this.Filters)
-            {
-                this.Filters = Array.Empty<Filter>();
-            }
+            Filters ??= Array.Empty<Filter>();
 
-            if (null == this.Attributes)
-            {
-                this.Attributes = Array.Empty<string>();
-            }
+            Attributes ??= Array.Empty<string>();
 
-            if (null == this.ExcludedAttributes)
-            {
-                this.ExcludedAttributes = Array.Empty<string>();
-            }
+            ExcludedAttributes ??= Array.Empty<string>();
         }
 
-        public IReadOnlyCollection<string> Attributes
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyCollection<string> Attributes { get; }
 
-        public IReadOnlyCollection<string> ExcludedAttributes
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyCollection<string> ExcludedAttributes { get; }
 
-        public IReadOnlyCollection<IFilter> Filters
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyCollection<IFilter> Filters { get; }
 
-        public IPaginationParameters PaginationParameters
-        {
-            get;
-            set;
-        }
+        public IPaginationParameters PaginationParameters { get; set; }
 
-        private void ApplyPaginationParameter(
-            string value,
-            Action<IPaginationParameters, int> action)
+        private void ApplyPaginationParameter(string value, Action<IPaginationParameters, int> action)
         {
-            if (null == action)
+            if (action == null)
             {
                 throw new ArgumentNullException(nameof(action));
             }
@@ -155,12 +113,11 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            int parsedValue = int.Parse(value, CultureInfo.InvariantCulture);
-            if (null == this.PaginationParameters)
-            {
-                this.PaginationParameters = new PaginationParameters();
-            }
-            action(this.PaginationParameters, parsedValue);
+            var parsedValue = int.Parse(value, CultureInfo.InvariantCulture);
+
+            PaginationParameters ??= new PaginationParameters();
+
+            action(PaginationParameters, parsedValue);
         }
 
         private static IReadOnlyCollection<string> ParseAttributes(string attributeExpression)
@@ -170,14 +127,9 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(attributeExpression));
             }
 
-            IReadOnlyCollection<string> results =
-                attributeExpression
-                .Split(ResourceQuery.SeperatorsAttributes.Value)
-                .Select(
-                    (string item) =>
-                        item.Trim())
-                .ToArray();
-            return results;
+            return attributeExpression
+                .Split(SeperatorsAttributes.Value)
+                .Select(item => item.Trim()).ToArray();
         }
 
         private static IReadOnlyCollection<IFilter> ParseFilters(string filterExpression)
@@ -189,7 +141,7 @@ namespace Microsoft.SCIM
 
             if (!Filter.TryParse(filterExpression, out IReadOnlyCollection<IFilter> results))
             {
-                throw new HttpResponseException(HttpStatusCode.NotAcceptable);
+                throw new InvalidOperationException();
             }
 
             return results;

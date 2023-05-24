@@ -1,760 +1,449 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.SCIM.Service;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-    using Microsoft.AspNetCore.Mvc;
-    using Microsoft.AspNetCore.Mvc.WebApiCompatShim;
-
     public abstract class ControllerTemplate : ControllerBase
     {
-        internal const string AttributeValueIdentifier = "{identifier}";
-        private const string HeaderKeyContentType = "Content-Type";
-        private const string HeaderKeyLocation = "Location";
+        internal const string ATTRIBUTE_VALUE_IDENTIFIER = "{identifier}";
+        private const string HEADER_KEY_CONTENT_TYPE = "Content-Type";
+        private const string HEADER_KEY_LOCATION = "Location";
 
-        internal readonly IMonitor monitor;
-        internal readonly IProvider provider;
-
-        internal ControllerTemplate(IProvider provider, IMonitor monitor)
+        internal ControllerTemplate()
         {
-            this.monitor = monitor;
-            this.provider = provider;
         }
 
         protected virtual void ConfigureResponse(Resource resource)
         {
-            this.Response.ContentType = ProtocolConstants.ContentType;
-            this.Response.StatusCode = (int)HttpStatusCode.Created;
+            Response.ContentType = ProtocolConstants.CONTENT_TYPE;
+            Response.StatusCode = (int)HttpStatusCode.Created;
 
-            if (null == this.Response.Headers)
+            if (Response.Headers == null)
             {
                 return;
             }
 
-            if (!this.Response.Headers.ContainsKey(ControllerTemplate.HeaderKeyContentType))
+            if (!Response.Headers.ContainsKey(HEADER_KEY_CONTENT_TYPE))
             {
-                this.Response.Headers.Add(ControllerTemplate.HeaderKeyContentType, ProtocolConstants.ContentType);
+                Response.Headers.Add(HEADER_KEY_CONTENT_TYPE, ProtocolConstants.CONTENT_TYPE);
             }
 
-            Uri baseResourceIdentifier = this.ConvertRequest().GetBaseResourceIdentifier();
-            Uri resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
-            string resourceLocation = resourceIdentifier.AbsoluteUri;
-            if (!this.Response.Headers.ContainsKey(ControllerTemplate.HeaderKeyLocation))
-            {
-                this.Response.Headers.Add(ControllerTemplate.HeaderKeyLocation, resourceLocation);
-            }
-        }
+            var baseResourceIdentifier = Request.GetBaseResourceIdentifier();
+            var resourceIdentifier = resource.GetResourceIdentifier(baseResourceIdentifier);
+            var resourceLocation = resourceIdentifier.AbsoluteUri;
 
-        protected HttpRequestMessage ConvertRequest()
-        {
-            HttpRequestMessageFeature hreqmf = new HttpRequestMessageFeature(this.HttpContext);
-            HttpRequestMessage result = hreqmf.HttpRequestMessage;
-            return result;
+            if (!Response.Headers.ContainsKey(HEADER_KEY_LOCATION))
+            {
+                Response.Headers.Add(HEADER_KEY_LOCATION, resourceLocation);
+            }
         }
 
         protected ObjectResult ScimError(HttpStatusCode httpStatusCode, string message)
         {
             return StatusCode((int)httpStatusCode, new Core2Error(message, (int)httpStatusCode));
         }
-
-        protected virtual bool TryGetMonitor(out IMonitor monitor)
-        {
-            monitor = this.monitor;
-            if (null == monitor)
-            {
-                return false;
-            }
-
-            return true;
-        }
     }
 
     public abstract class ControllerTemplate<T> : ControllerTemplate where T : Resource
     {
-        internal ControllerTemplate(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        private readonly IProviderAdapter<T> _provider;
+        private readonly ILogger _logger;
+
+        internal ControllerTemplate(IProviderAdapter<T> provider, ILogger logger)
         {
+            _provider = provider;
+            _logger = logger;
         }
 
-        protected abstract IProviderAdapter<T> AdaptProvider(IProvider provider);
-
-        protected virtual IProviderAdapter<T> AdaptProvider()
-        {
-            IProviderAdapter<T> result = this.AdaptProvider(this.provider);
-            return result;
-        }
-
-
-        [HttpDelete(ControllerTemplate.AttributeValueIdentifier)]
+        [HttpDelete(ATTRIBUTE_VALUE_IDENTIFIER)]
         public virtual async Task<IActionResult> Delete(string identifier)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
+
             try
             {
                 if (string.IsNullOrWhiteSpace(identifier))
                 {
-                    return this.BadRequest();
+                    return BadRequest();
                 }
 
                 identifier = Uri.UnescapeDataString(identifier);
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProviderAdapter<T> provider = this.AdaptProvider();
-                await provider.Delete(request, identifier, correlationIdentifier).ConfigureAwait(false);
-                return this.NoContent();
+                await _provider.Delete(Request, identifier, requestId).ConfigureAwait(false);
+
+                return NoContent();
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateDeleteArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template delete", requestId);
 
-                return this.BadRequest();
+                return BadRequest();
             }
-            catch (HttpResponseException responseException)
+            catch (ResourceNotFoundException)
             {
-                if (responseException.Response?.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return this.NotFound();
-                }
-
-                throw;
+                return NotFound();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template delete", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateDeleteNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template delete", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateDeleteException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template delete", requestId);
 
                 throw;
             }
         }
 
         [HttpGet]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get", Justification = "The names of the methods of a controller must correspond to the names of hypertext markup verbs")]
         public virtual async Task<ActionResult<QueryResponseBase>> Get()
         {
-            string correlationIdentifier = null;
+            string requestId = null;
+
             try
             {
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IResourceQuery resourceQuery = new ResourceQuery(request.RequestUri);
-                IProviderAdapter<T> provider = this.AdaptProvider();
-                QueryResponseBase result =
-                    await provider
-                            .Query(
-                                request,
-                                resourceQuery.Filters,
-                                resourceQuery.Attributes,
-                                resourceQuery.ExcludedAttributes,
-                                resourceQuery.PaginationParameters,
-                                correlationIdentifier)
-                            .ConfigureAwait(false);
-                return this.Ok(result);
+                var resourceQuery = new ResourceQuery(Request.Query);
+
+                var result = await _provider.Query(Request, resourceQuery.Filters, resourceQuery.Attributes,
+                    resourceQuery.ExcludedAttributes, resourceQuery.PaginationParameters, requestId)
+                    .ConfigureAwait(false);
+
+                return Ok(result);
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateQueryArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template get", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);
+                return ScimError(HttpStatusCode.BadRequest, argumentException.Message);
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateQueryNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template get", requestId);
 
-                return this.ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
+                return ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateQueryNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template get", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
-            }
-            catch (HttpResponseException responseException)
-            {
-                if (responseException.Response?.StatusCode != HttpStatusCode.NotFound)
-                {
-                    if (this.TryGetMonitor(out IMonitor monitor))
-                    {
-                        IExceptionNotification notification =
-                            ExceptionNotificationFactory.Instance.CreateNotification(
-                                responseException.InnerException ?? responseException,
-                                correlationIdentifier,
-                                ServiceNotificationIdentifiers.ControllerTemplateGetException);
-                        monitor.Report(notification);
-                    }
-                }
-
-                return this.ScimError(HttpStatusCode.InternalServerError, responseException.Message);
+                return ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateQueryException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template get", requestId);
 
-                return this.ScimError(HttpStatusCode.InternalServerError, exception.Message);
+                return ScimError(HttpStatusCode.InternalServerError, exception.Message);
             }
         }
 
-        [HttpGet(ControllerTemplate.AttributeValueIdentifier)]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1716:IdentifiersShouldNotMatchKeywords", MessageId = "Get", Justification = "The names of the methods of a controller must correspond to the names of hypertext markup verbs")]
-        public virtual async Task<IActionResult> Get([FromUri]string identifier)
+        [HttpGet(ATTRIBUTE_VALUE_IDENTIFIER)]
+        public virtual async Task<IActionResult> Get(string identifier)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
+
             try
             {
                 if (string.IsNullOrWhiteSpace(identifier))
                 {
-                    return this.ScimError(HttpStatusCode.BadRequest, SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidIdentifier);
+                    return ScimError(HttpStatusCode.BadRequest, ServiceResources.ExceptionInvalidIdentifier);
                 }
 
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IResourceQuery resourceQuery = new ResourceQuery(request.RequestUri);
+                var resourceQuery = new ResourceQuery(Request.Query);
+
                 if (resourceQuery.Filters.Any())
                 {
                     if (resourceQuery.Filters.Count != 1)
                     {
-                        return this.ScimError(HttpStatusCode.BadRequest, SystemForCrossDomainIdentityManagementServiceResources.ExceptionFilterCount);
+                        return ScimError(HttpStatusCode.BadRequest, ServiceResources.ExceptionFilterCount);
                     }
 
-                    IFilter filter = new Filter(AttributeNames.Identifier, ComparisonOperator.Equals, identifier);
-                    filter.AdditionalFilter = resourceQuery.Filters.Single();
-                    IReadOnlyCollection<IFilter> filters =
-                        new IFilter[]
-                            {
-                                filter
-                            };
-                    IResourceQuery effectiveQuery =
-                        new ResourceQuery(
-                            filters,
-                            resourceQuery.Attributes,
-                            resourceQuery.ExcludedAttributes);
-                    IProviderAdapter<T> provider = this.AdaptProvider();
-                    QueryResponseBase queryResponse =
-                        await provider
-                            .Query(
-                                request,
-                                effectiveQuery.Filters,
-                                effectiveQuery.Attributes,
-                                effectiveQuery.ExcludedAttributes,
-                                effectiveQuery.PaginationParameters,
-                                correlationIdentifier)
-                            .ConfigureAwait(false);
+                    var filter = new Filter(AttributeNames.IDENTIFIER, ComparisonOperator.Equals, identifier)
+                    {
+                        AdditionalFilter = resourceQuery.Filters.Single()
+                    };
+
+                    var filters = new IFilter[] { filter };
+
+                    var effectiveQuery = new ResourceQuery(filters, resourceQuery.Attributes,
+                        resourceQuery.ExcludedAttributes);
+
+                    var queryResponse = await _provider.Query(Request, effectiveQuery.Filters, effectiveQuery.Attributes,
+                        effectiveQuery.ExcludedAttributes, effectiveQuery.PaginationParameters, requestId)
+                        .ConfigureAwait(false);
+
                     if (!queryResponse.Resources.Any())
                     {
-                        return this.ScimError(HttpStatusCode.NotFound, string.Format(SystemForCrossDomainIdentityManagementServiceResources.ResourceNotFoundTemplate, identifier));
+                        return ScimError(HttpStatusCode.NotFound,
+                            string.Format(ServiceResources.ResourceNotFoundTemplate,
+                            identifier));
                     }
 
-                    Resource result = queryResponse.Resources.Single();
-                    return this.Ok(result);
+                    var result = queryResponse.Resources.Single();
+
+                    return Ok(result);
                 }
                 else
                 {
-                    IProviderAdapter<T> provider = this.AdaptProvider();
-                    Resource result =
-                        await provider
-                            .Retrieve(
-                                request,
-                                identifier,
-                                resourceQuery.Attributes,
-                                resourceQuery.ExcludedAttributes,
-                                correlationIdentifier)
-                            .ConfigureAwait(false);
-                    if (null == result)
+                    var result = await _provider.Retrieve(Request, identifier, resourceQuery.Attributes,
+                        resourceQuery.ExcludedAttributes, requestId).ConfigureAwait(false);
+
+                    if (result == null)
                     {
-                        return this.ScimError(HttpStatusCode.NotFound, string.Format(SystemForCrossDomainIdentityManagementServiceResources.ResourceNotFoundTemplate, identifier));
+                        return ScimError(HttpStatusCode.NotFound,
+                            string.Format(ServiceResources.ResourceNotFoundTemplate,
+                            identifier));
                     }
 
-                    return this.Ok(result);
+                    return Ok(result);
                 }
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateGetArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template get by id", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);
+                return ScimError(HttpStatusCode.BadRequest, argumentException.Message);
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateGetNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template get by id", requestId);
 
-                return this.ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
+                return ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateGetNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template get by id", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
+                return ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
             }
-            catch (HttpResponseException responseException)
+            catch (ResourceNotFoundException)
             {
-                if (responseException.Response?.StatusCode != HttpStatusCode.NotFound)
-                {
-                    if (this.TryGetMonitor(out IMonitor monitor))
-                    {
-                        IExceptionNotification notification =
-                            ExceptionNotificationFactory.Instance.CreateNotification(
-                                responseException.InnerException ?? responseException,
-                                correlationIdentifier,
-                                ServiceNotificationIdentifiers.ControllerTemplateGetException);
-                        monitor.Report(notification);
-                    }
-                }
-
-                if (responseException.Response?.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return this.ScimError(HttpStatusCode.NotFound, string.Format(SystemForCrossDomainIdentityManagementServiceResources.ResourceNotFoundTemplate, identifier));
-                }
-
-                return this.ScimError(HttpStatusCode.InternalServerError, responseException.Message);
+                return ScimError(HttpStatusCode.NotFound, string.Format(ServiceResources.ResourceNotFoundTemplate, identifier));
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplateGetException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template get by id", requestId);
 
-                return this.ScimError(HttpStatusCode.InternalServerError, exception.Message);
+                return ScimError(HttpStatusCode.InternalServerError, exception.Message);
             }
         }
 
-        [HttpPatch(ControllerTemplate.AttributeValueIdentifier)]
-        public virtual async Task<IActionResult> Patch(string identifier, [FromBody]PatchRequest2 patchRequest)
+        [HttpPatch(ATTRIBUTE_VALUE_IDENTIFIER)]
+        public virtual async Task<IActionResult> Patch(string identifier, [FromBody] PatchRequest2 patchRequest)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
                 if (string.IsNullOrWhiteSpace(identifier))
                 {
-                    return this.BadRequest();
+                    return BadRequest();
                 }
 
                 identifier = Uri.UnescapeDataString(identifier);
 
-                if (null == patchRequest)
+                if (patchRequest == null)
                 {
-                    return this.BadRequest();
+                    return BadRequest();
                 }
 
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProviderAdapter<T> provider = this.AdaptProvider();
-                await provider.Update(request, identifier, patchRequest, correlationIdentifier).ConfigureAwait(false);
+                await _provider.Update(Request, identifier, patchRequest, requestId)
+                    .ConfigureAwait(false);
 
                 // If EnterpriseUser, return HTTP code 200 and user object, otherwise HTTP code 204
-                if (provider.SchemaIdentifier == SchemaIdentifiers.Core2EnterpriseUser)
+                if (_provider.SchemaIdentifier == SchemaIdentifiers.CORE_2_ENTERPRISE_USER)
                 {
-                    return await this.Get(identifier).ConfigureAwait(false);
+                    return await Get(identifier).ConfigureAwait(false);
                 }
                 else
-                    return this.NoContent();
+                {
+                    return NoContent();
+                }
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePatchArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template patch", requestId);
 
-                return this.BadRequest();
+                return BadRequest();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePatchNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template patch", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePatchNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template patch", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
-            catch (HttpResponseException responseException)
+            catch (ResourceNotFoundException)
             {
-                if (responseException.Response?.StatusCode == HttpStatusCode.NotFound)
-                {
-                    return this.NotFound();
-                }
-                else
-                {
-                    if (this.TryGetMonitor(out IMonitor monitor))
-                    {
-                        IExceptionNotification notification =
-                            ExceptionNotificationFactory.Instance.CreateNotification(
-                                responseException.InnerException ?? responseException,
-                                correlationIdentifier,
-                                ServiceNotificationIdentifiers.ControllerTemplateGetException);
-                        monitor.Report(notification);
-                    }
-                }
-
-                throw;
-
+                return NotFound();
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePatchException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template patch", requestId);
 
                 throw;
             }
         }
 
         [HttpPost]
-        public virtual async Task<ActionResult<Resource>> Post([FromBody]T resource)
+        public virtual async Task<ActionResult<Resource>> Post([FromBody] T resource)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                if (null == resource)
+                if (resource == null)
                 {
-                    return this.BadRequest();
+                    return BadRequest();
                 }
 
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProviderAdapter<T> provider = this.AdaptProvider();
-                Resource result = await provider.Create(request, resource, correlationIdentifier).ConfigureAwait(false);
-                this.ConfigureResponse(result);
-                return this.CreatedAtAction(nameof(Post), result);
+                var result = await _provider.Create(Request, resource, requestId).ConfigureAwait(false);
+
+                ConfigureResponse(result);
+
+                return CreatedAtAction(nameof(Post), result);
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template post", requestId);
 
-                return this.BadRequest();
+                return BadRequest();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template post", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template post", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
-            catch (HttpResponseException httpResponseException)
+            catch (ResourceConflictException ex)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            httpResponseException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(ex, "{requestId} Controller template put", requestId);
 
-                if (httpResponseException.Response.StatusCode == HttpStatusCode.Conflict)
-                    return this.Conflict();
-                else
-                    return this.BadRequest();
+                return ScimError(HttpStatusCode.Conflict, ex.Message);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template post", requestId);
 
                 throw;
             }
         }
 
-        [HttpPut(ControllerTemplate.AttributeValueIdentifier)]
-        public virtual async Task<ActionResult<Resource>> Put([FromBody]T resource, string identifier)
+        [HttpPut(ATTRIBUTE_VALUE_IDENTIFIER)]
+        public virtual async Task<ActionResult<Resource>> Put([FromBody] T resource, string identifier)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                if (null == resource)
+                if (resource == null)
                 {
-                    return this.ScimError(HttpStatusCode.BadRequest, SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidResource);
+                    return ScimError(HttpStatusCode.BadRequest, ServiceResources.ExceptionInvalidResource);
                 }
 
                 if (string.IsNullOrEmpty(identifier))
                 {
-                    return this.ScimError(HttpStatusCode.BadRequest, SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidIdentifier);
+                    return ScimError(HttpStatusCode.BadRequest, ServiceResources.ExceptionInvalidIdentifier);
                 }
 
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProviderAdapter<T> provider = this.AdaptProvider();
-                Resource result = await provider.Replace(request, resource, correlationIdentifier).ConfigureAwait(false);
-                this.ConfigureResponse(result);
-                return this.Ok(result);
+                resource.Identifier = identifier;
+
+                var result = await _provider.Replace(Request, resource, requestId).ConfigureAwait(false);
+
+                ConfigureResponse(result);
+
+                return Ok(result);
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePutArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Controller template put", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, argumentException.Message);
+                return ScimError(HttpStatusCode.BadRequest, argumentException.Message);
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePutNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Controller template put", requestId);
 
-                return this.ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
+                return ScimError(HttpStatusCode.NotImplemented, notImplementedException.Message);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePutNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Controller template put", requestId);
 
-                return this.ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
+                return ScimError(HttpStatusCode.BadRequest, notSupportedException.Message);
             }
-            catch (HttpResponseException httpResponseException)
+            catch (ResourceNotFoundException ex)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            httpResponseException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePostNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(ex, "{requestId} Controller template put", requestId);
 
-                if (httpResponseException.Response.StatusCode == HttpStatusCode.NotFound)
-                    return this.ScimError(HttpStatusCode.NotFound, string.Format(SystemForCrossDomainIdentityManagementServiceResources.ResourceNotFoundTemplate, identifier));
-                else if (httpResponseException.Response.StatusCode == HttpStatusCode.Conflict)
-                    return this.ScimError(HttpStatusCode.Conflict, SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
-                else
-                    return this.ScimError(HttpStatusCode.BadRequest, httpResponseException.Message);
+                    return ScimError(HttpStatusCode.NotFound, string.Format(ServiceResources.ResourceNotFoundTemplate, identifier));
+            }
+            catch (ResourceConflictException ex)
+            {
+                _logger.LogError(ex, "{requestId} Controller template put", requestId);
+
+                return ScimError(HttpStatusCode.Conflict, ServiceResources.ExceptionInvalidRequest);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ControllerTemplatePutException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Controller template put", requestId);
 
-                return this.ScimError(HttpStatusCode.InternalServerError, exception.Message);
+                return ScimError(HttpStatusCode.InternalServerError, exception.Message);
             }
         }
     }

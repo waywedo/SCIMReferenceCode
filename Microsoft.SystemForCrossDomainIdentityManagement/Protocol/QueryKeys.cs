@@ -6,10 +6,10 @@ namespace Microsoft.SCIM
 {
     public static class QueryKeys
     {
-        public const string Attributes = "attributes";
-        public const string Count = "count";
-        public const string Filter = "filter";
-        public const string ExcludedAttributes = "excludedAttributes";
-        public const string StartIndex = "startIndex";
+        public const string ATTRIBUTES = "attributes";
+        public const string COUNT = "count";
+        public const string FILTER = "filter";
+        public const string EXCLUDED_ATTRIBUTES = "excludedAttributes";
+        public const string START_INDEX = "startIndex";
     }
 }

@@ -4,8 +4,7 @@
 
 namespace Microsoft.SCIM
 {
-    public sealed class Core2ServiceConfigurationJsonDeserializingFactory :
-        JsonDeserializingFactory<Core2ServiceConfiguration>
+    public sealed class Core2ServiceConfigurationJsonDeserializingFactory : JsonDeserializingFactory<Core2ServiceConfiguration>
     {
     }
 }

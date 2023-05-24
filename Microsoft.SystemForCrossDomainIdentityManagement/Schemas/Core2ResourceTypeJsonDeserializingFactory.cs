@@ -4,8 +4,7 @@
 
 namespace Microsoft.SCIM
 {
-    public sealed class Core2ResourceTypeJsonDeserializingFactory :
-        JsonDeserializingFactory<Core2ResourceType>
+    public sealed class Core2ResourceTypeJsonDeserializingFactory : JsonDeserializingFactory<Core2ResourceType>
     {
     }
 }

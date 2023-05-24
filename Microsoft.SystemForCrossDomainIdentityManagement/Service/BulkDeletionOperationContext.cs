@@ -1,29 +1,27 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-
     internal sealed class BulkDeletionOperationContext : BulkOperationContextBase<IResourceIdentifier>
     {
-        public BulkDeletionOperationContext(
-            IRequest<BulkRequest2> request,
-            BulkRequestOperation operation)
+        public BulkDeletionOperationContext(IRequest<BulkRequest2> request, BulkRequestOperation operation)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            IBulkOperationState<IResourceIdentifier> receivedState = new BulkDeletionOperationState(request, operation, this);
-            this.Initialize(receivedState);
+            var receivedState = new BulkDeletionOperationState(request, operation, this);
+
+            Initialize(receivedState);
         }
     }
 }

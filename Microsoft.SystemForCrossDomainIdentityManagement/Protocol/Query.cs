@@ -1,100 +1,75 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Web;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Collections.Specialized;
-    using System.Globalization;
-    using System.Linq;
-    using System.Web;
-
     public sealed class Query : IQuery
     {
-        private const string AttributeNameSeparator = ",";
+        private const string ATTRIBUTE_NAME_SEPARATOR = ",";
 
-        public IReadOnlyCollection<IFilter> AlternateFilters
-        {
-            get;
-            set;
-        }
-
-        public IReadOnlyCollection<string> ExcludedAttributePaths
-        {
-            get;
-            set;
-        }
-
-        public IPaginationParameters PaginationParameters
-        {
-            get;
-            set;
-        }
-
-        public string Path
-        {
-            get;
-            set;
-        }
-
-        public IReadOnlyCollection<string> RequestedAttributePaths
-        {
-            get;
-            set;
-        }
+        public IReadOnlyCollection<IFilter> AlternateFilters { get; set; }
+        public IReadOnlyCollection<string> ExcludedAttributePaths { get; set; }
+        public IPaginationParameters PaginationParameters { get; set; }
+        public string Path { get; set; }
+        public IReadOnlyCollection<string> RequestedAttributePaths { get; set; }
 
         public string Compose()
         {
-            string result = this.ToString();
-            return result;
+            return ToString();
         }
 
         private static Filter Clone(IFilter filter, Dictionary<string, string> placeHolders)
         {
-            string placeHolder = Guid.NewGuid().ToString();
+            var placeHolder = Guid.NewGuid().ToString();
+
             placeHolders.Add(placeHolder, filter.ComparisonValueEncoded);
-            Filter result = new Filter(filter.AttributePath, filter.FilterOperator, placeHolder);
+
+            var result = new Filter(filter.AttributePath, filter.FilterOperator, placeHolder);
+
             if (filter.AdditionalFilter != null)
             {
-                result.AdditionalFilter = Query.Clone(filter.AdditionalFilter, placeHolders);
+                result.AdditionalFilter = Clone(filter.AdditionalFilter, placeHolders);
             }
+
             return result;
         }
 
         public override string ToString()
         {
-            NameValueCollection parameters = HttpUtility.ParseQueryString(string.Empty);
+            var parameters = HttpUtility.ParseQueryString(string.Empty);
 
-            if (true == this.RequestedAttributePaths?.Any())
+            if (RequestedAttributePaths?.Any() == true)
             {
-                IReadOnlyCollection<string> encodedPaths = this.RequestedAttributePaths.Encode();
-                string requestedAttributes =
-                    string.Join(Query.AttributeNameSeparator, encodedPaths);
-                parameters.Add(QueryKeys.Attributes, requestedAttributes);
+                var encodedPaths = RequestedAttributePaths.Encode();
+                var requestedAttributes = string.Join(ATTRIBUTE_NAME_SEPARATOR, encodedPaths);
+
+                parameters.Add(QueryKeys.ATTRIBUTES, requestedAttributes);
             }
 
-            if (true == this.ExcludedAttributePaths?.Any())
+            if (ExcludedAttributePaths?.Any() == true)
             {
-                IReadOnlyCollection<string> encodedPaths = this.ExcludedAttributePaths.Encode();
-                string excludedAttributes =
-                    string.Join(Query.AttributeNameSeparator, encodedPaths);
-                parameters.Add(QueryKeys.ExcludedAttributes, excludedAttributes);
+                var encodedPaths = ExcludedAttributePaths.Encode();
+                var excludedAttributes = string.Join(ATTRIBUTE_NAME_SEPARATOR, encodedPaths);
+
+                parameters.Add(QueryKeys.EXCLUDED_ATTRIBUTES, excludedAttributes);
             }
 
             Dictionary<string, string> placeHolders;
-            if (true == this.AlternateFilters?.Any())
+
+            if (AlternateFilters?.Any() == true)
             {
-                placeHolders = new Dictionary<string, string>(this.AlternateFilters.Count);
-                IReadOnlyCollection<IFilter> clones =
-                    this.AlternateFilters
-                    .Select(
-                        (IFilter item) =>
-                            Query.Clone(item, placeHolders))
-                    .ToArray();
-                string filters = Filter.ToString(clones);
-                NameValueCollection filterParameters = HttpUtility.ParseQueryString(filters);
+                placeHolders = new Dictionary<string, string>(AlternateFilters.Count);
+
+                var clones = AlternateFilters.Select(item => Clone(item, placeHolders)).ToArray();
+                var filters = Filter.ToString(clones);
+                var filterParameters = HttpUtility.ParseQueryString(filters);
+
                 foreach (string key in filterParameters.AllKeys)
                 {
                     parameters.Add(key, filterParameters[key]);
@@ -105,36 +80,30 @@ namespace Microsoft.SCIM
                 placeHolders = new Dictionary<string, string>();
             }
 
-            if (this.PaginationParameters != null)
+            if (PaginationParameters != null)
             {
-                if (this.PaginationParameters.StartIndex.HasValue)
+                if (PaginationParameters.StartIndex.HasValue)
                 {
-                    string startIndex =
-                        this
-                        .PaginationParameters
-                        .StartIndex
-                        .Value
-                        .ToString(CultureInfo.InvariantCulture);
-                    parameters.Add(QueryKeys.StartIndex, startIndex);
+                    var startIndex = PaginationParameters.StartIndex.Value.ToString(CultureInfo.InvariantCulture);
+
+                    parameters.Add(QueryKeys.START_INDEX, startIndex);
                 }
 
-                if (this.PaginationParameters.Count.HasValue)
+                if (PaginationParameters.Count.HasValue)
                 {
-                    string count =
-                        this
-                        .PaginationParameters
-                        .Count
-                        .Value
-                        .ToString(CultureInfo.InvariantCulture);
-                    parameters.Add(QueryKeys.Count, count);
+                    var count = PaginationParameters.Count.Value.ToString(CultureInfo.InvariantCulture);
+
+                    parameters.Add(QueryKeys.COUNT, count);
                 }
             }
 
             string result = parameters.ToString();
+
             foreach (KeyValuePair<string, string> placeholder in placeHolders)
             {
                 result = result.Replace(placeholder.Key, placeholder.Value, StringComparison.InvariantCulture);
             }
+
             return result;
         }
     }

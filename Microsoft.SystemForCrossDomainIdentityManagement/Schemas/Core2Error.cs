@@ -9,17 +9,14 @@ namespace Microsoft.SCIM
     [DataContract]
     public sealed class Core2Error : ErrorBase
     {
-        public Core2Error(
-            string detail,
-            int status,
-            string scimType = null // https://datatracker.ietf.org/doc/html/rfc7644#section-3.12
-            )
+        // https://datatracker.ietf.org/doc/html/rfc7644#section-3.12
+        public Core2Error( string detail, int status, string scimType = null)
         {
-            this.AddSchema(ProtocolSchemaIdentifiers.Version2Error);
+            AddSchema(ProtocolSchemaIdentifiers.VERSION_2_ERROR);
 
-            this.Detail = detail;
-            this.Status = status;
-            this.ScimType = scimType != null ? scimType : null;
+            Detail = detail;
+            Status = status;
+            ScimType = scimType;
         }
     }
 }

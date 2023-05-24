@@ -1,24 +1,24 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Globalization;
-    using System.Runtime.Serialization;
 
     [DataContract]
     public abstract class PatchOperation2Base : IPatchOperation2Base
     {
-        private const string Template = "{0} {1}";
+        private const string TEMPLATE = "{0} {1}";
 
-        private OperationName name;
-        private string operationName;
+        private OperationName _name;
+        private string _operationName;
+        private IPath _path;
 
-        private IPath path;
-        [DataMember(Name = ProtocolAttributeNames.Path, Order = 1)]
-        private string pathExpression;
+        [DataMember(Name = ProtocolAttributeNames.PATH, Order = 1)]
+        private string _pathExpression;
 
         protected PatchOperation2Base()
         {
@@ -31,41 +31,38 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(pathExpression));
             }
 
-            this.Name = operationName;
-            this.Path = Microsoft.SCIM.Path.Create(pathExpression);
+            Name = operationName;
+            Path = SCIM.Path.Create(pathExpression);
         }
 
         public OperationName Name
         {
-            get
-            {
-                return this.name;
-            }
+            get { return _name; }
 
             set
             {
-                this.name = value;
-                this.operationName = Enum.GetName(typeof(OperationName), value);
+                _name = value;
+                _operationName = Enum.GetName(typeof(OperationName), value);
             }
         }
 
         // It's the value of 'op' parameter within the json of request body.
-        [DataMember(Name = ProtocolAttributeNames.Patch2Operation, Order = 0)]
+        [DataMember(Name = ProtocolAttributeNames.PATCH_2_OPERATION, Order = 0)]
         public string OperationName
         {
             get
             {
-                return this.operationName;
+                return _operationName;
             }
 
             set
             {
-                if (!Enum.TryParse(value, true, out this.name))
+                if (!Enum.TryParse(value, true, out _name))
                 {
                     throw new NotSupportedException();
                 }
 
-                this.operationName = value;
+                _operationName = value;
             }
         }
 
@@ -73,30 +70,24 @@ namespace Microsoft.SCIM
         {
             get
             {
-                if (null == this.path && !string.IsNullOrWhiteSpace(this.pathExpression))
+                if (_path == null && !string.IsNullOrWhiteSpace(_pathExpression))
                 {
-                    this.path = Microsoft.SCIM.Path.Create(this.pathExpression);
+                    _path = SCIM.Path.Create(_pathExpression);
                 }
 
-                return this.path;
+                return _path;
             }
 
             set
             {
-                this.pathExpression = value?.ToString();
-                this.path = value;
+                _pathExpression = value?.ToString();
+                _path = value;
             }
         }
 
         public override string ToString()
         {
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    PatchOperation2Base.Template,
-                    this.operationName,
-                    this.pathExpression);
-            return result;
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, _operationName, _pathExpression);
         }
     }
 }

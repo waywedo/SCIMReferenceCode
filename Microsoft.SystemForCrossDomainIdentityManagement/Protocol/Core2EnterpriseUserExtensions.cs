@@ -1,29 +1,27 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Newtonsoft.Json;
+using System;
+using System.Linq;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using Newtonsoft.Json;
-
     public static class Core2EnterpriseUserExtensions
     {
         public static void Apply(this Core2EnterpriseUser user, PatchRequest2Base<PatchOperation2> patch)
         {
-            if (null == user)
+            if (user == null)
             {
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (null == patch)
+            if (patch == null)
             {
                 return;
             }
 
-            if (null == patch.Operations || !patch.Operations.Any())
+            if (patch.Operations?.Any() != true)
             {
                 return;
             }
@@ -36,47 +34,38 @@ namespace Microsoft.SCIM
 
         public static void Apply(this Core2EnterpriseUser user, PatchRequest2 patch)
         {
-            if (null == user)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
+            ArgumentNullException.ThrowIfNull(user, nameof(user));
 
-            if (null == patch)
+            if (patch == null)
             {
                 return;
             }
 
-            if (null == patch.Operations || !patch.Operations.Any())
+            if (patch.Operations?.Any() != true)
             {
                 return;
             }
 
             foreach (PatchOperation2Combined operation in patch.Operations)
             {
-                PatchOperation2 operationInternal = new PatchOperation2()
+                var operationInternal = new PatchOperation2
                 {
                     OperationName = operation.OperationName,
                     Path = operation.Path
                 };
 
-                OperationValue[] values =
-                    JsonConvert.DeserializeObject<OperationValue[]>(
-                        operation.Value,
-                        ProtocolConstants.JsonSettings.Value);
+                var values = JsonConvert.DeserializeObject<OperationValue[]>(operation.Value, ProtocolConstants.JsonSettings.Value);
 
                 if (values == null)
                 {
-                    string value =
-                        JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
-                    OperationValue valueSingle = new OperationValue()
-                    {
-                        Value = value
-                    };
+                    var value = JsonConvert.DeserializeObject<string>(operation.Value, ProtocolConstants.JsonSettings.Value);
+                    var valueSingle = new OperationValue { Value = value };
+
                     operationInternal.AddValue(valueSingle);
                 }
                 else
                 {
-                    foreach (OperationValue value in values)
+                    foreach (var value in values)
                     {
                         operationInternal.AddValue(value);
                     }
@@ -86,36 +75,34 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "None")]
         private static void Apply(this Core2EnterpriseUser user, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 return;
             }
 
-            if (null == operation.Path || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
+            if (operation.Path == null || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
             {
                 return;
             }
 
-            if (
-                   !string.IsNullOrWhiteSpace(operation.Path.SchemaIdentifier)
-                && (operation?.Path?.SchemaIdentifier?.Equals(
-                        SchemaIdentifiers.Core2EnterpriseUser,
-                        StringComparison.OrdinalIgnoreCase) == true))
+            if (!string.IsNullOrWhiteSpace(operation.Path.SchemaIdentifier)
+                && (operation?.Path?.SchemaIdentifier?.Equals(SchemaIdentifiers.CORE_2_ENTERPRISE_USER, StringComparison.OrdinalIgnoreCase) == true))
             {
                 user.PatchEnterpriseExtension(operation);
                 return;
             }
 
             OperationValue value;
+
             switch (operation.Path.AttributePath)
             {
-                case AttributeNames.Active:
+                case AttributeNames.ACTIVE:
                     if (operation.Name != OperationName.Remove)
                     {
                         value = operation.Value.SingleOrDefault();
+
                         if (value != null && !string.IsNullOrWhiteSpace(value.Value) && bool.TryParse(value.Value, out bool active))
                         {
                             user.Active = active;
@@ -123,16 +110,16 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.Addresses:
+                case AttributeNames.ADDRESSES:
                     user.PatchAddresses(operation);
                     break;
 
-                case AttributeNames.DisplayName:
+                case AttributeNames.DISPLAY_NAME:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((null == value) || string.Equals(user.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if ((value == null) || string.Equals(user.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -142,7 +129,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         user.DisplayName = null;
                     }
@@ -152,16 +139,16 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.ElectronicMailAddresses:
+                case AttributeNames.ELECTRONIC_MAIL_ADDRESSES:
                     user.PatchElectronicMailAddresses(operation);
                     break;
 
-                case AttributeNames.ExternalIdentifier:
+                case AttributeNames.EXTERNAL_IDENTIFIER:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((null == value) || string.Equals(user.ExternalIdentifier, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if ((value == null) || string.Equals(user.ExternalIdentifier, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -171,7 +158,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         user.ExternalIdentifier = null;
                     }
@@ -181,20 +168,20 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.Name:
+                case AttributeNames.NAME:
                     user.PatchName(operation);
                     break;
 
-                case AttributeNames.PhoneNumbers:
+                case AttributeNames.PHONE_NUMBERS:
                     user.PatchPhoneNumbers(operation);
                     break;
 
-                case AttributeNames.PreferredLanguage:
+                case AttributeNames.PREFERRED_LANGUAGE:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((null == value) || string.Equals(user.PreferredLanguage, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if ((value == null) || string.Equals(user.PreferredLanguage, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -204,7 +191,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         user.PreferredLanguage = null;
                     }
@@ -214,16 +201,16 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.Roles:
+                case AttributeNames.ROLES:
                     user.PatchRoles(operation);
                     break;
 
-                case AttributeNames.Title:
+                case AttributeNames.TITLE:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((null == value) || string.Equals(user.Title, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if ((value == null) || string.Equals(user.Title, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -233,7 +220,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         user.Title = null;
                     }
@@ -243,12 +230,12 @@ namespace Microsoft.SCIM
                     }
                     break;
 
-                case AttributeNames.UserName:
+                case AttributeNames.USER_NAME:
                     value = operation.Value.SingleOrDefault();
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((null == value) || string.Equals(user.UserName, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if ((value == null) || string.Equals(user.UserName, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -258,7 +245,7 @@ namespace Microsoft.SCIM
                         }
                     }
 
-                    if (null == value)
+                    if (value == null)
                     {
                         user.UserName = null;
                     }
@@ -270,26 +257,19 @@ namespace Microsoft.SCIM
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "None")]
         private static void PatchAddresses(this Core2EnterpriseUser user, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 return;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Addresses,
-                    operation.Path.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.ADDRESSES, operation.Path.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            if (null == operation.Path.ValuePath)
+            if (operation.Path.ValuePath == null)
             {
                 return;
             }
@@ -299,212 +279,124 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            IFilter subAttribute = operation.Path.SubAttributes.SingleOrDefault();
-            if (null == subAttribute)
+            var subAttribute = operation.Path.SubAttributes.SingleOrDefault();
+
+            if (subAttribute == null)
             {
                 return;
             }
 
-            if
-            (
-                    (
-                            operation.Value != null
-                        && operation.Value.Count != 1
-                    )
-                || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
-            )
+            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
             {
                 return;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Type,
-                    subAttribute.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.TYPE, subAttribute.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
             Address address;
             Address addressExisting;
+
             if (user.Addresses != null)
             {
-                addressExisting =
-                    address =
-                        user
-                        .Addresses
-                        .SingleOrDefault(
-                            (Address item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
+                addressExisting = address = user.Addresses.SingleOrDefault(
+                    (Address item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                );
             }
             else
             {
                 addressExisting = null;
-                address =
-                    new Address()
-                    {
-                        ItemType = subAttribute.ComparisonValue
-                    };
+                address = new Address { ItemType = subAttribute.ComparisonValue };
             }
 
             string value;
-            if (string.Equals(Address.Work, subAttribute.ComparisonValue, StringComparison.Ordinal))
+
+            if (string.Equals(AddressBase.WORK, subAttribute.ComparisonValue, StringComparison.Ordinal))
             {
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.Country,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.COUNTRY, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.Country, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.Country, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.Country = value;
                 }
 
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.Locality,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.LOCALITY, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.Locality, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.Locality, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.Locality = value;
                 }
 
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.PostalCode,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.POSTAL_CODE, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.PostalCode, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.PostalCode, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.PostalCode = value;
                 }
 
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.Region,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.REGION, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.Region, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.Region, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.Region = value;
                 }
 
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.StreetAddress,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.STREET_ADDRESS, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.StreetAddress, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.StreetAddress, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.StreetAddress = value;
                 }
             }
 
-            if (string.Equals(Address.Other, subAttribute.ComparisonValue, StringComparison.Ordinal))
+            if (string.Equals(AddressBase.OTHER, subAttribute.ComparisonValue, StringComparison.Ordinal))
             {
-                if
-                (
-                    string.Equals(
-                        Microsoft.SCIM.AttributeNames.Formatted,
-                        operation.Path.ValuePath.AttributePath,
-                        StringComparison.Ordinal)
-                )
+                if (string.Equals(AttributeNames.FORMATTED, operation.Path.ValuePath.AttributePath, StringComparison.Ordinal))
                 {
                     value = operation.Value?.Single().Value;
-                    if
-                    (
-                            value != null
-                        && OperationName.Remove == operation.Name
-                        && string.Equals(value, address.Formatted, StringComparison.OrdinalIgnoreCase)
-                    )
+
+                    if (value != null && OperationName.Remove == operation.Name && string.Equals(value, address.Formatted, StringComparison.OrdinalIgnoreCase))
                     {
                         value = null;
                     }
+
                     address.Formatted = value;
                 }
             }
 
-            if
-            (
-                    string.IsNullOrWhiteSpace(address.Country)
-                && string.IsNullOrWhiteSpace(address.Locality)
-                && string.IsNullOrWhiteSpace(address.PostalCode)
-                && string.IsNullOrWhiteSpace(address.Region)
-                && string.IsNullOrWhiteSpace(address.StreetAddress)
-                && string.IsNullOrWhiteSpace(address.Formatted)
-            )
+            if (address == null || (string.IsNullOrWhiteSpace(address.Country) && string.IsNullOrWhiteSpace(address.Locality) && string.IsNullOrWhiteSpace(address.PostalCode)
+                && string.IsNullOrWhiteSpace(address.Region) && string.IsNullOrWhiteSpace(address.StreetAddress) && string.IsNullOrWhiteSpace(address.Formatted)))
             {
                 if (addressExisting != null)
                 {
-                    user.Addresses =
-                        user
-                        .Addresses
-                        .Where(
-                            (Address item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                    user.Addresses = user.Addresses.Where((item) => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)).ToArray();
                 }
 
                 return;
@@ -515,12 +407,9 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            IEnumerable<Address> addresses =
-                new Address[]
-                    {
-                        address
-                    };
-            if (null == user.Addresses)
+            var addresses = new Address[] { address };
+
+            if (user.Addresses == null)
             {
                 user.Addresses = addresses;
             }
@@ -532,11 +421,11 @@ namespace Microsoft.SCIM
 
         private static void PatchCostCenter(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((null == value) || string.Equals(extension.CostCenter, value.Value, StringComparison.OrdinalIgnoreCase))
+                if ((value == null) || string.Equals(extension.CostCenter, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -546,23 +435,16 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
-            {
-                extension.CostCenter = null;
-            }
-            else
-            {
-                extension.CostCenter = value.Value;
-            }
+            extension.CostCenter = value?.Value;
         }
 
         private static void PatchDepartment(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((null == value) || string.Equals(extension.Department, value.Value, StringComparison.OrdinalIgnoreCase))
+                if ((value == null) || string.Equals(extension.Department, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -572,23 +454,16 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
-            {
-                extension.Department = null;
-            }
-            else
-            {
-                extension.Department = value.Value;
-            }
+            extension.Department = value?.Value;
         }
 
         private static void PatchDivision(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((null == value) || string.Equals(extension.Division, value.Value, StringComparison.OrdinalIgnoreCase))
+                if ((value == null) || string.Equals(extension.Division, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -598,14 +473,7 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
-            {
-                extension.Division = null;
-            }
-            else
-            {
-                extension.Division = value.Value;
-            }
+            extension.Division = value?.Value;
         }
 
         private static void PatchElectronicMailAddresses(this Core2EnterpriseUser user, PatchOperation2 operation)
@@ -615,11 +483,11 @@ namespace Microsoft.SCIM
 
         private static void PatchEmployeeNumber(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((null == value) || string.Equals(extension.EmployeeNumber, value.Value, StringComparison.OrdinalIgnoreCase))
+                if ((value == null) || string.Equals(extension.EmployeeNumber, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -629,69 +497,53 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
-            {
-                extension.EmployeeNumber = null;
-            }
-            else
-            {
-                extension.EmployeeNumber = value.Value;
-            }
+            extension.EmployeeNumber = value?.Value;
         }
 
         private static void PatchEnterpriseExtension(this Core2EnterpriseUser user, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null || operation.Path == null || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
             {
                 return;
             }
 
-            if (null == operation.Path || string.IsNullOrWhiteSpace(operation.Path.AttributePath))
-            {
-                return;
-            }
+            var extension = user.EnterpriseExtension;
 
-            ExtensionAttributeEnterpriseUser2 extension = user.EnterpriseExtension;
             switch (operation.Path.AttributePath)
             {
-                case AttributeNames.CostCenter:
-                    Core2EnterpriseUserExtensions.PatchCostCenter(extension, operation);
+                case AttributeNames.COST_CENTER:
+                    PatchCostCenter(extension, operation);
                     break;
 
-                case AttributeNames.Department:
-                    Core2EnterpriseUserExtensions.PatchDepartment(extension, operation);
+                case AttributeNames.DEPARTMENT:
+                    PatchDepartment(extension, operation);
                     break;
 
-                case AttributeNames.Division:
-                    Core2EnterpriseUserExtensions.PatchDivision(extension, operation);
+                case AttributeNames.DIVISION:
+                    PatchDivision(extension, operation);
                     break;
 
-                case AttributeNames.EmployeeNumber:
-                    Core2EnterpriseUserExtensions.PatchEmployeeNumber(extension, operation);
+                case AttributeNames.EMPLOYEE_NUMBER:
+                    PatchEmployeeNumber(extension, operation);
                     break;
 
-                case AttributeNames.Manager:
-                    Core2EnterpriseUserExtensions.PatchManager(extension, operation);
+                case AttributeNames.MANAGER:
+                    PatchManager(extension, operation);
                     break;
 
-                case AttributeNames.Organization:
-                    Core2EnterpriseUserExtensions.PatchOrganization(extension, operation);
+                case AttributeNames.ORGANIZATION:
+                    PatchOrganization(extension, operation);
                     break;
             }
         }
 
         private static void PatchManager(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if
-                (
-                       null == value
-                    || null == extension.Manager
-                    || string.Equals(extension.Manager.Value, value.Value, StringComparison.OrdinalIgnoreCase)
-                )
+                if (value == null || extension.Manager == null || string.Equals(extension.Manager.Value, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -701,41 +553,32 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
+            if (value == null)
             {
                 extension.Manager = null;
             }
             else
             {
-                extension.Manager = new Manager();
-                extension.Manager.Value = value.Value;
+                extension.Manager = new Manager
+                {
+                    Value = value.Value
+                };
             }
         }
 
         private static void PatchName(this Core2EnterpriseUser user, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null || operation.Path == null)
             {
                 return;
             }
 
-            if (null == operation.Path)
+            if (!string.Equals(AttributeNames.NAME, operation.Path.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Name,
-                    operation.Path.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
-            {
-                return;
-            }
-
-            if (null == operation.Path.ValuePath)
+            if (operation.Path.ValuePath == null)
             {
                 return;
             }
@@ -745,72 +588,51 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            if
-            (
-                    (
-                            operation.Value != null
-                        && operation.Value.Count != 1
-                    )
-                || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
-            )
+            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
             {
                 return;
             }
 
             Name nameExisting;
-            Name name =
-                nameExisting =
-                user.Name;
+            var name = nameExisting = user.Name;
 
-            if (null == name)
-            {
-                name = new Name();
-            }
+            name ??= new Name();
 
             string value;
-            if
-            (
-                string.Equals(
-                    Microsoft.SCIM.AttributeNames.GivenName,
-                    operation.Path.ValuePath.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+
+            if (string.Equals(AttributeNames.GIVEN_NAME, operation.Path.ValuePath.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 value = operation.Value?.Single().Value;
-                if
-                (
-                        value != null
-                    && OperationName.Remove == operation.Name
-                    && string.Equals(value, name.GivenName, StringComparison.OrdinalIgnoreCase)
-                )
+
+                if (value != null && OperationName.Remove == operation.Name && string.Equals(value, name.GivenName, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
+
                 name.GivenName = value;
             }
 
-            if
-            (
-                string.Equals(
-                    Microsoft.SCIM.AttributeNames.FamilyName,
-                    operation.Path.ValuePath.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (string.Equals(AttributeNames.FAMILY_NAME, operation.Path.ValuePath.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 value = operation.Value?.Single().Value;
-                if
-                (
-                        value != null
-                    && OperationName.Remove == operation.Name
-                    && string.Equals(value, name.FamilyName, StringComparison.OrdinalIgnoreCase)
-                )
+
+                if (value != null && OperationName.Remove == operation.Name && string.Equals(value, name.FamilyName, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
+
                 name.FamilyName = value;
+            }
+
+            if (string.Equals(AttributeNames.FORMATTED, operation.Path.ValuePath.AttributePath, StringComparison.OrdinalIgnoreCase))
+            {
+                value = operation.Value?.Single().Value;
+
+                if (value != null && OperationName.Remove == operation.Name && string.Equals(value, name.Formatted, StringComparison.OrdinalIgnoreCase))
+                {
+                    value = null;
+                }
+                name.Formatted = value;
             }
 
             if (string.IsNullOrWhiteSpace(name.FamilyName) && string.IsNullOrWhiteSpace(name.GivenName))
@@ -833,11 +655,11 @@ namespace Microsoft.SCIM
 
         private static void PatchOrganization(ExtensionAttributeEnterpriseUser2 extension, PatchOperation2 operation)
         {
-            OperationValue value = operation.Value.SingleOrDefault();
+            var value = operation.Value.SingleOrDefault();
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((null == value) || string.Equals(extension.Organization, value.Value, StringComparison.OrdinalIgnoreCase))
+                if ((value == null) || string.Equals(extension.Organization, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -847,36 +669,22 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (null == value)
-            {
-                extension.Organization = null;
-            }
-            else
-            {
-                extension.Organization = value.Value;
-            }
+            extension.Organization = value?.Value;
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity", Justification = "None")]
         private static void PatchPhoneNumbers(this Core2EnterpriseUser user, PatchOperation2 operation)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 return;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.PhoneNumbers,
-                    operation.Path.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.PHONE_NUMBERS, operation.Path.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            if (null == operation.Path.ValuePath)
+            if (operation.Path.ValuePath == null)
             {
                 return;
             }
@@ -886,94 +694,63 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            IFilter subAttribute = operation.Path.SubAttributes.SingleOrDefault();
-            if (null == subAttribute)
+            var subAttribute = operation.Path.SubAttributes.SingleOrDefault();
+
+            if (subAttribute == null)
             {
                 return;
             }
 
-            if
-            (
-                    (
-                            operation.Value != null
-                        && operation.Value.Count != 1
-                    )
-                || (
-                            null == operation.Value
-                        && operation.Name != OperationName.Remove
-                    )
-            )
+            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
             {
                 return;
             }
 
-            if
-            (
-                !string.Equals(
-                    Microsoft.SCIM.AttributeNames.Type,
-                    subAttribute.AttributePath,
-                    StringComparison.OrdinalIgnoreCase)
-            )
+            if (!string.Equals(AttributeNames.TYPE, subAttribute.AttributePath, StringComparison.OrdinalIgnoreCase))
             {
                 return;
             }
 
-            string phoneNumberType = subAttribute.ComparisonValue;
-            if
-            (
-                    !string.Equals(phoneNumberType, PhoneNumber.Fax, StringComparison.Ordinal)
-                && !string.Equals(phoneNumberType, PhoneNumber.Mobile, StringComparison.Ordinal)
-                && !string.Equals(phoneNumberType, PhoneNumber.Work, StringComparison.Ordinal)
-            )
+            var phoneNumberType = subAttribute.ComparisonValue;
+
+            if (!string.Equals(phoneNumberType, PhoneNumberBase.FAX, StringComparison.Ordinal) && !string.Equals(phoneNumberType, PhoneNumberBase.MOBILE, StringComparison.Ordinal)
+                && !string.Equals(phoneNumberType, PhoneNumberBase.WORK, StringComparison.Ordinal))
             {
                 return;
             }
 
-            PhoneNumber phoneNumber;
-            PhoneNumber phoneNumberExisting;
+            PhoneNumber phoneNumber = null;
+            PhoneNumber phoneNumberExisting = null;
+
             if (user.PhoneNumbers != null)
             {
-                phoneNumberExisting =
-                    phoneNumber =
-                        user
-                        .PhoneNumbers
-                        .SingleOrDefault(
-                            (PhoneNumber item) =>
-                                string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal));
-            }
-            else
-            {
-                phoneNumberExisting = null;
-                phoneNumber =
-                    new PhoneNumber()
-                    {
-                        ItemType = subAttribute.ComparisonValue
-                    };
+                phoneNumberExisting = phoneNumber = user.PhoneNumbers.SingleOrDefault(
+                    (PhoneNumber item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                );
             }
 
-            string value = operation.Value?.Single().Value;
-            if
-            (
-                    value != null
-                && OperationName.Remove == operation.Name
-                && string.Equals(value, phoneNumber.Value, StringComparison.OrdinalIgnoreCase)
-            )
+            if (phoneNumber == null)
+            {
+                phoneNumberExisting = null;
+                phoneNumber = new PhoneNumber() { ItemType = subAttribute.ComparisonValue };
+            }
+
+            var value = operation.Value?.Single().Value;
+
+            if (value != null && OperationName.Remove == operation.Name && string.Equals(value, phoneNumber.Value, StringComparison.OrdinalIgnoreCase))
             {
                 value = null;
             }
+
             phoneNumber.Value = value;
 
             if (string.IsNullOrWhiteSpace(phoneNumber.Value))
             {
                 if (phoneNumberExisting != null)
                 {
-                    user.PhoneNumbers =
-                        user
-                        .PhoneNumbers
-                        .Where(
-                            (PhoneNumber item) =>
-                                !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal))
-                        .ToArray();
+                    user.PhoneNumbers = user.PhoneNumbers.Where(
+                        (PhoneNumber item) => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                    ).ToArray();
                 }
                 return;
             }
@@ -983,12 +760,9 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            IEnumerable<PhoneNumber> phoneNumbers =
-                new PhoneNumber[]
-                    {
-                        phoneNumber
-                    };
-            if (null == user.PhoneNumbers)
+            var phoneNumbers = new PhoneNumber[] { phoneNumber };
+
+            if (user.PhoneNumbers == null)
             {
                 user.PhoneNumbers = phoneNumbers;
             }

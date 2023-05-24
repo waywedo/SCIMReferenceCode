@@ -4,7 +4,8 @@
 
 namespace Microsoft.SCIM
 {
-    internal class PatchOperation2JsonDeserializingFactory : ProtocolJsonDeserializingFactory<PatchOperation2Combined>
+    internal class PatchOperation2JsonDeserializingFactory
+        : ProtocolJsonDeserializingFactory<PatchOperation2Combined>
     {
     }
 }

@@ -1,109 +1,85 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Threading.Tasks;
 
 namespace Microsoft.SCIM
 {
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-
-    [Route(ServiceConstants.RouteBulk)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_BULK)]
+    //[Authorize]
     [ApiController]
     public sealed class BulkRequestController : ControllerTemplate
     {
-        public BulkRequestController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        private readonly IProvider _provider;
+        private readonly ILogger<BulkRequestController> _logger;
+
+        public BulkRequestController(IProvider provider, ILogger<BulkRequestController> logger) : base()
         {
+            _provider = provider;
+            _logger = logger;
         }
 
-        public async Task<BulkResponse2> Post([FromBody] BulkRequest2 bulkRequest)
+        [HttpPost]
+        public async Task<IActionResult> Post([FromBody] BulkRequest2 bulkRequest)
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                HttpRequestMessage request = this.ConvertRequest();
-                if (null == bulkRequest)
+                if (bulkRequest == null)
                 {
-                    throw new HttpResponseException(HttpStatusCode.BadRequest);
+                    return BadRequest();
                 }
 
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProvider provider = this.provider;
-                if (null == provider)
+                var provider = _provider;
+
+                if (provider == null)
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IReadOnlyCollection<IExtension> extensions = provider.ReadExtensions();
-                IRequest<BulkRequest2> request2 = new BulkRequest(request, bulkRequest, correlationIdentifier, extensions);
-                BulkResponse2 result = await provider.ProcessAsync(request2).ConfigureAwait(false);
-                return result;
-                
+                var extensions = provider.ReadExtensions();
+                var response = new BulkRequest(Request, bulkRequest, requestId, extensions);
+
+                return Ok(await provider.ProcessAsync(response).ConfigureAwait(false));
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.BulkRequest2ControllerPostArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Bulk request controller post", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                return BadRequest();
+            }
+            catch (InvalidOperationException invalidOperationException)
+            {
+                _logger.LogError(invalidOperationException, "{requestId} Bulk request controller post", requestId);
+
+                return BadRequest();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.BulkRequest2ControllerPostNotImplementedException);
-                    monitor.Report(notification);
-                }
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                _logger.LogError(notImplementedException, "{requestId} Bulk request controller post", requestId);
+
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.BulkRequest2ControllerPostNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Bulk request controller post", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.BulkRequest2ControllerPostException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Bulk request controller post", requestId);
 
                 throw;
             }

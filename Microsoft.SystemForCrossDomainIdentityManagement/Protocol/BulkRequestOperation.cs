@@ -1,115 +1,88 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Net.Http;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class BulkRequestOperation : BulkOperation
     {
-        private Uri path;
-
-        [DataMember(Name = ProtocolAttributeNames.Path, Order = 0)]
-        private string pathValue;
+        private Uri _path;
+        [DataMember(Name = ProtocolAttributeNames.PATH, Order = 0)]
+        private string _pathValue;
 
         private BulkRequestOperation()
         {
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Data, Order = 4)]
-        public object Data
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.DATA, Order = 4)]
+        public object Data { get; set; }
 
         public Uri Path
         {
-            get => this.path;
-
+            get { return _path; }
             set
             {
-                this.path = value;
-                this.pathValue = new SystemForCrossDomainIdentityManagementResourceIdentifier(value).RelativePath;
+                _path = value;
+                _pathValue = new SCIMResourceIdentifier(value).RelativePath;
             }
         }
 
-        public static BulkRequestOperation CreateDeleteOperation(Uri resource) =>
-            new BulkRequestOperation
+        public static BulkRequestOperation CreateDeleteOperation(Uri resource)
+        {
+            return new BulkRequestOperation
             {
                 Method = HttpMethod.Delete,
                 Path = resource ?? throw new ArgumentNullException(nameof(resource))
             };
+        }
 
         public static BulkRequestOperation CreatePatchOperation(Uri resource, PatchRequest2 data)
         {
-            if (null == resource)
-            {
-                throw new ArgumentNullException(nameof(resource));
-            }
+            ArgumentNullException.ThrowIfNull(resource, nameof(resource));
+            ArgumentNullException.ThrowIfNull(data, nameof(data));
 
-            if (null == data)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-            PatchRequest2 patchRequest = new PatchRequest2(data.Operations);
-            BulkRequestOperation result = new BulkRequestOperation
+            var patchRequest = new PatchRequest2(data.Operations);
+
+            return new BulkRequestOperation
             {
                 Method = ProtocolExtensions.PatchMethod,
                 Path = resource,
                 Data = patchRequest
             };
-            return result;
         }
 
         public static BulkRequestOperation CreatePostOperation(Resource data)
         {
-            if (null == data)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
+            ArgumentNullException.ThrowIfNull(data, nameof(data));
 
-            if (null == data.Schemas)
+            if (data.Schemas == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionUnidentifiableSchema);
+                throw new ArgumentException(ProtocolResources.ExceptionUnidentifiableSchema);
             }
 
             if (!data.Schemas.Any())
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementProtocolResources.ExceptionUnidentifiableSchema);
+                throw new ArgumentException(ProtocolResources.ExceptionUnidentifiableSchema);
             }
 
-            IList<Uri> paths = new List<Uri>(1);
-            IEnumerable<ISchemaIdentifier> schemaIdentifiers =
-                data
-                .Schemas
-                .Select(
-                    (string item) =>
-                        new SchemaIdentifier(item));
-            foreach (ISchemaIdentifier schemaIdentifier in schemaIdentifiers)
+            var paths = new List<Uri>(1);
+
+            foreach (var schemaIdentifier in data.Schemas.Select((string item) => new SchemaIdentifier(item)))
             {
                 Uri schemaIdentifierPath = null;
+
                 if (schemaIdentifier.TryFindPath(out string pathValue))
                 {
                     schemaIdentifierPath = new Uri(pathValue, UriKind.Relative);
-                    if
-                    (
-                        !paths
-                        .Any(
-                            (Uri item) =>
-                                0 == Uri.Compare(
-                                        item,
-                                        schemaIdentifierPath,
-                                        UriComponents.AbsoluteUri,
-                                        UriFormat.UriEscaped,
-                                        StringComparison.OrdinalIgnoreCase))
-                    )
+
+                    if (!paths.Any((Uri item) => Uri.Compare(item, schemaIdentifierPath, UriComponents.AbsoluteUri,
+                        UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) == 0))
                     {
                         paths.Add(schemaIdentifierPath);
                     }
@@ -117,18 +90,8 @@ namespace Microsoft.SCIM
 
                 if (data.TryGetPathIdentifier(out Uri resourcePath))
                 {
-                    if
-                   (
-                       !paths
-                       .Any(
-                           (Uri item) =>
-                               0 == Uri.Compare(
-                                       item,
-                                       resourcePath,
-                                       UriComponents.AbsoluteUri,
-                                       UriFormat.UriEscaped,
-                                       StringComparison.OrdinalIgnoreCase))
-                   )
+                    if(!paths.Any((Uri item) => Uri.Compare(item, resourcePath, UriComponents.AbsoluteUri, UriFormat.UriEscaped,
+                        StringComparison.OrdinalIgnoreCase) == 0))
                     {
                         paths.Add(resourcePath);
                     }
@@ -137,33 +100,37 @@ namespace Microsoft.SCIM
 
             if (paths.Count != 1)
             {
-                string schemas = string.Join(Environment.NewLine, data.Schemas);
-                throw new NotSupportedException(schemas);
+                throw new NotSupportedException(string.Join(Environment.NewLine, data.Schemas));
             }
 
-            BulkRequestOperation result = new BulkRequestOperation
+            return new BulkRequestOperation
             {
-                path = paths.Single(),
+                _path = paths.Single(),
                 Method = HttpMethod.Post,
                 Data = data
             };
-            return result;
         }
 
         private void InitializePath(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
             {
-                this.path = null;
+                _path = null;
                 return;
             }
 
-            this.path = new Uri(value, UriKind.Relative);
+            _path = new Uri(value, UriKind.Relative);
         }
 
-        private void InitializePath() => this.InitializePath(this.pathValue);
-        
+        private void InitializePath()
+        {
+            InitializePath(_pathValue);
+        }
+
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext _) => this.InitializePath();
+        private void OnDeserialized(StreamingContext _)
+        {
+            InitializePath();
+        }
     }
 }

@@ -1,54 +1,48 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Json;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Runtime.Serialization;
-    using System.Runtime.Serialization.Json;
-
     internal class JsonSerializer : IJsonSerializable
     {
-        private static readonly Lazy<DataContractJsonSerializerSettings> SerializerSettings =
-            new Lazy<DataContractJsonSerializerSettings>(
-                () =>
-                    new DataContractJsonSerializerSettings()
-                    {
-                        EmitTypeInformation = EmitTypeInformation.Never
-                    });
+        private static readonly Lazy<DataContractJsonSerializerSettings> _serializerSettings =
+            new(() => new DataContractJsonSerializerSettings() { EmitTypeInformation = EmitTypeInformation.Never });
 
-        private readonly object dataContractValue;
+        private readonly object _dataContractValue;
 
         public JsonSerializer(object dataContract)
         {
-            this.dataContractValue = dataContract ??
+            _dataContractValue = dataContract ??
                 throw new ArgumentNullException(nameof(dataContract));
         }
 
         public string Serialize()
         {
-            IDictionary<string, object> json = this.ToJson();
-            string result = JsonFactory.Instance.Create(json, true);
-            return result;
+            var json = ToJson();
+            return JsonFactory.Instance.Create(json, true);
         }
 
         public Dictionary<string, object> ToJson()
         {
-            Type type = this.dataContractValue.GetType();
-            DataContractJsonSerializer serializer =
-                new DataContractJsonSerializer(type, JsonSerializer.SerializerSettings.Value);
+            var type = _dataContractValue.GetType();
+            var serializer = new DataContractJsonSerializer(type, _serializerSettings.Value);
 
             string json;
             MemoryStream stream = null;
+
             try
             {
                 stream = new MemoryStream();
-                serializer.WriteObject(stream, this.dataContractValue);
+                serializer.WriteObject(stream, _dataContractValue);
                 stream.Position = 0;
                 StreamReader streamReader = null;
+
                 try
                 {
                     streamReader = new StreamReader(stream);
@@ -73,8 +67,7 @@ namespace Microsoft.SCIM
                 }
             }
 
-            Dictionary<string, object> result = JsonFactory.Instance.Create(json, true);
-            return result;
+            return JsonFactory.Instance.Create(json, true);
         }
     }
 }

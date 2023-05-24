@@ -1,19 +1,18 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Linq;
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     public static class ObjectExtentions
     {
         public static bool IsResourceType(this object json, string scheme)
         {
-            if (null == json)
+            if (json == null)
             {
                 throw new ArgumentNullException(nameof(json));
             }
@@ -25,19 +24,12 @@ namespace Microsoft.SCIM
             dynamic operationDataJson = JsonConvert.DeserializeObject(json.ToString());
             bool result = false;
 
-            switch (operationDataJson.schemas)
+            if (operationDataJson.schemas is JArray schemas)
             {
-                case JArray schemas:
-                    string[] schemasList = schemas.ToObject<string[]>();
-                    result =
-                        schemasList
-                        .Any(
-                            (string item) =>
-                                string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
-                    break;
-                default:
-                    break;
+                var schemasList = schemas.ToObject<string[]>();
+                result = schemasList.Any((string item) => string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
             }
+
             return result;
         }
     }

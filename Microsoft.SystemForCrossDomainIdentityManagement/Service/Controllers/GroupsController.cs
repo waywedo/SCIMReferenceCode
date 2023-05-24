@@ -1,31 +1,18 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-
-    [Route(ServiceConstants.RouteGroups)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_GROUPS)]
+    //[Authorize]
     [ApiController]
     public sealed class GroupsController : ControllerTemplate<Core2Group>
     {
-        public GroupsController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        public GroupsController(IProvider provider, ILogger<GroupsController> logger)
+            : base(new Core2GroupProviderAdapter(provider), logger)
         {
-        }
-
-        protected override IProviderAdapter<Core2Group> AdaptProvider(IProvider provider)
-        {
-            if (null == provider)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            IProviderAdapter<Core2Group> result =
-                new Core2GroupProviderAdapter(provider);
-            return result;
         }
     }
 }

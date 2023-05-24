@@ -1,30 +1,19 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-
-    [Route(ServiceConstants.RouteUsers)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_USERS)]
+    //[Authorize]
     [ApiController]
     public sealed class UsersController : ControllerTemplate<Core2EnterpriseUser>
     {
-        public UsersController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        public UsersController(IProvider provider, ILogger<UsersController> logger)
+            : base(new Core2EnterpriseUserProviderAdapter(provider), logger)
         {
-        }
-
-        protected override IProviderAdapter<Core2EnterpriseUser> AdaptProvider(IProvider provider)
-        {
-            if (null == provider)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            IProviderAdapter<Core2EnterpriseUser> result = new Core2EnterpriseUserProviderAdapter(provider);
-            return result;
         }
     }
 }

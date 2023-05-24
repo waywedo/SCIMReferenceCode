@@ -1,11 +1,10 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-
     public class SchemaIdentifier : ISchemaIdentifier
     {
         public SchemaIdentifier(string value)
@@ -15,20 +14,16 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(value));
             }
 
-            this.Value = value;
+            Value = value;
         }
 
-        public string Value
-        {
-            get;
-            private set;
-        }
+        public string Value { get; }
 
         public string FindPath()
         {
-            if (!this.TryFindPath(out string result))
+            if (!TryFindPath(out string result))
             {
-                throw new NotSupportedException(this.Value);
+                throw new NotSupportedException(Value);
             }
 
             return result;
@@ -38,17 +33,17 @@ namespace Microsoft.SCIM
         {
             path = null;
 
-            switch (this.Value)
+            switch (Value)
             {
-                case SchemaIdentifiers.Core2EnterpriseUser:
-                case SchemaIdentifiers.Core2User:
-                    path = ProtocolConstants.PathUsers;
+                case SchemaIdentifiers.CORE_2_ENTERPRISE_USER:
+                case SchemaIdentifiers.CORE_2_USER:
+                    path = ProtocolConstants.PATH_USERS;
                     return true;
-                case SchemaIdentifiers.Core2Group:
-                    path = ProtocolConstants.PathGroups;
+                case SchemaIdentifiers.CORE_2_GROUP:
+                    path = ProtocolConstants.PATH_GROUPS;
                     return true;
-                case SchemaIdentifiers.None:
-                    path = SchemaConstants.PathInterface;
+                case SchemaIdentifiers.NONE:
+                    path = SchemaConstants.PATH_INTERFACE;
                     return true;
                 default:
                     return false;

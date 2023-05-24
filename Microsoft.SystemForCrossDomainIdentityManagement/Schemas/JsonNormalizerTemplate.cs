@@ -1,42 +1,35 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Collections.ObjectModel;
-    using System.Linq;
-
     public abstract class JsonNormalizerTemplate : IJsonNormalizationBehavior
     {
-        public abstract IReadOnlyCollection<string> AttributeNames
-        {
-            get;
-        }
+        public abstract IReadOnlyCollection<string> AttributeNames { get; }
 
         private IEnumerable<KeyValuePair<string, object>> Normalize(IReadOnlyCollection<KeyValuePair<string, object>> json)
         {
-            if (null == json)
+            if (json == null)
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            int countElements = json.CheckedCount();
-            IDictionary<string, object> result = new Dictionary<string, object>(countElements);
-            foreach (KeyValuePair<string, object> element in json)
+            var countElements = json.CheckedCount();
+            var result = new Dictionary<string, object>(countElements);
+
+            foreach (var element in json)
             {
-                string key;
-                key = element.Key;
-                object value = element.Value;
-                string attributeName =
-                    this
-                    .AttributeNames
-                    .SingleOrDefault(
-                        (string item) =>
-                            string.Equals(item, key, StringComparison.OrdinalIgnoreCase));
+                var key = element.Key;
+                var value = element.Value;
+                var attributeName = AttributeNames
+                    .SingleOrDefault(item => string.Equals(item, key, StringComparison.OrdinalIgnoreCase));
+
                 if (attributeName != null)
                 {
                     if (!string.Equals(key, attributeName, StringComparison.Ordinal))
@@ -47,17 +40,16 @@ namespace Microsoft.SCIM
                     switch (value)
                     {
                         case IEnumerable<KeyValuePair<string, object>> jsonValue:
-                            value = this.Normalize(jsonValue);
+                            value = Normalize(jsonValue);
                             break;
                         case ArrayList jsonCollectionValue:
-                            ArrayList jsonCollectionNormalized = new ArrayList();
+                            var jsonCollectionNormalized = new ArrayList();
+
                             foreach (object innerValue in jsonCollectionValue)
                             {
-                                IEnumerable<KeyValuePair<string, object>> innerObject =
-                                    innerValue as IEnumerable<KeyValuePair<string, object>>;
-                                if (innerObject != null)
+                                if (innerValue is IEnumerable<KeyValuePair<string, object>> innerObject)
                                 {
-                                    IEnumerable<KeyValuePair<string, object>> normalizedInnerObject = this.Normalize(innerObject);
+                                    var normalizedInnerObject = Normalize(innerObject);
                                     jsonCollectionNormalized.Add(normalizedInnerObject);
                                 }
                                 else
@@ -67,8 +59,6 @@ namespace Microsoft.SCIM
                             }
 
                             value = jsonCollectionNormalized;
-                            break;
-                        default:
                             break;
                     }
                 }
@@ -81,36 +71,27 @@ namespace Microsoft.SCIM
 
         private IEnumerable<KeyValuePair<string, object>> Normalize(IEnumerable<KeyValuePair<string, object>> json)
         {
-            if (null == json)
+            if (json == null)
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            IReadOnlyCollection<KeyValuePair<string, object>> materializedJson = json.ToArray();
-            IEnumerable<KeyValuePair<string, object>> result = this.Normalize(materializedJson);
-            return result;
+            var materializedJson = json.ToArray();
+
+            return Normalize(materializedJson);
         }
 
         public IReadOnlyDictionary<string, object> Normalize(IReadOnlyDictionary<string, object> json)
         {
-            if (null == json)
+            if (json == null)
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            IReadOnlyCollection<KeyValuePair<string, object>> keyedPairs =
-               (IReadOnlyCollection<KeyValuePair<string, object>>)json;
-            Dictionary<string, object> normalizedJson =
-                this
-                .Normalize(keyedPairs)
-                .ToDictionary(
-                    (KeyValuePair<string, object> item) =>
-                        item.Key,
-                    (KeyValuePair<string, object> item) =>
-                        item.Value);
-            IReadOnlyDictionary<string, object> result =
-                new ReadOnlyDictionary<string, object>(normalizedJson);
-            return result;
+            var keyedPairs = (IReadOnlyCollection<KeyValuePair<string, object>>)json;
+            var normalizedJson = Normalize(keyedPairs).ToDictionary(item => item.Key, item => item.Value);
+
+            return new ReadOnlyDictionary<string, object>(normalizedJson);
         }
     }
 }

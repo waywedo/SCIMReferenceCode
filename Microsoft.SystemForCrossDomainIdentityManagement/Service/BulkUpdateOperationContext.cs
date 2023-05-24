@@ -1,65 +1,62 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-
     internal sealed class BulkUpdateOperationContext : BulkOperationContextBase<IPatch>, IBulkUpdateOperationContext
     {
-        private readonly IBulkUpdateOperationState receivedState;
+        private readonly IBulkUpdateOperationState _receivedState;
 
-        public BulkUpdateOperationContext(
-            IRequest<BulkRequest2> request,
-            BulkRequestOperation operation)
+        public BulkUpdateOperationContext(IRequest<BulkRequest2> request, BulkRequestOperation operation)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            this.receivedState = new BulkUpdateOperationState(request, operation, this);
-            this.Initialize(this.receivedState);
+            _receivedState = new BulkUpdateOperationState(request, operation, this);
+
+            Initialize(_receivedState);
         }
 
-        public BulkUpdateOperationContext(
-            IRequest<BulkRequest2> request,
-            BulkRequestOperation operation,
+        public BulkUpdateOperationContext( IRequest<BulkRequest2> request, BulkRequestOperation operation,
             IBulkCreationOperationContext parent)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            this.receivedState = new BulkUpdateOperationState(request, operation, this, parent);
-            this.Initialize(this.receivedState);
+            _receivedState = new BulkUpdateOperationState(request, operation, this, parent);
+
+            Initialize(_receivedState);
         }
 
-        public IReadOnlyCollection<IBulkCreationOperationContext> Dependencies => this.receivedState.Dependencies;
-        
-        public IBulkCreationOperationContext Parent => this.receivedState.Parent;
+        public IReadOnlyCollection<IBulkCreationOperationContext> Dependencies => _receivedState.Dependencies;
+
+        public IBulkCreationOperationContext Parent => _receivedState.Parent;
 
         public void AddDependency(IBulkCreationOperationContext dependency)
         {
-            if (null == dependency)
+            if (dependency == null)
             {
                 throw new ArgumentNullException(nameof(dependency));
             }
 
-            this.receivedState.AddDependency(dependency);
+            _receivedState.AddDependency(dependency);
         }
     }
 }

@@ -1,63 +1,56 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-
     internal sealed class BulkCreationOperationContext : BulkOperationContextBase<Resource>, IBulkCreationOperationContext
     {
-        private readonly IBulkCreationOperationState receivedState;
+        private readonly IBulkCreationOperationState _receivedState;
 
-        public BulkCreationOperationContext(
-            IRequest<BulkRequest2> request,
-            BulkRequestOperation operation)
+        public BulkCreationOperationContext(IRequest<BulkRequest2> request, BulkRequestOperation operation)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            this.receivedState = new BulkCreationOperationState(request, operation, this);
-            this.Initialize(this.receivedState);
-            this.PendingState = new BulkOperationState<Resource>(request, operation, this);
+            _receivedState = new BulkCreationOperationState(request, operation, this);
+            Initialize(_receivedState);
+            PendingState = new BulkOperationState<Resource>(request, operation, this);
         }
 
-        public IReadOnlyCollection<IBulkUpdateOperationContext> Dependents => this.receivedState.Dependents;
-        
-        public IBulkOperationState<Resource> PendingState
-        {
-            get;
-            private set;
-        }
+        public IReadOnlyCollection<IBulkUpdateOperationContext> Dependents => _receivedState.Dependents;
 
-        public IReadOnlyCollection<IBulkUpdateOperationContext> Subordinates => this.receivedState.Subordinates;
-        
+        public IBulkOperationState<Resource> PendingState { get; }
+
+        public IReadOnlyCollection<IBulkUpdateOperationContext> Subordinates => _receivedState.Subordinates;
+
         public void AddDependent(IBulkUpdateOperationContext dependent)
         {
-            if (null == dependent)
+            if (dependent == null)
             {
                 throw new ArgumentNullException(nameof(dependent));
             }
 
-            this.receivedState.AddDependent(dependent);
+            _receivedState.AddDependent(dependent);
         }
 
         public void AddSubordinate(IBulkUpdateOperationContext subordinate)
         {
-            if (null == subordinate)
+            if (subordinate == null)
             {
                 throw new ArgumentNullException(nameof(subordinate));
             }
 
-            this.receivedState.AddSubordinate(subordinate);
+            _receivedState.AddSubordinate(subordinate);
         }
     }
 }

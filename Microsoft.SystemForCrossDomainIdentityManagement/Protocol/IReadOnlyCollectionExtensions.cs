@@ -1,31 +1,22 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Web;
 
     public static class IReadOnlyCollectionExtensions
     {
         public static IReadOnlyCollection<string> Encode(this IReadOnlyCollection<string> collection)
         {
-            IReadOnlyCollection<string> result =
-                collection
-                .Select(
-                    (string item) =>
-                        HttpUtility.UrlEncode(item))
-                .ToArray();
-            return result;
+            return collection.Select(HttpUtility.UrlEncode).ToArray();
         }
 
-        public static bool TryGetPath(
-            this IReadOnlyCollection<IExtension> extensions,
-            string schemaIdentifier,
-            out string path)
+        public static bool TryGetPath(this IReadOnlyCollection<IExtension> extensions, string schemaIdentifier, out string path)
         {
             if (string.IsNullOrWhiteSpace(schemaIdentifier))
             {
@@ -33,18 +24,18 @@ namespace Microsoft.SCIM
             }
 
             path = null;
-            IExtension
-                extension =
-                extensions
-                .SingleOrDefault(
-                    (IExtension item) =>
-                        string.Equals(schemaIdentifier, item.SchemaIdentifier, StringComparison.OrdinalIgnoreCase));
-            if (null == extension)
+
+            var extension = extensions.SingleOrDefault(
+                (IExtension item) => string.Equals(schemaIdentifier, item.SchemaIdentifier, StringComparison.OrdinalIgnoreCase)
+            );
+
+            if (extension == null)
             {
                 return false;
             }
 
             path = extension.Path;
+
             return true;
         }
     }

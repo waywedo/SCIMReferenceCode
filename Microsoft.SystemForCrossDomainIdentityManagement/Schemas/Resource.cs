@@ -1,28 +1,19 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class Resource : Schematized
     {
-        [DataMember(Name = AttributeNames.ExternalIdentifier, IsRequired = false, EmitDefaultValue = false)]
-        public string ExternalIdentifier
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.EXTERNAL_IDENTIFIER, IsRequired = false, EmitDefaultValue = false)]
+        public string ExternalIdentifier { get; set; }
 
-        [DataMember(Name = AttributeNames.Identifier)]
-        public string Identifier
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.IDENTIFIER)]
+        public string Identifier { get; set; }
 
         public virtual bool TryGetIdentifier(Uri baseIdentifier, out Uri identifier)
         {

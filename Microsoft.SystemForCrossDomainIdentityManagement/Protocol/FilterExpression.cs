@@ -1,16 +1,15 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Text;
-    using System.Text.RegularExpressions;
-
     // Parses filter expressions into a doubly-linked list.
     // A collection of IFilter objects can be obtained from the fully-parsed expression.
     //
@@ -35,93 +34,59 @@ namespace Microsoft.SCIM
     // and the second pair of bracketed clauses are in a third group.
     internal sealed class FilterExpression : IFilterExpression
     {
-        private const char BracketClose = ')';
-        private const char Escape = '\\';
-        private const char Quote = '"';
+        private const char BRACKET_CLOSE = ')';
+        private const char ESCAPE = '\\';
+        private const char QUOTE = '"';
 
-        private const string PatternGroupLeft = "left";
-        private const string PatternGroupLevelUp = "levelUp";
-        private const string PatternGroupOperator = "operator";
-        private const string PatternGroupRight = "right";
+        private const string PATTERN_GROUP_LEFT = "left";
+        private const string PATTERN_GROUP_LEVEL_UP = "levelUp";
+        private const string PATTERN_GROUP_OPERATOR = "operator";
+        private const string PATTERN_GROUP_RIGHT = "right";
         // (?<levelUp>\(*)?(?<left>(\S)*)(\s*(?<operator>bitAnd|eq|ne|co|sw|ew|ge|gt|isMemberOf|lt|matchesExpression|le|notBitAnd|notMatchesExpression)\s*(?<right>(.)*))?
-        private const string PatternTemplate =
-            @"(?<" +
-            FilterExpression.PatternGroupLevelUp +
-            @">\(*)?(?<" +
-            FilterExpression.PatternGroupLeft +
-            @">(\S)*)(\s*(?<" +
-            FilterExpression.PatternGroupOperator +
-            @">{0})\s*(?<" +
-            FilterExpression.PatternGroupRight +
-            @">(.)*))?";
+        private const string PATTERN_TEMPLATE = @$"(?<{PATTERN_GROUP_LEVEL_UP}>\(*)?(?<{PATTERN_GROUP_LEFT}>(\S)*)(\s*(?<{PATTERN_GROUP_OPERATOR}>{{0}})\s*(?<{PATTERN_GROUP_RIGHT}>(.)*))?";
 
-        private const string RegularExpressionOperatorOr = "|";
-        private const char Space = ' ';
-        private const string Template = "{0} {1} {2}";
+        private const char REGULAR_EXPRESSION_OPERATOR_OR = '|';
+        private const char SPACE = ' ';
+        private const string TEMPLATE = "{0} {1} {2}";
 
-        private static readonly Lazy<char[]> TrailingCharacters =
-            new Lazy<char[]>(
-                () =>
-                    new char[]
-                    {
-                        FilterExpression.Quote,
-                        FilterExpression.Space,
-                        FilterExpression.BracketClose
-                    });
+        private static readonly Lazy<char[]> TrailingCharacters = new(() => new char[] { QUOTE, SPACE, BRACKET_CLOSE });
+        private static readonly Lazy<string> ComparisonOperators = new(() => Initialize<ComparisonOperatorValue>());
+        private static readonly Lazy<string> FilterPattern = new(() => InitializeFilterPattern());
+        private static readonly Lazy<Regex> Expression = new(() => new Regex(FilterPattern.Value, RegexOptions.CultureInvariant | RegexOptions.Compiled));
+        private static readonly Lazy<string> LogicalOperatorAnd = new(() => Enum.GetName(typeof(LogicalOperatorValue), LogicalOperatorValue.and));
+        private static readonly Lazy<string> LogicalOperatorOr = new(() => Enum.GetName(typeof(LogicalOperatorValue), LogicalOperatorValue.or));
 
-        private static readonly Lazy<string> ComparisonOperators =
-            new Lazy<string>(
-                () =>
-                    FilterExpression.Initialize<ComparisonOperatorValue>());
-
-        private static readonly Lazy<string> FilterPattern =
-            new Lazy<string>(
-                () =>
-                    FilterExpression.InitializeFilterPattern());
-
-        private static readonly Lazy<Regex> Expression =
-            new Lazy<Regex>(
-                () =>
-                    new Regex(FilterExpression.FilterPattern.Value, RegexOptions.CultureInvariant | RegexOptions.Compiled));
-
-        private static readonly Lazy<string> LogicalOperatorAnd =
-            new Lazy<string>(
-                () =>
-                    Enum.GetName(typeof(LogicalOperatorValue), LogicalOperatorValue.and));
-
-        private static readonly Lazy<string> LogicalOperatorOr =
-            new Lazy<string>(
-                () =>
-                    Enum.GetName(typeof(LogicalOperatorValue), LogicalOperatorValue.or));
-
-        private string attributePath;
-        private ComparisonOperatorValue comparisonOperator;
-        private ComparisonOperator filterOperator;
-        private int groupValue;
-        private int levelValue;
-        private LogicalOperatorValue logicalOperator;
-        private FilterExpression next;
-        private ComparisonValue value;
+        private string _attributePath;
+        private ComparisonOperatorValue _comparisonOperator;
+        private ComparisonOperator _filterOperator;
+        private int _groupValue;
+        private int _levelValue;
+        private LogicalOperatorValue _logicalOperator;
+        private FilterExpression _next;
+        private ComparisonValue _value;
 
         private FilterExpression(FilterExpression other)
         {
-            if (null == other)
+            if (other == null)
             {
                 throw new ArgumentNullException(nameof(other));
             }
 
-            this.Text = other.Text;
-            this.attributePath = other.attributePath;
-            this.comparisonOperator = other.comparisonOperator;
-            this.filterOperator = other.filterOperator;
-            this.Group = other.Group;
-            this.Level = other.Level;
-            this.logicalOperator = other.logicalOperator;
-            this.value = other.value;
-            if (other.next != null)
+            Text = other.Text;
+            _attributePath = other._attributePath;
+            _comparisonOperator = other._comparisonOperator;
+            _filterOperator = other._filterOperator;
+            Group = other.Group;
+            Level = other.Level;
+            _logicalOperator = other._logicalOperator;
+            _value = other._value;
+
+            if (other._next != null)
             {
-                this.next = new FilterExpression(other.next);
-                this.next.Previous = this;
+                _next = new FilterExpression(other._next)
+                {
+                    Previous = this
+                };
             }
         }
 
@@ -132,35 +97,37 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(text));
             }
 
-            this.Text = text.Trim();
+            Text = text.Trim();
 
-            this.Level = level;
-            this.Group = group;
+            Level = level;
+            Group = group;
 
-            MatchCollection matches = FilterExpression.Expression.Value.Matches(this.Text);
-            foreach (Match match in matches)
+            foreach (var match in Expression.Value.Matches(Text).Cast<Match>())
             {
-                Group levelUpGroup = match.Groups[FilterExpression.PatternGroupLevelUp];
+                var levelUpGroup = match.Groups[PATTERN_GROUP_LEVEL_UP];
+
                 if (levelUpGroup.Success && levelUpGroup.Value.Any())
                 {
-                    this.Level += levelUpGroup.Value.Length;
-                    this.Group += 1;
+                    Level += levelUpGroup.Value.Length;
+                    Group++;
                 }
-                Group operatorGroup = match.Groups[FilterExpression.PatternGroupOperator];
+
+                var operatorGroup = match.Groups[PATTERN_GROUP_OPERATOR];
+
                 if (operatorGroup.Success)
                 {
-                    Group leftGroup = match.Groups[FilterExpression.PatternGroupLeft];
-                    Group rightGroup = match.Groups[FilterExpression.PatternGroupRight];
-                    this.Initialize(leftGroup, operatorGroup, rightGroup);
+                    var leftGroup = match.Groups[PATTERN_GROUP_LEFT];
+                    var rightGroup = match.Groups[PATTERN_GROUP_RIGHT];
+                    Initialize(leftGroup, operatorGroup, rightGroup);
                 }
                 else
                 {
-                    string remainder = match.Value.Trim();
+                    var remainder = match.Value.Trim();
+
                     if (string.IsNullOrWhiteSpace(remainder))
                     {
-                        continue;
                     }
-                    else if (1 == remainder.Length && FilterExpression.BracketClose == remainder[0])
+                    else if (remainder.Length == 1 && BRACKET_CLOSE == remainder[0])
                     {
                         continue;
                     }
@@ -172,8 +139,7 @@ namespace Microsoft.SCIM
             }
         }
 
-        public FilterExpression(string text)
-            : this(text: text, group: 0, level: 0)
+        public FilterExpression(string text) : this(text: text, group: 0, level: 0)
         {
         }
 
@@ -194,7 +160,7 @@ namespace Microsoft.SCIM
             le,
             notBitAnd,
             notMatchesExpression
-        }
+        }//15
 
         private interface IComparisonValue
         {
@@ -211,25 +177,16 @@ namespace Microsoft.SCIM
 
         private int Group
         {
-            get
-            {
-                return this.groupValue;
-            }
+            get { return _groupValue; }
 
             set
             {
                 if (value < 0)
                 {
-                    string message =
-                       string.Format(
-                           CultureInfo.InvariantCulture,
-                           SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                           this.Text);
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-                    throw new ArgumentOutOfRangeException(message, nameof(this.Group));
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                    var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+                    throw new ArgumentOutOfRangeException(message, nameof(Group));
                 }
-                this.groupValue = value;
+                _groupValue = value;
             }
         }
 
@@ -237,23 +194,17 @@ namespace Microsoft.SCIM
         {
             get
             {
-                return this.levelValue;
+                return _levelValue;
             }
 
             set
             {
                 if (value < 0)
                 {
-                    string message =
-                       string.Format(
-                           CultureInfo.InvariantCulture,
-                           SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                           this.Text);
-#pragma warning disable CA1303 // Do not pass literals as localized parameters
-                    throw new ArgumentOutOfRangeException(message, nameof(this.Level));
-#pragma warning restore CA1303 // Do not pass literals as localized parameters
+                    var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+                    throw new ArgumentOutOfRangeException(message, nameof(Level));
                 }
-                this.levelValue = value;
+                _levelValue = value;
             }
         }
 
@@ -261,7 +212,7 @@ namespace Microsoft.SCIM
         {
             get
             {
-                return this.comparisonOperator;
+                return _comparisonOperator;
             }
 
             set
@@ -269,95 +220,94 @@ namespace Microsoft.SCIM
                 switch (value)
                 {
                     case ComparisonOperatorValue.bitAnd:
-                        this.filterOperator = ComparisonOperator.BitAnd;
+                        _filterOperator = ComparisonOperator.BitAnd;
                         break;
                     case ComparisonOperatorValue.ew:
-                        this.filterOperator = ComparisonOperator.EndsWith;
+                        _filterOperator = ComparisonOperator.EndsWith;
+                        break;
+                    case ComparisonOperatorValue.sw:
+                        _filterOperator = ComparisonOperator.StartsWith;
                         break;
                     case ComparisonOperatorValue.eq:
-                        this.filterOperator = ComparisonOperator.Equals;
+                        _filterOperator = ComparisonOperator.Equals;
                         break;
                     case ComparisonOperatorValue.ge:
-                        this.filterOperator = ComparisonOperator.EqualOrGreaterThan;
+                        _filterOperator = ComparisonOperator.EqualOrGreaterThan;
                         break;
                     case ComparisonOperatorValue.gt:
-                        this.filterOperator = ComparisonOperator.GreaterThan;
+                        _filterOperator = ComparisonOperator.GreaterThan;
                         break;
                     case ComparisonOperatorValue.le:
-                        this.filterOperator = ComparisonOperator.EqualOrLessThan;
+                        _filterOperator = ComparisonOperator.EqualOrLessThan;
                         break;
                     case ComparisonOperatorValue.lt:
-                        this.filterOperator = ComparisonOperator.LessThan;
+                        _filterOperator = ComparisonOperator.LessThan;
+                        break;
+                    case ComparisonOperatorValue.co:
+                        _filterOperator = ComparisonOperator.Contains;
                         break;
                     case ComparisonOperatorValue.includes:
-                        this.filterOperator = ComparisonOperator.Includes;
+                        _filterOperator = ComparisonOperator.Includes;
                         break;
                     case ComparisonOperatorValue.isMemberOf:
-                        this.filterOperator = ComparisonOperator.IsMemberOf;
+                        _filterOperator = ComparisonOperator.IsMemberOf;
                         break;
                     case ComparisonOperatorValue.matchesExpression:
-                        this.filterOperator = ComparisonOperator.MatchesExpression;
+                        _filterOperator = ComparisonOperator.MatchesExpression;
                         break;
                     case ComparisonOperatorValue.notBitAnd:
-                        this.filterOperator = ComparisonOperator.NotBitAnd;
+                        _filterOperator = ComparisonOperator.NotBitAnd;
                         break;
                     case ComparisonOperatorValue.ne:
-                        this.filterOperator = ComparisonOperator.NotEquals;
+                        _filterOperator = ComparisonOperator.NotEquals;
                         break;
                     case ComparisonOperatorValue.notMatchesExpression:
-                        this.filterOperator = ComparisonOperator.NotMatchesExpression;
+                        _filterOperator = ComparisonOperator.NotMatchesExpression;
                         break;
                     default:
-                        string notSupported = Enum.GetName(typeof(ComparisonOperatorValue), this.Operator);
+                        string notSupported = Enum.GetName(typeof(ComparisonOperatorValue), value);
                         throw new NotSupportedException(notSupported);
                 }
-                this.comparisonOperator = value;
+                _comparisonOperator = value;
             }
         }
 
-        private FilterExpression Previous
-        {
-            get;
-            set;
-        }
-
-        private string Text
-        {
-            get;
-            set;
-        }
+        private FilterExpression Previous { get; set; }
+        private string Text { get; }
 
         private static void And(IFilter left, IFilter right)
         {
-            if (null == left)
+            if (left == null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (null == right)
+            if (right == null)
             {
                 throw new ArgumentNullException(nameof(right));
             }
 
-            if (null == left.AdditionalFilter)
+            if (left.AdditionalFilter == null)
             {
                 left.AdditionalFilter = right;
             }
             else
             {
-                FilterExpression.And(left.AdditionalFilter, right);
+                And(left.AdditionalFilter, right);
             }
         }
 
         private static IReadOnlyCollection<IFilter> And(IFilter left, IReadOnlyCollection<IFilter> right)
         {
-            List<IFilter> result = new List<IFilter>();
-            IFilter template = new Filter(left);
+            var result = new List<IFilter>();
+            var template = new Filter(left);
+
             for (int index = 0; index < right.Count; index++)
             {
-                IFilter rightFilter = right.ElementAt(index);
+                var rightFilter = right.ElementAt(index);
                 IFilter leftFilter;
-                if (0 == index)
+
+                if (index == 0)
                 {
                     leftFilter = left;
                 }
@@ -366,19 +316,21 @@ namespace Microsoft.SCIM
                     leftFilter = new Filter(template);
                     result.Add(leftFilter);
                 }
-                FilterExpression.And(leftFilter, rightFilter);
+
+                And(leftFilter, rightFilter);
             }
+
             return result;
         }
 
         private static IReadOnlyCollection<IFilter> And(IReadOnlyCollection<IFilter> left, IFilter right)
         {
-            if (null == left)
+            if (left == null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (null == right)
+            if (right == null)
             {
                 throw new ArgumentNullException(nameof(right));
             }
@@ -386,8 +338,9 @@ namespace Microsoft.SCIM
             for (int index = 0; index < left.Count; index++)
             {
                 IFilter leftFilter = left.ElementAt(index);
-                FilterExpression.And(leftFilter, right);
+                And(leftFilter, right);
             }
+
             return left;
         }
 
@@ -396,56 +349,57 @@ namespace Microsoft.SCIM
         // Those cases are documented by comments below.
         private IReadOnlyCollection<IFilter> Convert()
         {
-            List<IFilter> result = new List<IFilter>();
-            IFilter thisFilter = this.ToFilter();
+            var result = new List<IFilter>();
+            var thisFilter = ToFilter();
             result.Add(thisFilter);
-            FilterExpression current = this.next;
+            var current = _next;
+
             while (current != null)
             {
-                if (this.Level == current.Level)
+                if (Level == current.Level)
                 {
                     // The current clause has the same level number as the initial clause,
                     // such as
                     // b eq 2
                     // in the expression
                     // a eq 1 and b eq 2.
-                    IFilter filter = current.ToFilter();
-                    switch (current.Previous.logicalOperator)
+                    var filter = current.ToFilter();
+                    switch (current.Previous._logicalOperator)
                     {
                         case LogicalOperatorValue.and:
-                            IFilter left = result.Last();
-                            FilterExpression.And(left, filter);
+                            var left = result.Last();
+                            And(left, filter);
                             break;
                         case LogicalOperatorValue.or:
                             result.Add(filter);
                             break;
                         default:
-                            string notSupported = Enum.GetName(typeof(LogicalOperatorValue), this.logicalOperator);
+                            var notSupported = Enum.GetName(typeof(LogicalOperatorValue), _logicalOperator);
                             throw new NotSupportedException(notSupported);
                     }
-                    current = current.next;
+                    current = current._next;
                 }
-                else if (this.Level > current.Level)
+                else if (Level > current.Level)
                 {
                     // The current clause has a lower level number than the initial clause,
                     // such as
                     // c eq 3
                     // in the expression
                     // (a eq 1 and b eq 2) or c eq 3.
-                    IReadOnlyCollection<IFilter> superiors = current.Convert();
-                    switch (current.Previous.logicalOperator)
+                    var superiors = current.Convert();
+
+                    switch (current.Previous._logicalOperator)
                     {
                         case LogicalOperatorValue.and:
-                            IFilter superior = superiors.First();
-                            result = FilterExpression.And(result, superior).ToList();
-                            IReadOnlyCollection<IFilter> remainder = superiors.Skip(1).ToArray();
-                            result.AddRange(remainder);
+                            var superior = superiors.First();
+                            result = And(result, superior).ToList();
+                            result.AddRange(superiors.Skip(1).ToArray());
                             break;
                         case LogicalOperatorValue.or:
                             result.AddRange(superiors);
                             break;
                         default:
-                            string notSupported = Enum.GetName(typeof(LogicalOperatorValue), this.logicalOperator);
+                            var notSupported = Enum.GetName(typeof(LogicalOperatorValue), _logicalOperator);
                             throw new NotSupportedException(notSupported);
                     }
                     break;
@@ -486,29 +440,33 @@ namespace Microsoft.SCIM
                     // ToFilters()
                     // can be called on a FilterExpression any number of times,
                     // to yield the same output.
-                    FilterExpression subordinate = current;
-                    while (current != null && this.Level < current.Level && subordinate.Group == current.Group)
+                    var subordinate = current;
+
+                    while (current != null && Level < current.Level && subordinate.Group == current.Group)
                     {
-                        current = current.next;
+                        current = current._next;
                     }
+
                     if (current != null)
                     {
-                        current.Previous.next = null;
-                        subordinate.Previous.next = current;
+                        current.Previous._next = null;
+                        subordinate.Previous._next = current;
                     }
-                    IReadOnlyCollection<IFilter> subordinates = subordinate.Convert();
-                    switch (subordinate.Previous.logicalOperator)
+
+                    var subordinates = subordinate.Convert();
+
+                    switch (subordinate.Previous._logicalOperator)
                     {
                         case LogicalOperatorValue.and:
-                            IFilter superior = result.Last();
-                            IReadOnlyCollection<IFilter> merged = FilterExpression.And(superior, subordinates);
+                            var superior = result.Last();
+                            var merged = And(superior, subordinates);
                             result.AddRange(merged);
                             break;
                         case LogicalOperatorValue.or:
                             result.AddRange(subordinates);
                             break;
                         default:
-                            string notSupported = Enum.GetName(typeof(LogicalOperatorValue), this.logicalOperator);
+                            var notSupported = Enum.GetName(typeof(LogicalOperatorValue), _logicalOperator);
                             throw new NotSupportedException(notSupported);
                     }
                 }
@@ -518,93 +476,81 @@ namespace Microsoft.SCIM
 
         private void Initialize(Group left, Group @operator, Group right)
         {
-            if (null == left)
+            if (left == null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (null == @operator)
+            if (@operator == null)
             {
                 throw new ArgumentNullException(nameof(@operator));
             }
 
-            if (null == right)
+            if (right == null)
             {
                 throw new ArgumentNullException(nameof(right));
             }
 
-            if
-            (
-                    !left.Success
-                || !right.Success
-                || string.IsNullOrEmpty(left.Value)
-                || string.IsNullOrEmpty(right.Value)
-            )
+            if (!left.Success || !right.Success || string.IsNullOrEmpty(left.Value) || string.IsNullOrEmpty(right.Value))
             {
-                string message =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                        this.Text);
+                var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+
                 throw new InvalidOperationException(message);
             }
 
-            this.attributePath = left.Value;
+            _attributePath = left.Value;
 
-            if (!Enum.TryParse<ComparisonOperatorValue>(@operator.Value, out ComparisonOperatorValue comparisonOperatorValue))
+            if (!Enum.TryParse(@operator.Value, out ComparisonOperatorValue comparisonOperatorValue))
             {
-                string message =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                        this.Text);
+                var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+
                 throw new InvalidOperationException(message);
             }
-            this.Operator = comparisonOperatorValue;
 
-            if (!FilterExpression.TryParse(right.Value, out string comparisonValue))
+            Operator = comparisonOperatorValue;
+
+            if (!TryParse(right.Value, out string comparisonValue))
             {
-                string message =
-                    string.Format(
-                        CultureInfo.InvariantCulture,
-                        SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                        this.Text);
+                var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+
                 throw new InvalidOperationException(message);
             }
-            this.value = new ComparisonValue(comparisonValue, FilterExpression.Quote == right.Value[0]);
 
-            int indexRemainder = right.Value.IndexOf(comparisonValue, StringComparison.Ordinal) + comparisonValue.Length;
+            _value = new ComparisonValue(comparisonValue, QUOTE == right.Value[0]);
+
+            var indexRemainder = right.Value.IndexOf(comparisonValue, StringComparison.Ordinal) + comparisonValue.Length;
+
             if (indexRemainder >= right.Value.Length)
             {
                 return;
             }
-            string remainder = right.Value.Substring(indexRemainder);
-            int indexAnd = remainder.IndexOf(FilterExpression.LogicalOperatorAnd.Value, StringComparison.Ordinal);
-            int indexOr = remainder.IndexOf(FilterExpression.LogicalOperatorOr.Value, StringComparison.Ordinal);
+
+            var remainder = right.Value[indexRemainder..];
+            var indexAnd = remainder.IndexOf(LogicalOperatorAnd.Value, StringComparison.Ordinal);
+            var indexOr = remainder.IndexOf(LogicalOperatorOr.Value, StringComparison.Ordinal);
             int indexNextFilter;
             int indexLogicalOperator;
+
             if (indexAnd >= 0 && (indexOr < 0 || indexAnd < indexOr))
             {
-                indexNextFilter = indexAnd + FilterExpression.LogicalOperatorAnd.Value.Length;
-                this.logicalOperator = LogicalOperatorValue.and;
+                indexNextFilter = indexAnd + LogicalOperatorAnd.Value.Length;
+                _logicalOperator = LogicalOperatorValue.and;
                 indexLogicalOperator = indexAnd;
             }
             else if (indexOr >= 0)
             {
-                indexNextFilter = indexOr + FilterExpression.LogicalOperatorOr.Value.Length;
-                this.logicalOperator = LogicalOperatorValue.or;
+                indexNextFilter = indexOr + LogicalOperatorOr.Value.Length;
+                _logicalOperator = LogicalOperatorValue.or;
                 indexLogicalOperator = indexOr;
             }
             else
             {
-                string tail = remainder.Trim().TrimEnd(FilterExpression.TrailingCharacters.Value);
+                var tail = remainder.Trim().TrimEnd(TrailingCharacters.Value);
+
                 if (!string.IsNullOrWhiteSpace(tail))
                 {
-                    string message =
-                        string.Format(
-                            CultureInfo.InvariantCulture,
-                            SystemForCrossDomainIdentityManagementProtocolResources.ExceptionInvalidFilterTemplate,
-                            this.Text);
+                    var message = string.Format(CultureInfo.InvariantCulture, ProtocolResources.ExceptionInvalidFilterTemplate, Text);
+
                     throw new InvalidOperationException(message);
                 }
                 else
@@ -613,73 +559,66 @@ namespace Microsoft.SCIM
                 }
             }
 
-            string nextExpression = remainder.Substring(indexNextFilter);
-            int indexClosingBracket = remainder.IndexOf(FilterExpression.BracketClose, StringComparison.InvariantCulture);
+            var nextExpression = remainder[indexNextFilter..];
+            var indexClosingBracket = remainder.IndexOf(BRACKET_CLOSE, StringComparison.InvariantCulture);
             int nextExpressionLevel;
             int nextExpressionGroup;
+
             if (indexClosingBracket >= 0 && indexClosingBracket < indexLogicalOperator)
             {
-                nextExpressionLevel = this.Level - 1;
-                nextExpressionGroup = this.Group - 1;
+                nextExpressionLevel = Level - 1;
+                nextExpressionGroup = Group - 1;
             }
             else
             {
-                nextExpressionLevel = this.Level;
-                nextExpressionGroup = this.Group;
+                nextExpressionLevel = Level;
+                nextExpressionGroup = Group;
             }
-            this.next = new FilterExpression(nextExpression, nextExpressionGroup, nextExpressionLevel);
-            this.next.Previous = this;
+
+            _next = new FilterExpression(nextExpression, nextExpressionGroup, nextExpressionLevel)
+            {
+                Previous = this
+            };
         }
 
         private static string Initialize<TOperator>()
         {
-            Array comparisonOperatorValues = Enum.GetValues(typeof(TOperator));
-            StringBuilder buffer = new StringBuilder();
+            var comparisonOperatorValues = Enum.GetValues(typeof(TOperator));
+            var buffer = new StringBuilder();
+
             foreach (TOperator value in comparisonOperatorValues)
             {
                 if (buffer.Length > 0)
                 {
-                    buffer.Append(FilterExpression.RegularExpressionOperatorOr);
+                    buffer.Append(REGULAR_EXPRESSION_OPERATOR_OR);
                 }
                 buffer.Append(value);
             }
-            string result = buffer.ToString();
-            return result;
+
+            return buffer.ToString();
         }
 
         private static string InitializeFilterPattern()
         {
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    FilterExpression.PatternTemplate,
-                    FilterExpression.ComparisonOperators.Value);
-            return result;
+            return string.Format(CultureInfo.InvariantCulture, PATTERN_TEMPLATE, ComparisonOperators.Value);
         }
 
         private IFilter ToFilter()
         {
-            IFilter result = new Filter(this.attributePath, this.filterOperator, this.value.Value);
-            result.DataType = this.value.DataType;
-            return result;
+            return new Filter(_attributePath, _filterOperator, _value.Value)
+            {
+                DataType = _value.DataType
+            };
         }
 
         public IReadOnlyCollection<IFilter> ToFilters()
         {
-            IReadOnlyCollection<IFilter> result = new FilterExpression(this).Convert();
-            return result;
+            return new FilterExpression(this).Convert();
         }
 
         public override string ToString()
         {
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    FilterExpression.Template,
-                    this.attributePath,
-                    this.Operator,
-                    this.value);
-            return result;
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, _attributePath, Operator, _value);
         }
 
         // This function attempts to parse the comparison value out of the text to the right of a given comparison operator.
@@ -701,24 +640,29 @@ namespace Microsoft.SCIM
         private static bool TryParse(string input, out string comparisonValue)
         {
             comparisonValue = null;
+
             if (string.IsNullOrWhiteSpace(input))
             {
                 return false;
             }
 
             string buffer;
-            if (FilterExpression.Quote == input[0])
+
+            if (QUOTE == input[0])
             {
                 int index;
                 int position = 1;
+
                 while (true)
                 {
-                    index = input.IndexOf(FilterExpression.Quote, position);
+                    index = input.IndexOf(QUOTE, position);
+
                     if (index < 0)
                     {
                         throw new InvalidOperationException();
                     }
-                    if (index > 1 && FilterExpression.Escape == input[index - 1])
+
+                    if (index > 1 && ESCAPE == input[index - 1])
                     {
                         position = index + 1;
                         continue;
@@ -731,12 +675,8 @@ namespace Microsoft.SCIM
                     // would not be necessary.
                     // Alas, invalid filters have been accepted in the past.
                     int nextCharacterIndex = index + 1;
-                    if
-                    (
-                            nextCharacterIndex < input.Length
-                        && input[nextCharacterIndex] != FilterExpression.Space
-                        && input[nextCharacterIndex] != FilterExpression.BracketClose
-                    )
+
+                    if (nextCharacterIndex < input.Length && input[nextCharacterIndex] != SPACE && input[nextCharacterIndex] != BRACKET_CLOSE)
                     {
                         position = nextCharacterIndex;
                         continue;
@@ -744,11 +684,13 @@ namespace Microsoft.SCIM
 
                     break;
                 }
-                buffer = input.Substring(1, index - 1);
+
+                buffer = input[1..index];
             }
             else
             {
-                int index = input.IndexOf(FilterExpression.Space, StringComparison.InvariantCulture);
+                var index = input.IndexOf(SPACE, StringComparison.InvariantCulture);
+
                 if (index >= 0)
                 {
                     // If unquoted string comparison values were to be rejected,
@@ -756,17 +698,14 @@ namespace Microsoft.SCIM
                     // then the following check to verify that the current space is followed by a logical operator
                     // would not be necessary.
                     // Alas, invalid filters have been accepted in the past.
-                    if
-                    (
-                            input.LastIndexOf(FilterExpression.LogicalOperatorAnd.Value, StringComparison.Ordinal) < index
-                        && input.LastIndexOf(FilterExpression.LogicalOperatorOr.Value, StringComparison.Ordinal) < index
-                    )
+                    if (input.LastIndexOf(LogicalOperatorAnd.Value, StringComparison.Ordinal) < index
+                        && input.LastIndexOf(LogicalOperatorOr.Value, StringComparison.Ordinal) < index)
                     {
                         buffer = input;
                     }
                     else
                     {
-                        buffer = input.Substring(0, index);
+                        buffer = input[..index];
                     }
                 }
                 else
@@ -774,16 +713,15 @@ namespace Microsoft.SCIM
                     buffer = input;
                 }
             }
-            comparisonValue =
-                FilterExpression.Quote == input[0] ?
-                    buffer :
-                    buffer.TrimEnd(FilterExpression.TrailingCharacters.Value);
+
+            comparisonValue = QUOTE == input[0] ? buffer : buffer.TrimEnd(TrailingCharacters.Value);
+
             return true;
         }
 
         private class ComparisonValue : IComparisonValue
         {
-            private const string Template = "\"{0}\"";
+            private const string TEMPLATE = "\"{0}\"";
 
             public ComparisonValue(string value, bool quoted)
             {
@@ -792,53 +730,40 @@ namespace Microsoft.SCIM
                     throw new ArgumentNullException(nameof(value));
                 }
 
-                this.Value = value;
-                this.Quoted = quoted;
+                Value = value;
+                Quoted = quoted;
 
-                if (this.Quoted)
+                if (Quoted)
                 {
-                    this.DataType = AttributeDataType.@string;
+                    DataType = AttributeDataType.@string;
                 }
-                else if (bool.TryParse(this.Value, out bool _))
+                else if (bool.TryParse(Value, out bool _))
                 {
-                    this.DataType = AttributeDataType.boolean;
+                    DataType = AttributeDataType.boolean;
                 }
-                else if (long.TryParse(this.Value, out long _))
+                else if (long.TryParse(Value, out long _))
                 {
-                    this.DataType = AttributeDataType.integer;
+                    DataType = AttributeDataType.integer;
                 }
-                else if (double.TryParse(this.Value, out double _))
+                else if (double.TryParse(Value, out double _))
                 {
-                    this.DataType = AttributeDataType.@decimal;
+                    DataType = AttributeDataType.@decimal;
                 }
                 else
                 {
-                    this.DataType = AttributeDataType.@string;
+                    DataType = AttributeDataType.@string;
                 }
             }
 
-            public AttributeDataType DataType
-            {
-                get;
-            }
+            public AttributeDataType DataType { get; }
 
-            public bool Quoted
-            {
-                get;
-            }
+            public bool Quoted { get; }
 
-            public string Value
-            {
-                get;
-            }
+            public string Value { get; }
 
             public override string ToString()
             {
-                string result =
-                    this.Quoted ?
-                        string.Format(CultureInfo.InvariantCulture, ComparisonValue.Template, this.Value) :
-                        this.Value;
-                return result;
+                return Quoted ? string.Format(CultureInfo.InvariantCulture, TEMPLATE, Value) : Value;
             }
         }
     }

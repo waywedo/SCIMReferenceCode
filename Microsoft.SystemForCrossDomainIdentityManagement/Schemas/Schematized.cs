@@ -1,38 +1,29 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class Schematized : IJsonSerializable
     {
-        [DataMember(Name = AttributeNames.Schemas, Order = 0)]
-        private List<string> schemas;
-        private IReadOnlyCollection<string> schemasWrapper;
-
-        private object thisLock;
-        private IJsonSerializable serializer;
+        [DataMember(Name = AttributeNames.SCHEMAS, Order = 0)]
+        private List<string> _schemas;
+        private IReadOnlyCollection<string> _schemasWrapper;
+        private object _thisLock;
+        private IJsonSerializable _serializer;
 
         protected Schematized()
         {
-            this.OnInitialization();
-            this.OnInitialized();
+            OnInitialization();
+            OnInitialized();
         }
 
-
-        public virtual IReadOnlyCollection<string> Schemas
-        {
-            get
-            {
-                return this.schemasWrapper;
-            }
-        }
+        public virtual IReadOnlyCollection<string> Schemas { get { return _schemasWrapper; } }
 
         public void AddSchema(string schemaIdentifier)
         {
@@ -41,26 +32,17 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(schemaIdentifier));
             }
 
-            Func<bool> containsFunction =
-                new Func<bool>(
-                    () =>
-                        this
-                        .schemas
-                        .Any(
-                            (string item) =>
-                                string.Equals(
-                                    item,
-                                    schemaIdentifier,
-                                    StringComparison.OrdinalIgnoreCase)));
-
+            var containsFunction = new Func<bool>(
+                () => _schemas.Any(item => string.Equals(item, schemaIdentifier, StringComparison.OrdinalIgnoreCase))
+            );
 
             if (!containsFunction())
             {
-                lock (this.thisLock)
+                lock (_thisLock)
                 {
                     if (!containsFunction())
                     {
-                        this.schemas.Add(schemaIdentifier);
+                        _schemas.Add(schemaIdentifier);
                     }
                 }
             }
@@ -73,58 +55,48 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(scheme));
             }
 
-            bool result =
-                this
-                .schemas
-                .Any(
-                    (string item) =>
-                        string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
-            return result;
+            return _schemas.Any(item => string.Equals(item, scheme, StringComparison.OrdinalIgnoreCase));
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext _)
         {
-            this.OnInitialized();
+            OnInitialized();
         }
 
         [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        private void OnDeserializing(StreamingContext _)
         {
-            this.OnInitialization();
+            OnInitialization();
         }
 
         private void OnInitialization()
         {
-            this.thisLock = new object();
-            this.serializer = new JsonSerializer(this);
-            this.schemas = new List<string>();
+            _thisLock = new object();
+            _serializer = new JsonSerializer(this);
+            _schemas = new List<string>();
         }
 
         private void OnInitialized()
         {
-            this.schemasWrapper = this.schemas.AsReadOnly();
+            _schemasWrapper = _schemas.AsReadOnly();
         }
 
         public virtual Dictionary<string, object> ToJson()
         {
-            Dictionary<string, object> result = this.serializer.ToJson();
-            return result;
+            return _serializer.ToJson();
         }
 
         public virtual string Serialize()
         {
-            
-            IDictionary<string, object> json = this.ToJson();
-            string result = JsonFactory.Instance.Create(json, true);
-            
-            return result;
+            var json = ToJson();
+
+            return JsonFactory.Instance.Create(json, true);
         }
 
         public override string ToString()
         {
-            string result = this.Serialize();
-            return result;
+            return Serialize();
         }
 
         public virtual bool TryGetPath(out string path)

@@ -1,41 +1,25 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Globalization;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Globalization;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class OperationValue
     {
-        private const string Template = "{0} {1}";
+        private const string TEMPLATE = "{0} {1}";
 
-        [DataMember(Name = ProtocolAttributeNames.Reference, Order = 0, IsRequired = false, EmitDefaultValue = false)]
-        public string Reference
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.REFERENCE, Order = 0, IsRequired = false, EmitDefaultValue = false)]
+        public string Reference { get; set; }
 
-        [DataMember(Name = AttributeNames.Value, Order = 1, IsRequired = false, EmitDefaultValue = false)]
-        public string Value
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.VALUE, Order = 1, IsRequired = false, EmitDefaultValue = false)]
+        public string Value { get; set; }
 
         public override string ToString()
         {
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    OperationValue.Template,
-                    this.Value,
-                    this.Reference)
-                .Trim();
-            return result;
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, Value, Reference).Trim();
         }
     }
 }

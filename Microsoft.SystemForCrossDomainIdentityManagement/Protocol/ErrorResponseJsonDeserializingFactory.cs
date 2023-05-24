@@ -4,8 +4,7 @@
 
 namespace Microsoft.SCIM
 {
-    public sealed class ErrorResponseJsonDeserializingFactory :
-        ProtocolJsonDeserializingFactory<ErrorResponse>
+    public sealed class ErrorResponseJsonDeserializingFactory : ProtocolJsonDeserializingFactory<ErrorResponse>
     {
     }
 }

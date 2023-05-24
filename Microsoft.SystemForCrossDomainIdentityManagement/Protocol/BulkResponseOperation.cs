@@ -1,13 +1,12 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Net;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net;
-    using System.Runtime.Serialization;
-
     [DataContract]
     [KnownType(typeof(ErrorResponse))]
     [KnownType(typeof(Core2EnterpriseUser))]
@@ -18,52 +17,52 @@ namespace Microsoft.SCIM
     [KnownType(typeof(Core2Group))]
     public sealed class BulkResponseOperation : BulkOperation, IResponse
     {
-        private IResponse response;
+        private IResponse _response;
 
-        public BulkResponseOperation(string identifier)
-            : base(identifier)
+        public BulkResponseOperation(string identifier) : base(identifier)
         {
-            this.OnInitialization();
+            OnInitialization();
         }
 
         public BulkResponseOperation()
             : base(null)
         {
-            this.OnInitialization();
+            OnInitialization();
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Location)]
-        public Uri Location
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.LOCATION)]
+        public Uri Location { get; set; }
 
-        [DataMember(Name = ProtocolAttributeNames.Response)]
-        public object Response
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.RESPONSE)]
+        public object Response { get; set; }
 
         public HttpStatusCode Status
         {
-            get => this.response.Status;
-            set => this.response.Status = value;
+            get => _response.Status;
+            set => _response.Status = value;
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Status)]
+        [DataMember(Name = ProtocolAttributeNames.STATUS)]
         public string StatusCodeValue
         {
-            get => this.response.StatusCodeValue;
-            set => this.response.StatusCodeValue = value;
+            get => _response.StatusCodeValue;
+            set => _response.StatusCodeValue = value;
         }
 
-        public bool IsError() => this.response.IsError();
-        
-        [OnDeserializing]
-        private void OnDeserializing(StreamingContext _) => this.OnInitialization();
+        public bool IsError()
+        {
+            return _response.IsError();
+        }
 
-        private void OnInitialization() => this.response = new Response();
+        [OnDeserializing]
+        private void OnDeserializing(StreamingContext _)
+        {
+            OnInitialization();
+        }
+
+        private void OnInitialization()
+        {
+            _response = new Response();
+        }
     }
 }

@@ -1,61 +1,57 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net.Http;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class BulkOperation
     {
-        private HttpMethod method;
-        private string methodName;
+        private HttpMethod _method;
+        private string _methodName;
 
         protected BulkOperation()
         {
-            this.Identifier = Guid.NewGuid().ToString();
+            Identifier = Guid.NewGuid().ToString();
         }
 
         protected BulkOperation(string identifier)
         {
-            this.Identifier = identifier;
+            Identifier = identifier;
         }
 
-        [DataMember(Name = ProtocolAttributeNames.BulkOperationIdentifier, Order = 1)]
-        public string Identifier
-        {
-            get;
-            private set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.BULK_OPERATION_IDENTIFIER, Order = 1)]
+        public string Identifier { get; private set; }
 
         public HttpMethod Method
         {
-            get => this.method;
-
+            get { return _method; }
             set
             {
-                this.method = value;
+                _method = value;
+
                 if (value != null)
                 {
-                    this.methodName = value.ToString();
+                    _methodName = value.ToString();
                 }
             }
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Method, Order = 0)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [DataMember(Name = ProtocolAttributeNames.METHOD, Order = 0)]
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Required for protocol")]
+        [SuppressMessage("Roslynator", "RCS1213:Remove unused member declaration.", Justification = "Required for protocol")]
         private string MethodName
-#pragma warning restore IDE0051 // Remove unused private members
         {
-            get => this.methodName;
+            get => _methodName;
 
             set
             {
-                this.method = new HttpMethod(value);
-                this.methodName = value;
+                _method = new HttpMethod(value);
+                _methodName = value;
             }
         }
     }

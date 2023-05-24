@@ -1,74 +1,54 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.SCIM
 {
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Threading.Tasks;
-    using System.Web.Http;
-
     internal class RootProviderAdapter : ProviderAdapterTemplate<Resource>
     {
-        public RootProviderAdapter(IProvider provider)
-            : base(provider)
+        public RootProviderAdapter(IProvider provider) : base(provider)
         {
         }
 
         public override string SchemaIdentifier
         {
-            get
-            {
-                return SchemaIdentifiers.None;
-            }
+            get { return SchemaIdentifiers.NONE; }
         }
 
-        public override Task<Resource> Create(
-            HttpRequestMessage request,
-            Resource resource,
+        public override Task<Resource> Create(HttpRequest request, Resource resource,
             string correlationIdentifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
 
         public override IResourceIdentifier CreateResourceIdentifier(string identifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
 
-        public override Task Delete(
-            HttpRequestMessage request,
-            string identifier,
-            string correlationIdentifier)
+        public override Task Delete(HttpRequest request, string identifier, string correlationIdentifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
 
-        public override Task<Resource> Replace(
-            HttpRequestMessage request,
-            Resource resource, string
-            correlationIdentifier)
+        public override Task<Resource> Replace(HttpRequest request, Resource resource, string correlationIdentifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
 
-        public override Task<Resource> Retrieve(
-            HttpRequestMessage request,
-            string identifier,
+        public override Task<Resource> Retrieve(HttpRequest request, string identifier,
             IReadOnlyCollection<string> requestedAttributePaths,
-            IReadOnlyCollection<string> excludedAttributePaths,
-            string correlationIdentifier)
+            IReadOnlyCollection<string> excludedAttributePaths, string correlationIdentifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
 
-        public override Task Update(
-            HttpRequestMessage request,
-            string identifier,
-            PatchRequestBase patchRequest,
+        public override Task Update(HttpRequest request, string identifier, PatchRequestBase patchRequest,
             string correlationIdentifier)
         {
-            throw new HttpResponseException(HttpStatusCode.NotImplemented);
+            throw new NotImplementedException();
         }
     }
 }

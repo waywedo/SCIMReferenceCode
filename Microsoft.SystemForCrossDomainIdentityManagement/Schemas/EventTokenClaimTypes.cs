@@ -6,14 +6,14 @@ namespace Microsoft.SCIM
 {
     public static class EventTokenClaimTypes
     {
-        public const string Audience = "aud";
-        public const string Expiration = "exp";
-        public const string Events = "events";
-        public const string Identifier = "jti";
-        public const string IssuedAt = "iat";
-        public const string Issuer = "iss";
-        public const string NotBefore = "nbf";
-        public const string Subject = "sub";
-        public const string Transaction = "txn";
+        public const string AUDIENCE = "aud";
+        public const string EXPIRATION = "exp";
+        public const string EVENTS = "events";
+        public const string IDENTIFIER = "jti";
+        public const string ISSUED_AT = "iat";
+        public const string ISSUER = "iss";
+        public const string NOT_BEFORE = "nbf";
+        public const string SUBJECT = "sub";
+        public const string TRANSACTION = "txn";
     }
 }

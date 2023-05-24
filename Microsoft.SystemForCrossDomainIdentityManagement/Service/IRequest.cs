@@ -1,17 +1,16 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net.Http;
-
     public interface IRequest
     {
         Uri BaseResourceIdentifier { get; }
         string CorrelationIdentifier { get; }
         IReadOnlyCollection<IExtension> Extensions { get; }
-        HttpRequestMessage Request { get; }
+        HttpRequest Request { get; }
     }
 
     public interface IRequest<TPayload> : IRequest where TPayload : class

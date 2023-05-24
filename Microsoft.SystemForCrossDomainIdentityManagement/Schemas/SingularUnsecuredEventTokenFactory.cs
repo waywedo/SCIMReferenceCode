@@ -1,37 +1,33 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-
     public class SingularUnsecuredEventTokenFactory : UnsecuredEventTokenFactory
     {
-        public SingularUnsecuredEventTokenFactory(string issuer, string eventSchemaIdentifier)
-            : base(issuer)
+        public SingularUnsecuredEventTokenFactory(string issuer, string eventSchemaIdentifier) : base(issuer)
         {
             if (string.IsNullOrWhiteSpace(eventSchemaIdentifier))
             {
                 throw new ArgumentNullException(nameof(eventSchemaIdentifier));
             }
 
-            this.EventSchemaIdentifier = eventSchemaIdentifier;
+            EventSchemaIdentifier = eventSchemaIdentifier;
         }
 
-        private string EventSchemaIdentifier
-        {
-            get;
-            set;
-        }
+        private string EventSchemaIdentifier { get;  }
 
         public override IEventToken Create(IDictionary<string, object> events)
         {
-            IDictionary<string, object> tokenEvents = new Dictionary<string, object>(1);
-            tokenEvents.Add(this.EventSchemaIdentifier, events);
-            IEventToken result = new EventToken(this.Issuer, this.Header, tokenEvents);
-            return result;
+            var tokenEvents = new Dictionary<string, object>(1)
+            {
+                { EventSchemaIdentifier, events }
+            };
+
+            return new EventToken(Issuer, Header, tokenEvents);
         }
     }
 }

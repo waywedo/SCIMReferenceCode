@@ -1,47 +1,44 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Net.Http;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net.Http;
-
     internal class InvalidBulkOperationContext : IBulkOperationContext
     {
-        private readonly IBulkOperationState state;
+        private readonly IBulkOperationState _state;
 
-        public InvalidBulkOperationContext(
-            IRequest<BulkRequest2> request,
-            BulkRequestOperation operation)
+        public InvalidBulkOperationContext(IRequest<BulkRequest2> request, BulkRequestOperation operation)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            this.state = new InvalidBulkOperationState(request, operation);
+            _state = new InvalidBulkOperationState(request, operation);
         }
 
         public bool Completed => true;
 
         public bool Faulted => true;
-        
-        public IRequest<BulkRequest2> BulkRequest => this.state.BulkRequest;
 
-        public HttpMethod Method => this.state.Operation.Method;
-        
-        public BulkRequestOperation Operation => this.state.Operation;
-        
-        public BulkResponseOperation Response => this.state.Response;
+        public IRequest<BulkRequest2> BulkRequest => _state.BulkRequest;
 
-        public void Complete(BulkResponseOperation response) => this.state.Complete(response);
+        public HttpMethod Method => _state.Operation.Method;
 
-        public bool TryPrepare() => this.state.TryPrepare();
+        public BulkRequestOperation Operation => _state.Operation;
+
+        public BulkResponseOperation Response => _state.Response;
+
+        public void Complete(BulkResponseOperation response) => _state.Complete(response);
+
+        public bool TryPrepare() => _state.TryPrepare();
     }
 }

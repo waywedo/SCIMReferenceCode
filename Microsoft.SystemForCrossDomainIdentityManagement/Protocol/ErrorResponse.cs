@@ -1,72 +1,57 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+    using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Net;
+    using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net;
-    using System.Runtime.Serialization;
-
     [DataContract]
     public sealed class ErrorResponse : Schematized
     {
-        private ErrorType errorType;
+        private ErrorType _errorType;
 
-        [DataMember(Name = ProtocolAttributeNames.ErrorType)]
-        private string errorTypeValue;
-
-        private Response response;
+        [SuppressMessage("CodeQuality", "IDE0052:Remove unread private members", Justification = "Serialized Value")]
+        [DataMember(Name = ProtocolAttributeNames.ERROR_TYPE)]
+        private string _errorTypeValue;
+        private Response _response;
 
         public ErrorResponse()
         {
-            this.Initialize();
-            this.AddSchema(ProtocolSchemaIdentifiers.Version2Error);
+            Initialize();
+            AddSchema(ProtocolSchemaIdentifiers.VERSION_2_ERROR);
         }
 
-        [DataMember(Name = ProtocolAttributeNames.Detail)]
-        public string Detail
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = ProtocolAttributeNames.DETAIL)]
+        public string Detail { get; set; }
 
         public ErrorType ErrorType
         {
-            get
-            {
-                return this.errorType;
-            }
-
+            get { return _errorType; }
             set
             {
-                this.errorType = value;
-                this.errorTypeValue = Enum.GetName(typeof(ErrorType), value);
+                _errorType = value;
+                _errorTypeValue = Enum.GetName(typeof(ErrorType), value);
             }
         }
 
         public HttpStatusCode Status
         {
-            get
-            {
-                return this.response.Status;
-            }
-
-            set
-            {
-                this.response.Status = value;
-            }
+            get { return _response.Status; }
+            set { _response.Status = value; }
         }
 
         private void Initialize()
         {
-            this.response = new Response();
+            _response = new Response();
         }
 
         [OnDeserializing]
-        private void OnDeserializing(StreamingContext context)
+        private void OnDeserializing(StreamingContext _)
         {
-            this.Initialize();
+            Initialize();
         }
     }
 }

@@ -1,98 +1,68 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net;
-    using System.Net.Http;
-    using System.Web.Http;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-
-    [Route(ServiceConstants.RouteServiceConfiguration)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_SERVICE_CONFIGURATION)]
+    //[Authorize]
     [ApiController]
     public sealed class ServiceProviderConfigurationController : ControllerTemplate
     {
-        public ServiceProviderConfigurationController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        private readonly IProvider _provider;
+        private readonly ILogger<ServiceProviderConfigurationController> _logger;
+
+        public ServiceProviderConfigurationController(IProvider provider, ILogger<ServiceProviderConfigurationController> logger)
         {
+            _provider = provider;
+            _logger = logger;
         }
 
-        public ServiceConfigurationBase Get()
+        [HttpGet]
+        public ActionResult<ServiceConfigurationBase> Get()
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProvider provider = this.provider;
-                if (null == provider)
+                var provider = _provider;
+
+                if (provider == null)
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                ServiceConfigurationBase result = provider.Configuration;
-                return result;
+                return provider.Configuration;
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ServiceProviderConfigurationControllerGetArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Service provider configuration controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ServiceProviderConfigurationControllerGetNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Service provider configuration controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ServiceProviderConfigurationControllerGetNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Service provider configuration controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.ServiceProviderConfigurationControllerGetException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Service provider configuration controller get", requestId);
 
                 throw;
             }

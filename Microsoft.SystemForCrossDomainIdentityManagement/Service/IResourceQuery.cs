@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System.Collections.Generic;
-
     public interface IResourceQuery
     {
         IReadOnlyCollection<string> Attributes { get; }

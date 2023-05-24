@@ -1,30 +1,29 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Net.Http;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Net.Http;
-    
     internal abstract class BulkOperationContextBase<TPayload> : IBulkOperationContext<TPayload> where TPayload : class
     {
         protected BulkOperationContextBase()
         {
         }
 
-        public IRequest<BulkRequest2> BulkRequest => this.State.BulkRequest;
+        public IRequest<BulkRequest2> BulkRequest => State.BulkRequest;
 
         public bool Completed
         {
             get
             {
-                if (this.State == this.ProcessedState)
+                if (State == ProcessedState)
                 {
                     return true;
                 }
 
-                if (this.State == this.FaultedState)
+                if (State == FaultedState)
                 {
                     return true;
                 }
@@ -35,99 +34,70 @@ namespace Microsoft.SCIM
 
         public bool Faulted
         {
-            get
-            {
-                if (this.State == this.FaultedState)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            get { return State == FaultedState; }
         }
 
-        public IBulkOperationState<TPayload> FaultedState
-        {
-            get;
-            private set;
-        }
+        public IBulkOperationState<TPayload> FaultedState { get; private set; }
 
-        public HttpMethod Method => this.State.Operation.Method;
+        public HttpMethod Method => State.Operation.Method;
 
-        public BulkRequestOperation Operation => this.State.Operation;
+        public BulkRequestOperation Operation => State.Operation;
 
-        public IBulkOperationState<TPayload> PreparedState
-        {
-            get;
-            private set;
-        }
+        public IBulkOperationState<TPayload> PreparedState { get; private set; }
 
-        public IBulkOperationState<TPayload> ProcessedState
-        {
-            get;
-            private set;
-        }
+        public IBulkOperationState<TPayload> ProcessedState { get; private set; }
 
-        public IBulkOperationState<TPayload> ReceivedState
-        {
-            get;
-            set;
-        }
+        public IBulkOperationState<TPayload> ReceivedState { get; set; }
 
-        public IRequest<TPayload> Request => this.State.Request;
+        public IRequest<TPayload> Request => State.Request;
 
-        public BulkResponseOperation Response => this.State.Response;
+        public BulkResponseOperation Response => State.Response;
 
-        public IBulkOperationState<TPayload> State
-        {
-            get;
-            set;
-        }
+        public IBulkOperationState<TPayload> State { get; set; }
 
         public void Complete(BulkResponseOperation response)
         {
-            if (null == response)
+            if (response == null)
             {
                 throw new ArgumentNullException(nameof(response));
             }
 
-            this.State.Complete(response);
+            State.Complete(response);
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters", Justification = "False analysis of the handling of receivedState.  It is assigned as the value of properties of the derived IBulkOperationState<TPayload> type, rather than of the base IBulkOperationState type.")]
         public void Initialize(IBulkOperationState<TPayload> receivedState)
         {
-            if (null == receivedState)
+            if (receivedState == null)
             {
                 throw new ArgumentNullException(nameof(receivedState));
             }
 
-            if (null == receivedState.Operation)
+            if (receivedState.Operation == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidState);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidState);
             }
 
-            if (null == receivedState.BulkRequest)
+            if (receivedState.BulkRequest == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidState);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidState);
             }
 
-            this.State = this.ReceivedState = receivedState;
-            this.PreparedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
-            this.FaultedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
-            this.ProcessedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
+            State = ReceivedState = receivedState;
+            PreparedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
+            FaultedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
+            ProcessedState = new BulkOperationState<TPayload>(receivedState.BulkRequest, receivedState.Operation, this);
         }
 
         public void Prepare(IRequest<TPayload> request)
         {
-            if (null == request)
+            if (request == null)
             {
                 throw new ArgumentNullException(nameof(request));
             }
 
-            this.State.Prepare(request);
+            State.Prepare(request);
         }
 
-        public bool TryPrepare() => this.State.TryPrepare();
+        public bool TryPrepare() => State.TryPrepare();
     }
 }

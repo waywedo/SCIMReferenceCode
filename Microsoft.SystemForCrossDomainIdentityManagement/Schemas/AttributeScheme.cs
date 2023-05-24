@@ -1,34 +1,34 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Runtime.Serialization;
-    using System.Linq;
-
     [DataContract]
     public sealed class AttributeScheme
     {
-        private AttributeDataType dataType;
-        private string dataTypeValue;
-        private Mutability mutability;
-        private string mutabilityValue;
-        private Returned returned;
-        private string returnedValue;
-        private Uniqueness uniqueness;
-        private string uniquenessValue;
-        private List<AttributeScheme> subAttributes;
-        private IReadOnlyCollection<AttributeScheme> subAttributesWrapper;
-        private List<string> canonicalValues;
-        private IReadOnlyCollection<string> canonicalValuesWrapper;
+        private AttributeDataType _dataType;
+        private string _dataTypeValue;
+        private Mutability _mutability;
+        private string _mutabilityValue;
+        private Returned _returned;
+        private string _returnedValue;
+        private Uniqueness _uniqueness;
+        private string _uniquenessValue;
+        private List<AttributeScheme> _subAttributes;
+        private IReadOnlyCollection<AttributeScheme> _subAttributesWrapper;
+        private List<string> _canonicalValues;
+        private IReadOnlyCollection<string> _canonicalValuesWrapper;
 
-        private List<string> referenceTypes;
-        private IReadOnlyCollection<string> referenceTypesWrapper;
+        private List<string> _referenceTypes;
+        private IReadOnlyCollection<string> _referenceTypesWrapper;
 
-        private object thisLock;
+        private object _thisLock;
 
         public AttributeScheme()
         {
@@ -41,249 +41,190 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(name));
             }
 
-            this.OnInitialization();
-            this.OnInitialized();
-            this.Name = name;
-            this.DataType = type;
-            this.Plural = plural;
-            this.Mutability = Mutability.readWrite;
-            this.Returned = Returned.@default;
-            this.Uniqueness = Uniqueness.none;
+            OnInitialization();
+            OnInitialized();
+            Name = name;
+            DataType = type;
+            Plural = plural;
+            Mutability = Mutability.readWrite;
+            Returned = Returned.@default;
+            Uniqueness = Uniqueness.none;
         }
 
-        [DataMember(Name = AttributeNames.CaseExact)]
-        public bool CaseExact
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.CASE_EXACT)]
+        public bool CaseExact { get; set; }
 
         public AttributeDataType DataType
         {
-            get
-            {
-                return this.dataType;
-            }
-
+            get { return _dataType; }
             set
             {
-                this.dataTypeValue = Enum.GetName(typeof(AttributeDataType), value);
-                this.dataType = value;
+                _dataTypeValue = Enum.GetName(typeof(AttributeDataType), value);
+                _dataType = value;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Type)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Serialization")]
+        [SuppressMessage("Roslynator", "RCS1213:Remove unused member declaration.", Justification = "Serialization")]
+        [DataMember(Name = AttributeNames.TYPE)]
         private string DataTypeValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
-            get
-            {
-                return this.dataTypeValue;
-            }
-
+            get { return _dataTypeValue; }
             set
             {
-                this.dataType = (AttributeDataType)Enum.Parse(typeof(AttributeDataType), value);
-                this.dataTypeValue = value;
+                _dataType = (AttributeDataType)Enum.Parse(typeof(AttributeDataType), value);
+                _dataTypeValue = value;
             }
         }
 
-        [DataMember(Name = AttributeNames.Description)]
-        public string Description
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.DESCRIPTION)]
+        public string Description { get; set; }
 
         public Mutability Mutability
         {
-            get
-            {
-                return this.mutability;
-            }
-
+            get { return _mutability; }
             set
             {
-                this.mutabilityValue = Enum.GetName(typeof(Mutability), value);
-                this.mutability = value;
+                _mutabilityValue = Enum.GetName(typeof(Mutability), value);
+                _mutability = value;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Mutability)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Serialization")]
+        [SuppressMessage("Roslynator", "RCS1213:Remove unused member declaration.", Justification = "Serialization")]
+        [DataMember(Name = AttributeNames.MUTABILITY)]
         private string MutabilityValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
-            get
-            {
-                return this.mutabilityValue;
-            }
-
+            get { return _mutabilityValue; }
             set
             {
-                this.mutability = (Mutability)Enum.Parse(typeof(Mutability), value);
-                this.mutabilityValue = value;
+                _mutability = (Mutability)Enum.Parse(typeof(Mutability), value);
+                _mutabilityValue = value;
             }
         }
 
-        [DataMember(Name = AttributeNames.Name)]
-        public string Name
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.NAME)]
+        public string Name { get; set; }
 
-        [DataMember(Name = AttributeNames.Plural)]
-        public bool Plural
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.PLURAL)]
+        public bool Plural { get; set; }
 
-        [DataMember(Name = AttributeNames.Required)]
-        public bool Required
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.REQUIRED)]
+        public bool Required { get; set; }
 
         public Returned Returned
         {
-            get
-            {
-                return this.returned;
-            }
-
+            get { return _returned; }
             set
             {
-                this.returnedValue = Enum.GetName(typeof(Returned), value);
-                this.returned = value;
+                _returnedValue = Enum.GetName(typeof(Returned), value);
+                _returned = value;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Returned)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Serialization")]
+        [SuppressMessage("Roslynator", "RCS1213:Remove unused member declaration.", Justification = "Serialization")]
+        [DataMember(Name = AttributeNames.RETURNED)]
         private string ReturnedValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
-            get
-            {
-                return this.returnedValue;
-            }
-
+            get { return _returnedValue; }
             set
             {
-                this.returned = (Returned)Enum.Parse(typeof(Returned), value);
-                this.returnedValue = value;
+                _returned = (Returned)Enum.Parse(typeof(Returned), value);
+                _returnedValue = value;
             }
         }
 
         public Uniqueness Uniqueness
         {
-            get
-            {
-                return this.uniqueness;
-            }
-
+            get { return _uniqueness; }
             set
             {
-                this.uniquenessValue = Enum.GetName(typeof(Uniqueness), value);
-                this.uniqueness = value;
+                _uniquenessValue = Enum.GetName(typeof(Uniqueness), value);
+                _uniqueness = value;
             }
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode", Justification = "Called upon serialization")]
-        [DataMember(Name = AttributeNames.Uniqueness)]
-#pragma warning disable IDE0051 // Remove unused private members
+        [SuppressMessage("CodeQuality", "IDE0051:Remove unused private members", Justification = "Serialization")]
+        [SuppressMessage("Roslynator", "RCS1213:Remove unused member declaration.", Justification = "Serialization")]
+        [DataMember(Name = AttributeNames.UNIQUENESS)]
         private string UniquenessValue
-#pragma warning restore IDE0051 // Remove unused private members
         {
-            get
-            {
-                return this.uniquenessValue;
-            }
-
+            get { return _uniquenessValue; }
             set
             {
-                this.uniqueness = (Uniqueness)Enum.Parse(typeof(Uniqueness), value);
-                this.uniquenessValue = value;
+                _uniqueness = (Uniqueness)Enum.Parse(typeof(Uniqueness), value);
+                _uniquenessValue = value;
             }
         }
 
-        [DataMember(Name = AttributeNames.SubAttributes)]
-        public IReadOnlyCollection<AttributeScheme> SubAttributes => this.subAttributesWrapper.Count == 0 ? null : this.subAttributesWrapper;
-        
-        [DataMember(Name = AttributeNames.CanonicalValues)]
-        public IReadOnlyCollection<string> CanonicalValues => this.canonicalValuesWrapper.Count == 0 ? null : this.canonicalValuesWrapper;
-       
-        [DataMember(Name = AttributeNames.ReferenceTypes)]
-        public IReadOnlyCollection<string> ReferenceTypes => this.referenceTypesWrapper.Count == 0 ? null : this.referenceTypesWrapper;
-        
+        [DataMember(Name = AttributeNames.SUB_ATTRIBUTES)]
+        public IReadOnlyCollection<AttributeScheme> SubAttributes => _subAttributesWrapper.Count == 0 ? null : _subAttributesWrapper;
+
+        [DataMember(Name = AttributeNames.CANONICAL_VALUES)]
+        public IReadOnlyCollection<string> CanonicalValues => _canonicalValuesWrapper.Count == 0 ? null : _canonicalValuesWrapper;
+
+        [DataMember(Name = AttributeNames.REFERENCE_TYPES)]
+        public IReadOnlyCollection<string> ReferenceTypes => _referenceTypesWrapper.Count == 0 ? null : _referenceTypesWrapper;
+
         public void AddSubAttribute(AttributeScheme subAttribute)
         {
+            var containsFunction = new Func<bool>(
+                () => _subAttributes.Any(item =>
+                    string.Equals(item.Name, subAttribute.Name, StringComparison.OrdinalIgnoreCase)
+                )
+            );
 
-            Func<bool> containsFunction =
-                new Func<bool>(
-                        () =>
-                            this
-                            .subAttributes
-                            .Any(
-                                (AttributeScheme item) =>
-                                    string.Equals(item.Name, subAttribute.Name, StringComparison.OrdinalIgnoreCase)));
-            AddItemFunction(subAttribute, subAttributes, containsFunction);
+            AddItemFunction(subAttribute, _subAttributes, containsFunction);
         }
+
         public void AddCanonicalValues(string canonicalValue)
         {
-            Func<bool> containsFunction =
-                new Func<bool>(
-                        () =>
-                            this
-                            .canonicalValues
-                            .Any(
-                                (string item) =>
-                                    string.Equals(item, canonicalValue, StringComparison.OrdinalIgnoreCase)));
-            AddItemFunction(canonicalValue, canonicalValues, containsFunction);
+            var containsFunction = new Func<bool>(() =>
+                _canonicalValues.Any((string item) =>
+                    string.Equals(item, canonicalValue, StringComparison.OrdinalIgnoreCase)
+                )
+            );
+
+            AddItemFunction(canonicalValue, _canonicalValues, containsFunction);
         }
+
         public void AddReferenceTypes(string referenceType)
         {
-            Func<bool> containsFunction =
-                new Func<bool>(
-                        () =>
-                            this
-                            .referenceTypes
-                            .Any(
-                                (string item) =>
-                                    string.Equals(item, referenceType, StringComparison.OrdinalIgnoreCase)));
-            AddItemFunction(referenceType, referenceTypes, containsFunction);
+            var containsFunction = new Func<bool>(() =>
+                _referenceTypes.Any(item =>
+                    string.Equals(item, referenceType, StringComparison.OrdinalIgnoreCase)
+                )
+            );
+
+            AddItemFunction(referenceType, _referenceTypes, containsFunction);
         }
+
         private void OnInitialization()
         {
-            this.thisLock = new object();
-            this.subAttributes = new List<AttributeScheme>();
-            this.canonicalValues = new List<string>();
-            this.referenceTypes = new List<string>();
+            _thisLock = new object();
+            _subAttributes = new List<AttributeScheme>();
+            _canonicalValues = new List<string>();
+            _referenceTypes = new List<string>();
         }
 
         private void OnInitialized()
         {
-            this.subAttributesWrapper = this.subAttributes.AsReadOnly();
-            this.canonicalValuesWrapper = this.canonicalValues.AsReadOnly();
-            this.referenceTypesWrapper = this.referenceTypes.AsReadOnly();
+            _subAttributesWrapper = _subAttributes.AsReadOnly();
+            _canonicalValuesWrapper = _canonicalValues.AsReadOnly();
+            _referenceTypesWrapper = _referenceTypes.AsReadOnly();
         }
+
         private void AddItemFunction<T>(T item, List<T> itemCollection, Func<bool> containsFunction)
         {
-            if (null == item)
+            if (item == null)
             {
-
                 throw new ArgumentNullException(nameof(item));
             }
+
             if (!containsFunction())
             {
-                lock (this.thisLock)
+                lock (_thisLock)
                 {
                     if (!containsFunction())
                     {

@@ -13,8 +13,8 @@ namespace Microsoft.SCIM
         {
         }
 
-        public const string Home = "home";
-        public const string Other = "other";
-        public const string Work = "work";
+        public const string HOME = "home";
+        public const string OTHER = "other";
+        public const string WORK = "work";
     }
 }

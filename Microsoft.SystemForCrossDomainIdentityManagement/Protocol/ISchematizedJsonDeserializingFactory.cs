@@ -4,10 +4,8 @@
 
 namespace Microsoft.SCIM
 {
-    internal interface ISchematizedJsonDeserializingFactory :
-        IGroupDeserializer,
-        IPatchRequest2Deserializer,
-        IUserDeserializer
+    internal interface ISchematizedJsonDeserializingFactory : IGroupDeserializer,
+        IPatchRequest2Deserializer, IUserDeserializer
     {
     }
 }

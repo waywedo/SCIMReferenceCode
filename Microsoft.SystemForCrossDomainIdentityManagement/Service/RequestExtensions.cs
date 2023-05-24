@@ -1,177 +1,168 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Linq;
-    using System.Net;
-    using System.Net.Http;
-    using System.Web.Http;
-    using System.Collections.Generic;
-    using Newtonsoft.Json;
-
     public static class RequestExtensions
     {
-        private const string SegmentInterface =
-            RequestExtensions.SegmentSeparator +
-            SchemaConstants.PathInterface +
-            RequestExtensions.SegmentSeparator;
-        private const string SegmentSeparator = "/";
+        private const string SEGMENT_INTERFACE = SEGMENT_SEPARATOR + SchemaConstants.PATH_INTERFACE + SEGMENT_SEPARATOR;
+        private const string SEGMENT_SEPARATOR = "/";
+        private static readonly Lazy<char[]> SegmentSeparators = new(() => SEGMENT_SEPARATOR.ToArray());
 
-        private readonly static Lazy<char[]> SegmentSeparators =
-            new Lazy<char[]>(
-                () =>
-                    SegmentSeparator.ToArray());
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1062:Validate arguments of public methods", MessageId = "0", Justification = "False analysis of the 'this' parameter of an extension method")]
-        public static Uri GetBaseResourceIdentifier(this HttpRequestMessage request)
+        public static Uri GetBaseResourceIdentifier(this HttpRequest request)
         {
-            if (null == request.RequestUri)
+            if (request == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidRequest);
             }
 
-            string lastSegment =
-                request.RequestUri.AbsolutePath.Split(
-                    RequestExtensions.SegmentSeparators.Value,
-                    StringSplitOptions.RemoveEmptyEntries)
-                .Last();
-            if (string.Equals(lastSegment, SchemaConstants.PathInterface, StringComparison.OrdinalIgnoreCase))
+            var lastSegment = request.Path.Value.Split(SegmentSeparators.Value, StringSplitOptions.RemoveEmptyEntries).Last();
+
+            if (string.Equals(lastSegment, SchemaConstants.PATH_INTERFACE, StringComparison.OrdinalIgnoreCase))
             {
-                return request.RequestUri;
+                return new Uri(request.GetDisplayUrl());
             }
 
-            string resourceIdentifier = request.RequestUri.AbsoluteUri;
-
-            int indexInterface =
-                resourceIdentifier
-                .LastIndexOf(
-                    RequestExtensions.SegmentInterface,
-                    StringComparison.OrdinalIgnoreCase);
+            var resourceIdentifier = request.GetDisplayUrl();
+            var indexInterface = resourceIdentifier.LastIndexOf(SEGMENT_INTERFACE, StringComparison.OrdinalIgnoreCase);
 
             if (indexInterface < 0)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidRequest);
             }
 
-            string baseResource = resourceIdentifier.Substring(0, indexInterface);
-            Uri result = new Uri(baseResource, UriKind.Absolute);
-            return result;
+            var baseResource = resourceIdentifier[..indexInterface];
+
+            return new Uri(baseResource, UriKind.Absolute);
         }
 
-        public static bool TryGetRequestIdentifier(this HttpRequestMessage request, out string requestIdentifier)
+        public static bool TryGetRequestIdentifier(this HttpRequest request, out string requestIdentifier)
         {
-            request?.Headers.TryGetValues("client-id", out IEnumerable<string> _);
+            request?.Headers.TryGetValue("client-id", out _);
             requestIdentifier = Guid.NewGuid().ToString();
             return true;
         }
 
-        private static void Relate(
-            this IBulkUpdateOperationContext context,
-            IEnumerable<IBulkCreationOperationContext> creations)
+        public static Queue<IBulkOperationContext> EnqueueOperations(this IRequest<BulkRequest2> request)
         {
-            if (null == creations)
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            if (request.Payload == null)
+            {
+                throw new ArgumentException(ServiceResources.ExceptionInvalidRequest);
+            }
+
+            var creations = new List<IBulkCreationOperationContext>();
+            var updates = new List<IBulkUpdateOperationContext>();
+            var operations = new List<IBulkOperationContext>();
+
+            foreach (BulkRequestOperation operation in request.Payload.Operations)
+            {
+                request.Enlist(operation, operations, creations, updates);
+            }
+
+            var result = new Queue<IBulkOperationContext>(operations.Count);
+
+            foreach (IBulkOperationContext operation in operations)
+            {
+                result.Enqueue(operation);
+            }
+
+            return result;
+        }
+
+        private static void Relate(this IBulkUpdateOperationContext context, IEnumerable<IBulkCreationOperationContext> creations)
+        {
+            if (creations == null)
             {
                 throw new ArgumentNullException(nameof(creations));
             }
 
-            if (null == context.Method)
+            if (context.Method == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidContext);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidContext);
             }
 
-            if (null == context.Operation)
+            if (context.Operation == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidContext);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidContext);
             }
 
-            try
-            {
-                dynamic operationDataJson = JsonConvert.DeserializeObject(context.Operation.Data.ToString());
-                IReadOnlyCollection<PatchOperation2Combined> patchOperations = operationDataJson.Operations.ToObject<List<PatchOperation2Combined>>();
-                PatchRequest2 patchRequest = new PatchRequest2(patchOperations);
+            dynamic operationDataJson = JsonConvert.DeserializeObject(context.Operation.Data.ToString());
+            var patchOperations = operationDataJson.Operations.ToObject<List<PatchOperation2Combined>>();
+            var patchRequest = new PatchRequest2(patchOperations);
 
-                foreach (IBulkCreationOperationContext creation in creations)
+            foreach (IBulkCreationOperationContext creation in creations)
+            {
+                if (creation.Operation == null)
                 {
-                    if (null == creation.Operation)
-                    {
-                        throw new InvalidOperationException(
-                            SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
-                    }
+                    throw new InvalidOperationException(
+                        ServiceResources.ExceptionInvalidOperation);
+                }
 
-                    if (string.IsNullOrWhiteSpace(creation.Operation.Identifier))
-                    {
-                        throw new InvalidOperationException(
-                            SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
-                    }
+                if (string.IsNullOrWhiteSpace(creation.Operation.Identifier))
+                {
+                    throw new InvalidOperationException(
+                        ServiceResources.ExceptionInvalidOperation);
+                }
 
-                    if (patchRequest.References(creation.Operation.Identifier))
-                    {
-                        creation.AddDependent(context);
-                        context.AddDependency(creation);
-                    }
+                if (patchRequest.References(creation.Operation.Identifier))
+                {
+                    creation.AddDependent(context);
+                    context.AddDependency(creation);
                 }
             }
-            catch
-            {
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
-            }
-                   
         }
-        
 
-        private static void Enlist(
-            this IRequest<BulkRequest2> request,
-            BulkRequestOperation operation,
-            List<IBulkOperationContext> operations,
-            List<IBulkCreationOperationContext> creations,
+        private static void Enlist(this IRequest<BulkRequest2> request, BulkRequestOperation operation,
+            List<IBulkOperationContext> operations, List<IBulkCreationOperationContext> creations,
             List<IBulkUpdateOperationContext> updates)
         {
-            if (null == operation)
+            if (operation == null)
             {
                 throw new ArgumentNullException(nameof(operation));
             }
 
-            if (null == operations)
+            if (operations == null)
             {
                 throw new ArgumentNullException(nameof(operations));
             }
 
-            if (null == creations)
+            if (creations == null)
             {
                 throw new ArgumentNullException(nameof(creations));
             }
 
-            if (null == updates)
+            if (updates == null)
             {
                 throw new ArgumentNullException(nameof(updates));
             }
 
-            if (null == operation.Method)
+            if (operation.Method == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidOperation);
             }
 
             if (HttpMethod.Post == operation.Method)
             {
-                IBulkCreationOperationContext context = new BulkCreationOperationContext(request, operation);
+                var context = new BulkCreationOperationContext(request, operation);
                 context.Relate(updates);
 
                 (IBulkOperationContext item, int index) firstDependent =
-                    operations
-                    .Select(
-                        (IBulkOperationContext item, int index) => (item, index))
-                    .Where(
-                        (candidateItem) =>
-                            context
-                            .Dependents
-                            .Any(
-                                (IBulkOperationContext dependentItem) =>
-                                    dependentItem == candidateItem.item))
-                    .OrderBy(
-                        (item) =>
-                            item.index)
-                    .FirstOrDefault();
+                    operations.Select((IBulkOperationContext item, int index) => (item, index))
+                        .Where(candidateItem => context.Dependents.Any(dependentItem => dependentItem == candidateItem.item))
+                        .OrderBy((item) => item.index)
+                        .FirstOrDefault();
 
                 if (firstDependent != default)
                 {
@@ -181,82 +172,55 @@ namespace Microsoft.SCIM
                 {
                     operations.Add(context);
                 }
+
                 creations.Add(context);
                 operations.AddRange(context.Subordinates);
                 updates.AddRange(context.Subordinates);
+
                 return;
             }
 
             if (HttpMethod.Delete == operation.Method)
             {
-                IBulkOperationContext context = new BulkDeletionOperationContext(request, operation);
+                var context = new BulkDeletionOperationContext(request, operation);
                 operations.Add(context);
-                return; 
+
+                return;
             }
 
             if (ProtocolExtensions.PatchMethod == operation.Method)
             {
-                IBulkUpdateOperationContext context = new BulkUpdateOperationContext(request, operation);
+                var context = new BulkUpdateOperationContext(request, operation);
                 context.Relate(creations);
                 operations.Add(context);
                 updates.Add(context);
+
                 return;
             }
 
-            throw new HttpResponseException(HttpStatusCode.BadRequest);
+            throw new InvalidOperationException();
         }
 
-        public static Queue<IBulkOperationContext> EnqueueOperations(this IRequest<BulkRequest2> request)
+        private static void Relate(this IBulkCreationOperationContext context, IEnumerable<IBulkUpdateOperationContext> updates)
         {
-            if (null == request)
-            {
-                throw new ArgumentNullException(nameof(request));
-            }
-
-            if (null == request.Payload)
-            {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidRequest);
-            }
-
-            List<IBulkCreationOperationContext> creations = new List<IBulkCreationOperationContext>();
-            List<IBulkUpdateOperationContext> updates = new List<IBulkUpdateOperationContext>();
-            List<IBulkOperationContext> operations = new List<IBulkOperationContext>();
-
-            foreach (BulkRequestOperation operation in request.Payload.Operations)
-            {
-                request.Enlist(operation, operations, creations, updates);
-            }
-
-            Queue<IBulkOperationContext> result = new Queue<IBulkOperationContext>(operations.Count);
-            foreach (IBulkOperationContext operation in operations)
-            {
-                result.Enqueue(operation);
-            }
-            return result;
-        }
-
-        private static void Relate(
-            this IBulkCreationOperationContext context,
-            IEnumerable<IBulkUpdateOperationContext> updates)
-        {
-            if (null == updates)
+            if (updates == null)
             {
                 throw new ArgumentNullException(nameof(updates));
             }
 
-            if (null == context.Method)
+            if (context.Method == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidContext);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidContext);
             }
 
-            if (null == context.Operation)
+            if (context.Operation == null)
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidContext);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidContext);
             }
 
             if (string.IsNullOrWhiteSpace(context.Operation.Identifier))
             {
-                throw new ArgumentException(SystemForCrossDomainIdentityManagementServiceResources.ExceptionInvalidOperation);
+                throw new ArgumentException(ServiceResources.ExceptionInvalidOperation);
             }
 
             foreach (IBulkUpdateOperationContext update in updates)
@@ -271,7 +235,7 @@ namespace Microsoft.SCIM
                         }
                         break;
                     default:
-                        throw new HttpResponseException(HttpStatusCode.BadRequest);
+                        throw new InvalidOperationException();
                 }
             }
         }

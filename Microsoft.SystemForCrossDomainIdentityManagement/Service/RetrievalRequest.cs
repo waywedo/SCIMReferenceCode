@@ -1,18 +1,14 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace Microsoft.SCIM
 {
-    using System.Collections.Generic;
-    using System.Net.Http;
-
     public sealed class RetrievalRequest :
-        SystemForCrossDomainIdentityManagementRequest<IResourceRetrievalParameters>
+        SCIMRequest<IResourceRetrievalParameters>
     {
-        public RetrievalRequest(
-            HttpRequestMessage request,
-            IResourceRetrievalParameters payload,
-            string correlationIdentifier,
-            IReadOnlyCollection<IExtension> extensions)
+        public RetrievalRequest(HttpRequest request, IResourceRetrievalParameters payload,
+            string correlationIdentifier, IReadOnlyCollection<IExtension> extensions)
             : base(request, payload, correlationIdentifier, extensions)
         {
         }

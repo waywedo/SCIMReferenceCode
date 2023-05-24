@@ -1,14 +1,13 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.Linq;
-
     public abstract class PatchRequest2DeserializingFactory<TPatchRequest, TOperation> :
         ProtocolJsonDeserializingFactory<TPatchRequest>,
         ISchematizedJsonDeserializingFactory<TPatchRequest>
@@ -17,115 +16,108 @@ namespace Microsoft.SCIM
     {
         public override TPatchRequest Create(IReadOnlyDictionary<string, object> json)
         {
-            Dictionary<string, object> normalized =
-                this.Normalize(json)
-                .ToDictionary(
-                    (KeyValuePair<string, object> item) => item.Key,
-                    (KeyValuePair<string, object> item) => item.Value);
-            if (normalized.TryGetValue(ProtocolAttributeNames.Operations, out object operations))
+            var normalized = Normalize(json).ToDictionary(
+                (KeyValuePair<string, object> item) => item.Key,
+                (KeyValuePair<string, object> item) => item.Value
+            );
+
+            if (normalized.TryGetValue(ProtocolAttributeNames.OPERATIONS, out object operations))
             {
-                normalized.Remove(ProtocolAttributeNames.Operations);
+                normalized.Remove(ProtocolAttributeNames.OPERATIONS);
             }
-            TPatchRequest result = base.Create(normalized);
+
+            var result = base.Create(normalized);
+
             if (operations != null)
             {
-                IReadOnlyCollection<PatchOperation2Base> patchOperations =
-                    PatchRequest2DeserializingFactory<TPatchRequest, TOperation>.Deserialize(operations);
-                foreach (PatchOperation2Base patchOperation in patchOperations)
+                foreach (var patchOperation in Deserialize(operations))
                 {
                     result.AddOperation(patchOperation as TOperation);
                 }
             }
+
             return result;
         }
 
         private static bool TryDeserialize(Dictionary<string, object> json, out PatchOperation2Base operation)
         {
             operation = null;
-            if (null == json)
+
+            if (json == null)
             {
                 throw new ArgumentNullException(nameof(json));
             }
 
-            if (!json.TryGetValue(AttributeNames.Value, out object value))
+            if (!json.TryGetValue(AttributeNames.VALUE, out object value))
             {
                 return false;
             }
 
             switch (value)
             {
-                case string scalar:
+                case string:
                     operation = new PatchOperation2SingleValuedJsonDeserializingFactory().Create(json);
                     return true;
-                case ArrayList _:
-                case object _:
+                case ArrayList:
+                case object:
                     operation = new PatchOperation2JsonDeserializingFactory().Create(json);
                     return true;
                 default:
-                    string unsupported = value.GetType().FullName;
+                    var unsupported = value.GetType().FullName;
                     throw new NotSupportedException(unsupported);
             }
         }
 
         private static IReadOnlyCollection<PatchOperation2Base> Deserialize(ArrayList operations)
         {
-            if (null == operations)
+            if (operations == null)
             {
                 throw new ArgumentNullException(nameof(operations));
             }
 
-            List<PatchOperation2Base> result = new List<PatchOperation2Base>(operations.Count);
+            var result = new List<PatchOperation2Base>(operations.Count);
+
             foreach (Dictionary<string, object> json in operations)
             {
-                if
-                (
-                    PatchRequest2DeserializingFactory<TPatchRequest, TOperation>.TryDeserialize(
-                        json,
-                        out PatchOperation2Base patchOperation)
-                )
+                if (TryDeserialize(json, out PatchOperation2Base patchOperation))
                 {
                     result.Add(patchOperation);
                 }
             }
+
             return result;
         }
 
         private static IReadOnlyCollection<PatchOperation2Base> Deserialize(object[] operations)
         {
-            if (null == operations)
+            if (operations == null)
             {
                 throw new ArgumentNullException(nameof(operations));
             }
 
-            List<PatchOperation2Base> result = new List<PatchOperation2Base>(operations.Length);
-            foreach (Dictionary<string, object> json in operations)
+            var result = new List<PatchOperation2Base>(operations.Length);
+
+            foreach (var json in operations.Cast<Dictionary<string, object>>())
             {
-                if
-                (
-                    PatchRequest2DeserializingFactory<TPatchRequest, TOperation>.TryDeserialize(
-                        json,
-                        out PatchOperation2Base patchOperation)
-                )
+                if (TryDeserialize(json, out PatchOperation2Base patchOperation))
                 {
                     result.Add(patchOperation);
                 }
             }
+
             return result;
         }
 
         private static IReadOnlyCollection<PatchOperation2Base> Deserialize(object operations)
         {
-            IReadOnlyCollection<PatchOperation2Base> result;
             switch (operations)
             {
                 case ArrayList list:
-                    result = PatchRequest2DeserializingFactory<TPatchRequest, TOperation>.Deserialize(list);
-                    return result;
+                    return Deserialize(list);
                 case object[] array:
-                    result = PatchRequest2DeserializingFactory<TPatchRequest, TOperation>.Deserialize(array);
-                    return result;
+                    return Deserialize(array);
                 default:
-                    string unsupported = operations.GetType().FullName;
+                    var unsupported = operations.GetType().FullName;
                     throw new NotSupportedException(unsupported);
             }
         }

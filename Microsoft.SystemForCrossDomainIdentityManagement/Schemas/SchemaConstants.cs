@@ -6,7 +6,7 @@ namespace Microsoft.SCIM
 {
     public static class SchemaConstants
     {
-        public const string PathInterface = "scim";
-        public const string SeparatorSchemaIdentifierAttribute = ":";
+        public const string PATH_INTERFACE = "scim";
+        public const string SEPARATOR_SCHEMA_IDENTIFIER_ATTRIBUTE = ":";
     }
 }

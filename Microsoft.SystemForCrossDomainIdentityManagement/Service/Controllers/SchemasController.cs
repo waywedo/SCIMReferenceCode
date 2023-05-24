@@ -1,106 +1,75 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Net;
-    using System.Net.Http;
-    using System.Web.Http;
-    using Microsoft.AspNetCore.Authorization;
-    using Microsoft.AspNetCore.Mvc;
-
-    [Route(ServiceConstants.RouteSchemas)]
-    [Authorize]
+    [Route(ServiceConstants.ROUTE_SCHEMAS)]
+    //[Authorize]
     [ApiController]
     public sealed class SchemasController : ControllerTemplate
     {
-        public SchemasController(IProvider provider, IMonitor monitor)
-            : base(provider, monitor)
+        private readonly IProvider _provider;
+        private readonly ILogger<SchemasController> _logger;
+
+        public SchemasController(IProvider provider, ILogger<SchemasController> logger)
         {
+            _provider = provider;
+            _logger = logger;
         }
 
-        public QueryResponseBase Get()
+        [HttpGet]
+        public ActionResult<QueryResponseBase> Get()
         {
-            string correlationIdentifier = null;
+            string requestId = null;
 
             try
             {
-                HttpRequestMessage request = this.ConvertRequest();
-                if (!request.TryGetRequestIdentifier(out correlationIdentifier))
+                if (!Request.TryGetRequestIdentifier(out requestId))
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IProvider provider = this.provider;
-                if (null == provider)
+                IProvider provider = _provider;
+
+                if (provider == null)
                 {
-                    throw new HttpResponseException(HttpStatusCode.InternalServerError);
+                    return StatusCode(StatusCodes.Status500InternalServerError);
                 }
 
-                IReadOnlyCollection<Resource> resources = provider.Schema;
-                QueryResponseBase result = new QueryResponse(resources);
-                
-                result.TotalResults =
-                    result.ItemsPerPage =
-                        resources.Count;
+                var resources = provider.Schema;
+                var result = new QueryResponse(resources);
+
+                result.TotalResults = result.ItemsPerPage = resources.Count;
+
                 result.StartIndex = 1;
+
                 return result;
-                
             }
             catch (ArgumentException argumentException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            argumentException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.SchemasControllerGetArgumentException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(argumentException, "{requestId} Schemas controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.BadRequest);
+                return BadRequest();
             }
             catch (NotImplementedException notImplementedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notImplementedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.SchemasControllerGetNotImplementedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notImplementedException, "{requestId} Schemas controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (NotSupportedException notSupportedException)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            notSupportedException,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.SchemasControllerGetNotSupportedException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(notSupportedException, "{requestId} Schemas controller get", requestId);
 
-                throw new HttpResponseException(HttpStatusCode.NotImplemented);
+                return StatusCode(StatusCodes.Status501NotImplemented);
             }
             catch (Exception exception)
             {
-                if (this.TryGetMonitor(out IMonitor monitor))
-                {
-                    IExceptionNotification notification =
-                        ExceptionNotificationFactory.Instance.CreateNotification(
-                            exception,
-                            correlationIdentifier,
-                            ServiceNotificationIdentifiers.SchemasControllerGetException);
-                    monitor.Report(notification);
-                }
+                _logger.LogError(exception, "{requestId} Schemas controller get", requestId);
 
                 throw;
             }

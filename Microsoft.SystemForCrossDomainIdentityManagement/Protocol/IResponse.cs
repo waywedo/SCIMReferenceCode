@@ -1,11 +1,10 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Net;
 
 namespace Microsoft.SCIM
 {
-    using System.Net;
-
     internal interface IResponse
     {
         HttpStatusCode Status { get; set; }

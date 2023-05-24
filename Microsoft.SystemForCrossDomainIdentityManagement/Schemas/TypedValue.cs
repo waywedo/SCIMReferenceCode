@@ -1,19 +1,14 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System.Runtime.Serialization;
-
     [DataContract]
     public abstract class TypedValue : TypedItem
     {
-        [DataMember(Name = AttributeNames.Value, Order = 0)]
-        public string Value
-        {
-            get;
-            set;
-        }
+        [DataMember(Name = AttributeNames.VALUE, Order = 0)]
+        public string Value { get; set; }
     }
 }

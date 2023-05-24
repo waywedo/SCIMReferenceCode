@@ -1,33 +1,30 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Newtonsoft.Json;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Runtime.Serialization;
 
 namespace Microsoft.SCIM
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Globalization;
-    using System.Linq;
-    using System.Runtime.Serialization;
-    using Newtonsoft.Json;
-
     [DataContract]
     public sealed class PatchOperation2Combined : PatchOperation2Base
     {
-        private const string Template = "{0}: [{1}]";
+        private const string TEMPLATE = "{0}: [{1}]";
 
-        [DataMember(Name = AttributeNames.Value, Order = 2)]
-        private object values;
-
+        [DataMember(Name = AttributeNames.VALUE, Order = 2)]
+        private object _values;
 
         public PatchOperation2Combined()
         {
         }
 
-        public PatchOperation2Combined(OperationName operationName, string pathExpression)
-            : base(operationName, pathExpression)
+        public PatchOperation2Combined(OperationName operationName, string pathExpression) : base(operationName, pathExpression)
         {
         }
+
         public static PatchOperation2Combined Create(OperationName operationName, string pathExpression, string value)
         {
             if (string.IsNullOrWhiteSpace(pathExpression))
@@ -40,65 +37,53 @@ namespace Microsoft.SCIM
                 throw new ArgumentNullException(nameof(value));
             }
 
-            OperationValue operationValue = new OperationValue();
-            operationValue.Value = value;
+            var operationValue = new OperationValue
+            {
+                Value = value
+            };
 
-            PatchOperation2Combined result = new PatchOperation2Combined(operationName, pathExpression);
-            result.Value = JsonConvert.SerializeObject(operationValue);
-
-            return result;
+            return new PatchOperation2Combined(operationName, pathExpression)
+            {
+                Value = JsonConvert.SerializeObject(operationValue)
+            };
         }
 
         public string Value
         {
             get
             {
-                if (this.values == null)
+                if (_values == null)
                 {
                     return null;
                 }
 
-                string result = JsonConvert.SerializeObject(this.values);
-                return result;
+                return JsonConvert.SerializeObject(_values);
             }
 
             set
             {
-                this.values = value;
+                _values = value;
             }
         }
 
         [OnDeserialized]
-        private void OnDeserialized(StreamingContext context)
+        private void OnDeserialized(StreamingContext _)
         {
-            if (this.Value == null)
+            if (Value == null && this?.Path?.AttributePath != null
+                && Path.AttributePath.Contains(AttributeNames.MEMBERS, StringComparison.OrdinalIgnoreCase)
+                && Name == SCIM.OperationName.Remove && Path?.SubAttributes?.Count == 1)
             {
-                if 
-                (
-                    this?.Path?.AttributePath != null &&
-                    this.Path.AttributePath.Contains(AttributeNames.Members, StringComparison.OrdinalIgnoreCase) &&
-                    this.Name == SCIM.OperationName.Remove &&
-                    this.Path?.SubAttributes?.Count == 1
-                )
-                {
-                    this.Value = this.Path.SubAttributes.First().ComparisonValue;
-                    IPath path = SCIM.Path.Create(AttributeNames.Members);
-                    this.Path = path;
-                }
+                Value = Path.SubAttributes.First().ComparisonValue;
+                Path = SCIM.Path.Create(AttributeNames.MEMBERS);
             }
         }
 
         public override string ToString()
         {
-            string allValues = string.Join(Environment.NewLine, this.Value);
-            string operation = base.ToString();
-            string result =
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    PatchOperation2Combined.Template,
-                    operation,
-                    allValues);
-            return result;
+            var allValues = string.Join(Environment.NewLine, Value);
+            var operation = base.ToString();
+
+            return string.Format(CultureInfo.InvariantCulture, TEMPLATE, operation, allValues);
         }
     }
 }
