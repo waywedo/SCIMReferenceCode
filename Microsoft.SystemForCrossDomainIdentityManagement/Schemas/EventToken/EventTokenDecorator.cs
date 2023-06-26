@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas.EventToken
 {
     public abstract class EventTokenDecorator : IEventToken
     {
@@ -45,7 +45,7 @@ namespace Microsoft.SCIM
             get { return InnerToken.Identifier; }
         }
 
-        public IEventToken InnerToken { get;  }
+        public IEventToken InnerToken { get; }
 
         public DateTime IssuedAt
         {

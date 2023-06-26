@@ -3,6 +3,7 @@
 //------------------------------------------------------------
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.SCIM.Schemas.EventToken;
 
 namespace Microsoft.SCIM
 {

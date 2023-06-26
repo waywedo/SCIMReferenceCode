@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas.EventToken
 {
     public interface IEventToken
     {

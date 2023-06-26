@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas.EventToken
 {
     public class SingularUnsecuredEventTokenFactory : UnsecuredEventTokenFactory
     {
@@ -18,7 +18,7 @@ namespace Microsoft.SCIM
             EventSchemaIdentifier = eventSchemaIdentifier;
         }
 
-        private string EventSchemaIdentifier { get;  }
+        private string EventSchemaIdentifier { get; }
 
         public override IEventToken Create(IDictionary<string, object> events)
         {

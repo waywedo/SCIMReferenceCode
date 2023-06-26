@@ -2,6 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 using Microsoft.AspNetCore.Http;
+using Microsoft.SCIM.Schemas.EventToken;
 using System.Collections.Generic;
 
 namespace Microsoft.SCIM

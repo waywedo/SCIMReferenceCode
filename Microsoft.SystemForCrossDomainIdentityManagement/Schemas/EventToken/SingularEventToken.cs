@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas.EventToken
 {
     public abstract class SingularEventToken : EventTokenDecorator
     {
@@ -26,8 +26,8 @@ namespace Microsoft.SCIM
         {
         }
 
-        public IReadOnlyDictionary<string, object> Event { get;  }
+        public IReadOnlyDictionary<string, object> Event { get; }
 
-        public string SchemaIdentifier { get;  }
+        public string SchemaIdentifier { get; }
     }
 }
