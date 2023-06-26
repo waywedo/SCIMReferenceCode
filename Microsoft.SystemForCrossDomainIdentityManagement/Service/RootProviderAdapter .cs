@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.SCIM
 {
-    internal class RootProviderAdapter : ProviderAdapterTemplate<Resource>
+    public class RootProviderAdapter : ProviderAdapterTemplate<Resource>
     {
         public RootProviderAdapter(IProvider provider) : base(provider)
         {

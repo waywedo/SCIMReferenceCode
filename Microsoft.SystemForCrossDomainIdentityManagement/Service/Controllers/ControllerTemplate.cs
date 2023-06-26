@@ -16,7 +16,7 @@ namespace Microsoft.SCIM
         private const string HEADER_KEY_CONTENT_TYPE = "Content-Type";
         private const string HEADER_KEY_LOCATION = "Location";
 
-        internal ControllerTemplate()
+        protected ControllerTemplate()
         {
         }
 
@@ -56,7 +56,7 @@ namespace Microsoft.SCIM
         private readonly IProviderAdapter<T> _provider;
         private readonly ILogger _logger;
 
-        internal ControllerTemplate(IProviderAdapter<T> provider, ILogger logger)
+        protected ControllerTemplate(IProviderAdapter<T> provider, ILogger logger)
         {
             _provider = provider;
             _logger = logger;

@@ -5,10 +5,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.SCIM;
 using System;
 using System.Threading.Tasks;
 
-namespace Microsoft.SCIM
+namespace SCIM.Sample.Controllers
 {
     [Route(ServiceConstants.ROUTE_BULK)]
     //[Authorize]

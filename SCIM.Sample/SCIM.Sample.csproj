@@ -16,8 +16,4 @@
         <ProjectReference Include="..\Microsoft.SystemForCrossDomainIdentityManagement\Microsoft.SCIM.csproj" />
     </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
 </Project>
