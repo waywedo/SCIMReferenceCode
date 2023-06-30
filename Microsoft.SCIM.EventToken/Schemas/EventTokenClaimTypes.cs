@@ -2,7 +2,7 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
-namespace Microsoft.SCIM.Schemas.EventToken
+namespace Microsoft.SCIM.EventToken.Schemas
 {
     public static class EventTokenClaimTypes
     {

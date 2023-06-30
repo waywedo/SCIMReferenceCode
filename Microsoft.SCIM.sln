@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.SCIM", "Microsoft.SystemForCrossDomainIdentityManagement\Microsoft.SCIM.csproj", "{C9ED6410-1995-4B98-AD57-C02D5F16631C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.SCIM", "Microsoft.SCIM\Microsoft.SCIM.csproj", "{C9ED6410-1995-4B98-AD57-C02D5F16631C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SCIM.Sample", "SCIM.Sample\SCIM.Sample.csproj", "{62374087-E3AC-493B-84F7-4E4EB1282729}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.SCIM.EventToken", "Microsoft.SCIM.EventToken\Microsoft.SCIM.EventToken.csproj", "{7F97FC6F-65A6-4215-8468-C986BF866AFA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{62374087-E3AC-493B-84F7-4E4EB1282729}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{62374087-E3AC-493B-84F7-4E4EB1282729}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{62374087-E3AC-493B-84F7-4E4EB1282729}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7F97FC6F-65A6-4215-8468-C986BF866AFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7F97FC6F-65A6-4215-8468-C986BF866AFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7F97FC6F-65A6-4215-8468-C986BF866AFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7F97FC6F-65A6-4215-8468-C986BF866AFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

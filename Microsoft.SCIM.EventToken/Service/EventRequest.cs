@@ -1,11 +1,11 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
-using Microsoft.AspNetCore.Http;
-using Microsoft.SCIM.Schemas.EventToken;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http;
+using Microsoft.SCIM.EventToken.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.EventToken.Service
 {
     public sealed class EventRequest : SCIMRequest<IEventToken>
     {

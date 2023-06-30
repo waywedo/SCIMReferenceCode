@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 
-namespace Microsoft.SCIM.Schemas.EventToken
+namespace Microsoft.SCIM.EventToken.Schemas
 {
     public abstract class SingularEventToken : EventTokenDecorator
     {

@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SCIM.Schemas.EventToken
+namespace Microsoft.SCIM.EventToken.Schemas
 {
     public class SingularUnsecuredEventTokenFactory : UnsecuredEventTokenFactory
     {

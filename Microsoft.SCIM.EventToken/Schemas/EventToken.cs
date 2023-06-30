@@ -8,7 +8,7 @@ using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.EventToken.Schemas
 {
     // Implements https://tools.ietf.org/html/draft-ietf-secevent-token
     public class EventToken : IEventToken
