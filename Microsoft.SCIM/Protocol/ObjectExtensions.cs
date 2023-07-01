@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.SCIM.Protocol
 {
-    public static class ObjectExtentions
+    public static class ObjectExtensions
     {
         public static bool IsResourceType(this object json, string scheme)
         {
