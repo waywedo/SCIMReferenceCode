@@ -10,7 +10,6 @@ using Microsoft.SCIM.Protocol;
 using Microsoft.SCIM.Protocol.Contracts;
 using Microsoft.SCIM.Resources;
 using Microsoft.SCIM.Schemas;
-using Microsoft.SCIM.Schemas.Contracts;
 using Microsoft.SCIM.Service.Contracts;
 
 namespace Microsoft.SCIM.Service
@@ -36,23 +35,7 @@ namespace Microsoft.SCIM.Service
             get { return ServiceConfiguration.Value; }
         }
 
-        //public virtual IEventTokenHandler EventHandler
-        //{
-        //    get;
-        //    set;
-        //}
-
         public virtual IReadOnlyCollection<IExtension> Extensions
-        {
-            get { return null; }
-        }
-
-        public virtual IResourceJsonDeserializingFactory<GroupBase> GroupDeserializationBehavior
-        {
-            get { return null; }
-        }
-
-        public virtual ISchematizedJsonDeserializingFactory<PatchRequest2> PatchRequestDeserializationBehavior
         {
             get { return null; }
         }
@@ -65,19 +48,6 @@ namespace Microsoft.SCIM.Service
         public virtual IReadOnlyCollection<TypeScheme> Schema
         {
             get { return TypeSchema.Value; }
-        }
-
-        //public virtual Action<IAppBuilder, HttpConfiguration> StartupBehavior
-        //{
-        //    get
-        //    {
-        //        return null;
-        //    }
-        //}
-
-        public virtual IResourceJsonDeserializingFactory<Core2UserBase> UserDeserializationBehavior
-        {
-            get { return null; }
         }
 
         public abstract Task<Resource> CreateAsync(Resource resource, string correlationIdentifier);
