@@ -1,9 +1,10 @@
 {
 	"info": {
-		"_postman_id": "195ae322-3171-4766-90ea-c5c0d3e5401d",
+		"_postman_id": "b5f221f0-bd7b-4d29-ad6f-43d15f3de367",
 		"name": "SCIM Tests",
 		"description": "The set of tests for the SCIM reference api",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "3046043"
 	},
 	"item": [
 		{
@@ -15,7 +16,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a762d68b-524c-4386-b694-0a081e1083f9",
+								"type": "text/javascript",
 								"exec": [
 									"var jsonData = JSON.parse(responseBody);\r",
 									"postman.setEnvironmentVariable(\"token\", jsonData.token);\r",
@@ -23,8 +24,7 @@
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -51,8 +51,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Token",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Token",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -64,8 +64,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "Endpoint tests",
@@ -74,25 +73,23 @@
 					"name": "Get empty Users",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "4023a7a6-b759-42c3-a791-554cdcafb199",
-								"exec": [
-									"pm.environment.get(\"token\");"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "28710651-d4bc-4289-8b1b-38754958f766",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});"
-								],
-								"type": "text/javascript"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.environment.get(\"token\");"
+								]
 							}
 						}
 					],
@@ -110,8 +107,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -128,25 +125,23 @@
 					"name": "Get empty Groups",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "4023a7a6-b759-42c3-a791-554cdcafb199",
-								"exec": [
-									"pm.environment.get(\"token\");"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "28710651-d4bc-4289-8b1b-38754958f766",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});"
-								],
-								"type": "text/javascript"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.environment.get(\"token\");"
+								]
 							}
 						}
 					],
@@ -164,8 +159,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -181,19 +176,8 @@
 					"name": "Get ResourceTypes",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "4023a7a6-b759-42c3-a791-554cdcafb199",
-								"exec": [
-									"pm.environment.get(\"token\");"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "28710651-d4bc-4289-8b1b-38754958f766",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -203,6 +187,15 @@
 									"    var jsonData = pm.response.json();\r",
 									"    pm.expect(jsonData.Resources[0].endpoint).to.eql(\"/Users\");\r",
 									"});"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.get(\"token\");"
 								],
 								"type": "text/javascript"
 							}
@@ -222,8 +215,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/ResourceTypes",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/ResourceTypes",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -239,19 +232,8 @@
 					"name": "Get ServiceProviderConfig",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "4023a7a6-b759-42c3-a791-554cdcafb199",
-								"exec": [
-									"pm.environment.get(\"token\");"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "28710651-d4bc-4289-8b1b-38754958f766",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -264,6 +246,15 @@
 								],
 								"type": "text/javascript"
 							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.environment.get(\"token\");"
+								],
+								"type": "text/javascript"
+							}
 						}
 					],
 					"request": {
@@ -280,14 +271,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/serviceConfiguration",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/ServiceProviderConfig",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
 							"path": [
 								"{{Api}}",
-								"serviceConfiguration"
+								"ServiceProviderConfig"
 							]
 						}
 					},
@@ -297,19 +288,9 @@
 					"name": "Get Schemas",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "4023a7a6-b759-42c3-a791-554cdcafb199",
-								"exec": [
-									"pm.environment.get(\"token\");"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "28710651-d4bc-4289-8b1b-38754958f766",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
@@ -318,8 +299,16 @@
 									"pm.test(\"Body contians User Account\", function () {\r",
 									"pm.expect(pm.response.text()).to.include(\"User Account\");\r",
 									"});"
-								],
-								"type": "text/javascript"
+								]
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.environment.get(\"token\");"
+								]
 							}
 						}
 					],
@@ -337,8 +326,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Schemas",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Schemas",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -350,8 +339,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "User tests",
@@ -362,7 +350,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b113e2a4-3bcc-4bf7-8412-196977200586",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -399,7 +386,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName123\",\r\n    \"active\": true,\r\n    \"displayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName123\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -407,8 +394,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -427,7 +414,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b113e2a4-3bcc-4bf7-8412-196977200586",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -437,8 +424,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"id2\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -464,7 +450,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName222\",\r\n    \"active\": true,\r\n    \"displayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ],\r\n    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n    \t\t\"Department\": \"bob\",\r\n    \t\t\"Manager\" : { \"Value\": \"SuzzyQ\" }\r\n    }\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName222\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ],\r\n    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n    \t\t\"Department\": \"bob\",\r\n    \t\t\"Manager\" : { \"Value\": \"SuzzyQ\" }\r\n    }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -472,8 +458,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -492,7 +478,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d961e0b3-2edc-4075-b465-58402c590be8",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -503,8 +489,7 @@
 									"    var id = pm.environment.get(\"id1\");",
 									"    pm.expect(jsonData.id).to.eql(id);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -522,8 +507,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -542,7 +527,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d961e0b3-2edc-4075-b465-58402c590be8",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -553,8 +538,7 @@
 									"        var id = pm.environment.get(\"id2\");",
 									"    pm.expect(jsonData.id).to.eql(id);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -572,8 +556,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -592,7 +576,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "315d8f5b-9383-4a5b-a8bc-0d3d183d5800",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -602,8 +586,7 @@
 									"        var id = pm.environment.get(\"id1\");",
 									"pm.expect(pm.response.text()).to.include(id);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -621,8 +604,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName,emails",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName,emails",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -646,14 +629,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "44212323-c0c4-4c4c-8079-68ceddf8459b",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Body contians id1\", function () {",
 									"        var id = pm.environment.get(\"id1\");",
 									"pm.expect(pm.response.text()).to.include(id);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -671,8 +653,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/?filter=DisplayName+eq+%22BobIsAmazing%22",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/?filter=DisplayName+eq+%22BobIsAmazing%22",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -723,8 +705,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -743,7 +725,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "154019ac-76ee-4881-8815-a6550da7d0fb",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -759,8 +741,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.userName).to.eql(\"ryan3\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -778,8 +759,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -798,13 +779,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "5d82f681-33ae-4cf0-9389-00f307923e71",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -830,7 +810,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserNameReplace2\",\r\n    \"active\": true,\r\n    \"displayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n    \"id\": \"{{id2}}\",\r\n    \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"NewName\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bobREPLACE.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserNameReplace2\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n    \"id\": \"{{id2}}\",\r\n    \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"NewName\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bobREPLACE.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -838,8 +818,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -858,7 +838,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "d961e0b3-2edc-4075-b465-58402c590be8",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -868,8 +848,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.name.formatted).to.eql(\"NewName\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -887,8 +866,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -907,13 +886,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "99266ba9-9d1c-4924-9a24-50784ac41338",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -931,8 +909,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -951,13 +929,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "99266ba9-9d1c-4924-9a24-50784ac41338",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -975,8 +952,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -989,8 +966,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "Group tests",
@@ -999,19 +975,9 @@
 					"name": "Create empty group",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "75e4dc30-bcb7-4ed4-91e2-8341ba0ca919",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "917bcf70-7eae-4285-8ac1-3ffb1238118d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1020,8 +986,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"groupid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1055,8 +1020,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1074,7 +1039,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "6aa6b3cc-e4c7-4201-8c65-36f238bd7d82",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1083,8 +1048,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"id3\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1110,7 +1074,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName333\",\r\n    \"active\": true,\r\n    \"displayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName333\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1118,8 +1082,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1137,7 +1101,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e5f7bff1-166c-49d3-93bf-4742db3ba5c9",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1146,8 +1110,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"id4\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1173,7 +1136,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName444\",\r\n    \"active\": true,\r\n    \"displayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName444\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"lennay\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Adrew Ryan\",\r\n        \"familyName\": \"Ryan\",\r\n        \"givenName\": \"Andrew\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"testing@bob2.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob3.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1181,8 +1144,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1198,19 +1161,9 @@
 					"name": "Create filled group 2",
 					"event": [
 						{
-							"listen": "prerequest",
-							"script": {
-								"id": "75e4dc30-bcb7-4ed4-91e2-8341ba0ca919",
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
 							"listen": "test",
 							"script": {
-								"id": "917bcf70-7eae-4285-8ac1-3ffb1238118d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1219,8 +1172,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"groupid2\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1254,8 +1206,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1273,13 +1225,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3d062c67-bf87-453f-a7ba-e17297f0fa87",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1297,8 +1248,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1316,7 +1267,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "6c6cd06a-5357-418d-aace-961a052e1846",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -1325,8 +1276,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"groupid3\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1360,8 +1310,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1379,13 +1329,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f6c2d2ea-cafe-4741-8742-35d0cead8a3e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1419,8 +1368,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1439,7 +1388,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8f506fce-31cc-4268-bc3d-8957f9c3f516",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1455,8 +1404,7 @@
 									"    var id = pm.environment.get(\"id3\")",
 									"pm.expect(pm.response.text()).to.include(id);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1481,8 +1429,8 @@
 							}
 						],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1527,8 +1475,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1573,8 +1521,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1619,8 +1567,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1639,7 +1587,6 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3596a517-04a0-4b9b-824b-8dd0a8306f17",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1652,8 +1599,12 @@
 									"});",
 									"",
 									"pm.test(\"Body contians user\", function () {",
-									"pm.expect(pm.response.text()).to.include(\"new User\");",
-									"});"
+									"pm.expect(pm.response.text()).to.include(pm.environment.get(\"id4\"));",
+									"});",
+									"",
+									"// pm.test(\"Body contians user\", function () {",
+									"// pm.expect(pm.response.text()).to.include(\"new User\");",
+									"// });"
 								],
 								"type": "text/javascript"
 							}
@@ -1673,8 +1624,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1719,8 +1670,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1739,7 +1690,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3596a517-04a0-4b9b-824b-8dd0a8306f17",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -1754,8 +1705,7 @@
 									"pm.test(\"Body contians user\", function () {",
 									"pm.expect(pm.response.text()).to.not.include(\"new User\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1773,8 +1723,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1793,13 +1743,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "30a6a5d8-b9eb-441d-8d1b-ea4c60758748",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1817,8 +1766,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id3}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id3}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1837,13 +1786,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "30a6a5d8-b9eb-441d-8d1b-ea4c60758748",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1861,8 +1809,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id4}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id4}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1881,13 +1829,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e02821fc-0a31-433b-9f04-30590d893dd4",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1905,8 +1852,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1925,13 +1872,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e02821fc-0a31-433b-9f04-30590d893dd4",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1949,8 +1895,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -1969,13 +1915,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "e02821fc-0a31-433b-9f04-30590d893dd4",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -1993,8 +1938,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{groupid3}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2007,8 +1952,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "ComplexAttribute tests",
@@ -2019,7 +1963,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3486886d-3b26-48c1-887f-03e1a1701c8b",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2028,8 +1972,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"id1\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2055,7 +1998,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName111\",\r\n    \"active\": true,\r\n    \"displayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"emailName357\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName111\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"emailName357\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2063,8 +2006,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2082,7 +2025,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3486886d-3b26-48c1-887f-03e1a1701c8b",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2091,8 +2034,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"id2\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2118,7 +2060,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"UserName222\",\r\n    \"active\": true,\r\n    \"displayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"jump@bob.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
+							"raw": "{\r\n    \"UserName\": \"UserName222\",\r\n    \"Active\": true,\r\n    \"DisplayName\": \"BobIsAmazing\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\"\r\n    ],\r\n  \"externalId\": \"${__UUID}\",\r\n    \"name\": {\r\n        \"formatted\": \"Ryan Leenay\",\r\n        \"familyName\": \"Leenay\",\r\n        \"givenName\": \"Ryan\"\r\n    },\r\n    \"emails\": [\r\n        {\r\n            \"Primary\": true,\r\n            \"type\": \"work\",\r\n            \"value\": \"jump@bob.com\"\r\n        },\r\n        {\r\n            \"Primary\": false,\r\n            \"type\": \"home\",\r\n            \"value\": \"testinghome@bob.com\"\r\n        }\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -2126,8 +2068,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2145,7 +2087,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "cb5670a2-a4c9-41a4-99c7-a852da02a6c0",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2154,8 +2096,7 @@
 									"pm.test(\"Body contians User1 email\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"emailName357\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2173,8 +2114,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?attributes=emails%5Btype+eq+%22work%22%5D",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?attributes=emails%5Btype+eq+%22work%22%5D",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2198,7 +2139,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "16b0ff7a-dff1-405a-a1cb-f236bbfb0146",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2208,8 +2149,7 @@
 									"pm.test(\"Body contians User1 email\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"emailName357\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2227,8 +2167,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?attributes=emails%5Bvalue+eq+%22emailName357%22%5D",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?attributes=emails%5Bvalue+eq+%22emailName357%22%5D",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2252,13 +2192,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b833558e-f3ee-4381-8b07-a2f86d53fe2a",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2276,8 +2215,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id1}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2296,13 +2235,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "b833558e-f3ee-4381-8b07-a2f86d53fe2a",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2320,8 +2258,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{id2}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2334,8 +2272,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "User tests with garbage",
@@ -2346,7 +2283,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "03468a5e-58d1-4ec8-b932-2c051715de81",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2365,8 +2302,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"1stuserid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2400,8 +2336,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2419,7 +2355,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "fb9c8956-32b8-4433-bd0d-c2d64b0c5890",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2433,8 +2369,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"2nduserid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2468,8 +2403,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2487,7 +2422,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "02f8b389-0af0-477b-8837-faad3df5a082",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2501,8 +2436,7 @@
 									"pm.test(\"Body contians OMalley\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"OMalley\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2520,8 +2454,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2539,7 +2473,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "26b7fc13-a319-4d2e-a763-61fc6910eb46",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2548,8 +2482,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"3rduserid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2583,8 +2516,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2602,7 +2535,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "26b7fc13-a319-4d2e-a763-61fc6910eb46",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -2611,8 +2544,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"4thuserid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2646,8 +2578,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2665,13 +2597,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2705,8 +2636,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2724,13 +2655,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2764,8 +2694,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2783,7 +2713,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 409\", function () {",
 									"    pm.response.to.have.status(409);",
@@ -2792,8 +2722,7 @@
 									"pm.test(\"Body contians Error detial\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"detail\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2827,8 +2756,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2846,7 +2775,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 409\", function () {",
 									"    pm.response.to.have.status(409);",
@@ -2855,8 +2784,7 @@
 									"pm.test(\"Body contians Error detial\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"detail\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2890,8 +2818,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2909,14 +2837,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 400\", function () {",
 									"    pm.response.to.have.status(400);",
 									"});",
 									""
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -2950,8 +2877,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -2970,7 +2897,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "fd367af3-a9c6-4156-9032-6c97a8e6bb88",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -2979,8 +2906,7 @@
 									"pm.test(\"Body does not contians Addresses\", function () {",
 									"pm.expect(pm.response.text()).to.not.include(\"Addresses\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3014,8 +2940,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3034,7 +2960,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "67cfa75d-1765-4f75-aadf-3f8ed448b440",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -3043,8 +2969,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"enteruserid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3070,7 +2995,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"userName\": \"enterprise\",\r\n    \"active\": true,\r\n    \"addresses\": [\r\n        {\r\n            \"country\": \"Bermuda\",\r\n            \"formatted\": \"9132 Jennifer Way Suite 040\\nSouth Nancy, MI 55645\",\r\n            \"locality\": \"West Mercedes\",\r\n            \"postalCode\": \"99265\",\r\n            \"region\": \"Montana\",\r\n            \"streetAddress\": \"4939 Hess Fork\",\r\n            \"type\": \"work\",\r\n            \"primary\": false\r\n        },\r\n        {\r\n            \"country\": null,\r\n            \"formatted\": \"18522 Lisa Unions\\nEast Gregory, CT 52311\",\r\n            \"locality\": null,\r\n            \"postalCode\": null,\r\n            \"region\": null,\r\n            \"streetAddress\": null,\r\n            \"type\": \"other\",\r\n            \"primary\": false\r\n        }\r\n    ],\r\n    \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\": {\r\n    \t\"Department\": \"some department\"\r\n    },\r\n    \"displayName\": \"Kimberly Baker\",\r\n    \"emails\": [\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": true,\r\n            \"value\": \"anna33@gmail.com\"\r\n        },\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": false,\r\n            \"value\": \"anna33@example.com\"\r\n        }\r\n    ],\r\n    \"meta\": {\r\n        \"created\": \"2019-09-18T18:15:26.5788954+00:00\",\r\n        \"lastModified\": \"2019-09-18T18:15:26.5788976+00:00\",\r\n        \"resourceType\": \"User\"\r\n    },\r\n    \"name\": {\r\n        \"formatted\": \"Daniel Mcgee\",\r\n        \"familyName\": \"Employee\",\r\n        \"givenName\": \"Darl\",\r\n        \"honorificPrefix\": null,\r\n        \"honorificSuffix\": null\r\n    },\r\n    \"phoneNumbers\": [\r\n        {\r\n \"type\": \"fax\",\r\n            \"primary\": false,\r\n            \"value\": \"312-320-0500\"\r\n        },\r\n        {\r\n            \"type\": \"mobile\",\r\n            \"primary\": false,\r\n            \"value\": \"312-320-1707\"\r\n        },\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": true,\r\n            \"value\": \"312-320-0932\"\r\n        }\r\n    ],\r\n    \"preferredLanguage\": \"xh\",\r\n    \"roles\": [],\r\n    \"title\": \"Site engineer\",\r\n    \"externalId\": \"22fbc523-6032-4c5f-939d-5d4850cf3e52\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"\r\n    ]\r\n}",
+							"raw": "{\r\n    \"userName\": \"enterprise\",\r\n    \"active\": true,\r\n    \"addresses\": [\r\n        {\r\n            \"country\": \"Bermuda\",\r\n            \"formatted\": \"9132 Jennifer Way Suite 040\\nSouth Nancy, MI 55645\",\r\n            \"locality\": \"West Mercedes\",\r\n            \"postalCode\": \"99265\",\r\n            \"region\": \"Montana\",\r\n            \"streetAddress\": \"4939 Hess Fork\",\r\n            \"type\": \"work\",\r\n            \"primary\": false\r\n        },\r\n        {\r\n            \"country\": null,\r\n            \"formatted\": \"18522 Lisa Unions\\nEast Gregory, CT 52311\",\r\n            \"locality\": null,\r\n            \"postalCode\": null,\r\n            \"region\": null,\r\n            \"streetAddress\": null,\r\n            \"type\": \"other\",\r\n            \"primary\": false\r\n        }\r\n    ],\r\n    \"Department\": \"some department\",\r\n    \"displayName\": \"Kimberly Baker\",\r\n    \"emails\": [\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": true,\r\n            \"value\": \"anna33@gmail.com\"\r\n        },\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": false,\r\n            \"value\": \"anna33@example.com\"\r\n        }\r\n    ],\r\n    \"meta\": {\r\n        \"created\": \"2019-09-18T18:15:26.5788954+00:00\",\r\n        \"lastModified\": \"2019-09-18T18:15:26.5788976+00:00\",\r\n        \"resourceType\": \"User\"\r\n    },\r\n    \"name\": {\r\n        \"formatted\": \"Daniel Mcgee\",\r\n        \"familyName\": \"Employee\",\r\n        \"givenName\": \"Darl\",\r\n        \"honorificPrefix\": null,\r\n        \"honorificSuffix\": null\r\n    },\r\n    \"phoneNumbers\": [\r\n        {\r\n            \"type\": \"fax\",\r\n            \"primary\": false,\r\n            \"value\": \"312-320-0500\"\r\n        },\r\n        {\r\n            \"type\": \"mobile\",\r\n            \"primary\": false,\r\n            \"value\": \"312-320-1707\"\r\n        },\r\n        {\r\n            \"type\": \"work\",\r\n            \"primary\": true,\r\n            \"value\": \"312-320-0932\"\r\n        }\r\n    ],\r\n    \"preferredLanguage\": \"xh\",\r\n    \"roles\": [],\r\n    \"title\": \"Site engineer\",\r\n    \"externalId\": \"22fbc523-6032-4c5f-939d-5d4850cf3e52\",\r\n    \"schemas\": [\r\n        \"urn:ietf:params:scim:schemas:core:2.0:User\",\r\n        \"urn:ietf:params:scim:schemas:extension:enterprise:2.0:User\"\r\n    ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -3078,8 +3003,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3097,10 +3022,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "27790826-a6ed-4f1e-b993-e59002124576",
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {",
-									"    pm.response.to.have.status(204);",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Username is changed\", function () {",
+									"   var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.userName).to.eql(\"newusername\");",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3137,8 +3065,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3157,10 +3085,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "33629cf0-6dd5-4e0c-b543-a3c1e99ac240",
 								"exec": [
-									"pm.test(\"Status code is 204\", function () {",
-									"    pm.response.to.have.status(204);",
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"pm.test(\"Active is changed\", function () {",
+									"   var jsonData = pm.response.json();",
+									"    pm.expect(jsonData.active).to.eql(false);",
 									"});"
 								],
 								"type": "text/javascript"
@@ -3197,8 +3128,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3217,7 +3148,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "15418860-b5a5-4d47-86ce-fbd537a609b6",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Username changed\", function () {",
 									"    var jsonData = pm.response.json();",
@@ -3228,8 +3159,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.active).to.eql(false);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3247,8 +3177,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3267,7 +3197,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3286,8 +3216,7 @@
 									"pm.test(\"Body contians Germany\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"Germany\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3321,8 +3250,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3341,7 +3270,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "abe0b7b3-f0ea-44bb-95cf-5bc6045fd490",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Total results\", function () {",
 									"    var jsonData = pm.response.json();",
@@ -3352,8 +3281,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.itemsPerPage).to.eql(2);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3371,8 +3299,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?startIndex=1&count=2",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?startIndex=1&count=2",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3400,14 +3328,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f2b90fb7-97fd-40ec-bb7f-2cf3b6d50f05",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Total results\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.totalResults).to.eql(5);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3425,8 +3352,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName,emails",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName,emails",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3450,7 +3377,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "8b32e0cf-c64c-47fc-b441-c763d75fc808",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 409\", function () {",
 									"    pm.response.to.have.status(409);",
@@ -3459,8 +3386,7 @@
 									"pm.test(\"Body contians Error detial\", function () {",
 									"pm.expect(pm.response.text()).to.include(\"detail\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3494,8 +3420,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3513,14 +3439,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f2b90fb7-97fd-40ec-bb7f-2cf3b6d50f05",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Total results\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.totalResults).to.eql(4);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3538,8 +3463,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?filter=name.FamilyName eq Employee and (emails.Value co example.com or emails.Value co example.org)",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?filter=name.FamilyName eq Employee and (emails.Value co example.com or emails.Value co example.org)",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3563,14 +3488,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f2b90fb7-97fd-40ec-bb7f-2cf3b6d50f05",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Total results\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.totalResults).to.eql(1);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3588,8 +3512,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?filter=userName sw O",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?filter=userName sw O",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3613,14 +3537,13 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "f2b90fb7-97fd-40ec-bb7f-2cf3b6d50f05",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Total results\", function () {",
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.totalResults).to.eql(5);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3638,8 +3561,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?filter=meta.Created gt 2015-10-10T14:38:21.8617979-07:00",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?filter=meta.Created gt 2015-10-10T14:38:21.8617979-07:00",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3657,8 +3580,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "Group tests with garbage",
@@ -3669,7 +3591,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "63ad41d6-d6a2-4192-8ddd-f71b763eed82",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 201\", function () {",
 									"    pm.response.to.have.status(201);",
@@ -3678,8 +3600,7 @@
 									"var jsonData = pm.response.json();",
 									"",
 									"pm.environment.set(\"1stgroupid\", jsonData.id);"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3713,8 +3634,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3732,15 +3653,14 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a98345c8-1dfb-4969-a4c9-85ba8106144f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});",
 									"",
 									""
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3774,8 +3694,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3794,15 +3714,14 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "a98345c8-1dfb-4969-a4c9-85ba8106144f",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});",
 									"",
 									""
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3836,8 +3755,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3856,15 +3775,14 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3286c2d3-421e-4565-bfc0-5661bddaaca1",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
 									""
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3882,8 +3800,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3902,15 +3820,14 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "3286c2d3-421e-4565-bfc0-5661bddaaca1",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
 									"});",
 									"",
 									""
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3928,8 +3845,8 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}?excludedAttributes=members",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}?excludedAttributes=members",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -3954,7 +3871,7 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ff497bb7-1dd7-4f08-99c3-cd528ffe4a34",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 200\", function () {",
 									"    pm.response.to.have.status(200);",
@@ -3964,8 +3881,7 @@
 									"    var jsonData = pm.response.json();",
 									"    pm.expect(jsonData.displayName).to.eql(\"Tiffany Ortiz\");",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -3999,8 +3915,8 @@
 							}
 						},
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4013,8 +3929,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "Teardown garbage",
@@ -4025,13 +3940,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "c632bef4-f555-4a8b-a38c-daa465caec55",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4049,8 +3963,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{1stuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4069,13 +3983,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "1302dbf9-b2f9-4a7d-b481-7216834daca4",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4093,8 +4006,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{2nduserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{2nduserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4113,13 +4026,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ebd39be7-d02b-47e3-805f-4769c6df050d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4137,8 +4049,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{3rduserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{3rduserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4157,13 +4069,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ebd39be7-d02b-47e3-805f-4769c6df050d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4181,8 +4092,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{4thuserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{4thuserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4201,13 +4112,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "ebd39be7-d02b-47e3-805f-4769c6df050d",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4225,8 +4135,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users/{{enteruserid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Users/{{enteruserid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4245,13 +4155,12 @@
 						{
 							"listen": "test",
 							"script": {
-								"id": "9efd2693-39bd-4394-a1e7-c87d6fdbf25e",
+								"type": "text/javascript",
 								"exec": [
 									"pm.test(\"Status code is 204\", function () {",
 									"    pm.response.to.have.status(204);",
 									"});"
-								],
-								"type": "text/javascript"
+								]
 							}
 						}
 					],
@@ -4269,8 +4178,8 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
-							"protocol": "{{Protocol}}",
+							"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups/{{1stgroupid}}",
+							"protocol": "https",
 							"host": [
 								"{{Server}}{{Port}}"
 							],
@@ -4283,8 +4192,7 @@
 					},
 					"response": []
 				}
-			],
-			"protocolProfileBehavior": []
+			]
 		},
 		{
 			"name": "Get all users",
@@ -4292,7 +4200,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "c7493b40-8345-4eba-92f9-9b5d64ae3376",
+						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -4302,8 +4210,7 @@
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData.Resources).to.eql([]);",
 							"});"
-						],
-						"type": "text/javascript"
+						]
 					}
 				}
 			],
@@ -4321,8 +4228,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName",
-					"protocol": "{{Protocol}}",
+					"raw": "https://{{Server}}{{Port}}/{{Api}}/Users?attributes=userName",
+					"protocol": "https",
 					"host": [
 						"{{Server}}{{Port}}"
 					],
@@ -4346,7 +4253,7 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "0561f20f-008a-4e82-896e-019d8ff6f9a8",
+						"type": "text/javascript",
 						"exec": [
 							"pm.test(\"Status code is 200\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -4356,8 +4263,7 @@
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData.Resources).to.eql([]);",
 							"});"
-						],
-						"type": "text/javascript"
+						]
 					}
 				}
 			],
@@ -4375,8 +4281,8 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{Protocol}}://{{Server}}{{Port}}/{{Api}}/Groups",
-					"protocol": "{{Protocol}}",
+					"raw": "https://{{Server}}{{Port}}/{{Api}}/Groups",
+					"protocol": "https",
 					"host": [
 						"{{Server}}{{Port}}"
 					],
@@ -4393,7 +4299,6 @@
 		{
 			"listen": "prerequest",
 			"script": {
-				"id": "a25b8356-f8f2-431e-b08b-f7987d18db41",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -4403,7 +4308,6 @@
 		{
 			"listen": "test",
 			"script": {
-				"id": "3ba01074-4377-431d-81a0-c61f060242b1",
 				"type": "text/javascript",
 				"exec": [
 					""
@@ -4411,5 +4315,21 @@
 			}
 		}
 	],
-	"protocolProfileBehavior": []
+	"variable": [
+		{
+			"key": "Server",
+			"value": "localhost",
+			"type": "string"
+		},
+		{
+			"key": "Api",
+			"value": "scim",
+			"type": "string"
+		},
+		{
+			"key": "Port",
+			"value": ":7285",
+			"type": "string"
+		}
+	]
 }
