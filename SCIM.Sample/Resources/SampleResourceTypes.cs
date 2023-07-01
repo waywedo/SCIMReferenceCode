@@ -1,25 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-
-using Microsoft.SCIM;
+using System;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
-    using System;
-
-    public class SampleResourceTypes
+    public static class SampleResourceTypes
     {
         public static Core2ResourceType UserResourceType
         {
             get
             {
-                Core2ResourceType userResource = new Core2ResourceType
+                return new()
                 {
                     Identifier = Types.USER,
-                    Endpoint = new Uri($"{SampleConstants.SampleScimEndpoint}/Users"),
-                    Schema = SampleConstants.UserEnterpriseSchema
+                    Endpoint = new Uri($"{SampleConstants.SAMPLE_SCIM_ENDPOINT}/Users"),
+                    Schema = SampleConstants.USER_ENTERPRISE_SCHEMA
                 };
-
-                return userResource;
             }
         }
 
@@ -27,14 +23,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                Core2ResourceType groupResource = new Core2ResourceType
+                return new()
                 {
                     Identifier = Types.GROUP,
-                    Endpoint = new Uri($"{SampleConstants.SampleScimEndpoint}/Groups"),
-                    Schema = $"{SampleConstants.Core2SchemaPrefix}{Types.GROUP}"
+                    Endpoint = new Uri($"{SampleConstants.SAMPLE_SCIM_ENDPOINT}/Groups"),
+                    Schema = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.GROUP}"
                 };
-
-                return groupResource;
             }
         }
     }

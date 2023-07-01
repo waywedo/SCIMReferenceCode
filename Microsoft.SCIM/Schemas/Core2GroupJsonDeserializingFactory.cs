@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     public sealed class Core2GroupJsonDeserializingFactory : JsonDeserializingFactory<Core2Group>
     {

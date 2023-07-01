@@ -3,8 +3,9 @@
 //------------------------------------------------------------
 using System;
 using System.Globalization;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     // Refer to https://en.wikipedia.org/wiki/Unix_time
     public class UnixTime : IUnixTime
@@ -37,7 +38,7 @@ namespace Microsoft.SCIM
             return Epoch.AddSeconds(EpochTimestamp);
         }
 
-        public long EpochTimestamp { get;  }
+        public long EpochTimestamp { get; }
 
         public override string ToString()
         {

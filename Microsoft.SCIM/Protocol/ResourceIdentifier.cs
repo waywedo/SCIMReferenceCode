@@ -3,8 +3,10 @@
 //------------------------------------------------------------
 using System;
 using System.Globalization;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public sealed class ResourceIdentifier : IResourceIdentifier
     {

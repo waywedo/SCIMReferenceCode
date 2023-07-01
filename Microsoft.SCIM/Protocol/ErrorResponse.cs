@@ -1,12 +1,13 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
-    using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-    using System.Runtime.Serialization;
+using System.Runtime.Serialization;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public sealed class ErrorResponse : Schematized

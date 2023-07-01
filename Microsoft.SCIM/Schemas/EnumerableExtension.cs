@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     internal static class EnumerableExtension
     {

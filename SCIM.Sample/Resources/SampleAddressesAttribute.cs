@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,24 +10,21 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme formattedAddressScheme = new AttributeScheme("formatted", AttributeDataType.@string, false)
+                return new("formatted", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionFormattedAddress
+                    Description = SampleConstants.DESCRIPTION_FORMATTED_ADDRESS
                 };
-                return formattedAddressScheme;
-
             }
         }
+
         public static AttributeScheme StreetAddressAttributeScheme
         {
             get
             {
-                AttributeScheme streetAddressScheme = new AttributeScheme("streetAddress", AttributeDataType.@string, false)
+                return new("streetAddress", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionStreetAddress
+                    Description = SampleConstants.DESCRIPTION_STREET_ADDRESS
                 };
-                return streetAddressScheme;
-
             }
         }
 
@@ -35,11 +32,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme countryAddressScheme = new AttributeScheme("country", AttributeDataType.@string, false)
+                return new("country", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAddressCountry
+                    Description = SampleConstants.DESCRIPTION_ADDRESS_COUNTRY
                 };
-                return countryAddressScheme;
             }
         }
 
@@ -47,11 +43,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme localityAddressScheme = new AttributeScheme("locality", AttributeDataType.@string, false)
+                return new("locality", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAddressLocality
+                    Description = SampleConstants.DESCRIPTION_ADDRESS_LOCALITY
                 };
-                return localityAddressScheme;
             }
         }
 
@@ -59,11 +54,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme postalCodeAddressScheme = new AttributeScheme("postalCode", AttributeDataType.@string, false)
+                return new("postalCode", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAddressPostalCode
+                    Description = SampleConstants.DESCRIPTION_ADDRESS_POSTAL_CODE
                 };
-                return postalCodeAddressScheme;
             }
         }
 
@@ -71,11 +65,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme regionAddressScheme = new AttributeScheme("region", AttributeDataType.@string, false)
+                return new("region", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAddressRegion
+                    Description = SampleConstants.DESCRIPTION_ADDRESS_REGION
                 };
-                return regionAddressScheme;
             }
         }
     }

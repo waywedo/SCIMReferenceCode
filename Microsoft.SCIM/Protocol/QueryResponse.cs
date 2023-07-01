@@ -3,8 +3,9 @@
 //------------------------------------------------------------
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public sealed class QueryResponse<TResource> : QueryResponseBase<TResource>

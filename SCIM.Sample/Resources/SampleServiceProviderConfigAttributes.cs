@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,9 +10,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme documentationUriScheme = new AttributeScheme("documentationUri", AttributeDataType.reference, false)
+                var documentationUriScheme = new AttributeScheme("documentationUri", AttributeDataType.reference, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigDocumentationUri,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_DOCUMENTATION_URI,
                     Mutability = Mutability.readOnly
                 };
                 documentationUriScheme.AddReferenceTypes("external");
@@ -25,9 +25,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme patchScheme = new AttributeScheme("patch", AttributeDataType.complex, false)
+                var patchScheme = new AttributeScheme("patch", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigPatch,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_PATCH,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -41,9 +41,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme bulkScheme = new AttributeScheme("bulk", AttributeDataType.complex, false)
+                var bulkScheme = new AttributeScheme("bulk", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigBulk,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_BULK,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -59,9 +59,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme etagScheme = new AttributeScheme("etag", AttributeDataType.complex, false)
+                var etagScheme = new AttributeScheme("etag", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigEtag,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_ETAG,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -75,9 +75,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme filterScheme = new AttributeScheme("filter", AttributeDataType.complex, false)
+                var filterScheme = new AttributeScheme("filter", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigFilter,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_FILTER,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -92,9 +92,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme changePasswordScheme = new AttributeScheme("changePassword", AttributeDataType.complex, false)
+                var changePasswordScheme = new AttributeScheme("changePassword", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigChangePassword,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_CHANGE_PASSWORD,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -108,9 +108,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme sortScheme = new AttributeScheme("sort", AttributeDataType.complex, false)
+                var sortScheme = new AttributeScheme("sort", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigSort,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_SORT,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -124,9 +124,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme authenticationSchemesScheme = new AttributeScheme("authenticationSchemes", AttributeDataType.complex, true)
+                var authenticationSchemesScheme = new AttributeScheme("authenticationSchemes", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderAuthenticationSchemes,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_AUTHENTICATION_SCHEMES,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
@@ -144,13 +144,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme supportedScheme = new AttributeScheme("supported", AttributeDataType.boolean, false)
+                return new("supported", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigSupported,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_SUPPORTED,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return supportedScheme;
             }
         }
 
@@ -158,13 +157,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme maxOperationsScheme = new AttributeScheme("maxOperations", AttributeDataType.integer, false)
+                return new("maxOperations", AttributeDataType.integer, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigBulkMaxOperations,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_BULK_MAX_OPERATIONS,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return maxOperationsScheme;
             }
         }
 
@@ -172,13 +170,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme maxPayloadSizeScheme = new AttributeScheme("maxPayloadSize", AttributeDataType.integer, false)
+                return new("maxPayloadSize", AttributeDataType.integer, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigBulkMaxPayloadSize,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_BULK_MAX_PAYLOAD_SIZE,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return maxPayloadSizeScheme;
             }
         }
 
@@ -186,13 +183,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme maxResultsScheme = new AttributeScheme("maxResults", AttributeDataType.integer, false)
+                return new("maxResults", AttributeDataType.integer, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigFilterMaxResults,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_FILTER_MAX_RESULTS,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return maxResultsScheme;
             }
         }
 
@@ -200,13 +196,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme nameScheme = new AttributeScheme("name", AttributeDataType.@string, false)
+                return new("name", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderAuthenticationSchemesName,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_AUTHENTICATION_SCHEMES_NAME,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return nameScheme;
             }
         }
 
@@ -214,13 +209,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme descriptionScheme = new AttributeScheme("description", AttributeDataType.@string, false)
+                return new("description", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderAuthenticationSchemesDescription,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_AUTHENTICATION_SCHEMES_DESCRIPTION,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return descriptionScheme;
             }
         }
 
@@ -228,9 +222,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme specUriScheme = new AttributeScheme("specUri", AttributeDataType.reference, false)
+                var specUriScheme = new AttributeScheme("specUri", AttributeDataType.reference, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderAuthenticationSchemesSpecUri,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_AUTHENTICATION_SCHEMES_SPEC_URI,
                     Mutability = Mutability.readOnly,
                 };
                 specUriScheme.AddReferenceTypes("external");
@@ -243,9 +237,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme documentationUriScheme = new AttributeScheme("documentationUri", AttributeDataType.reference, false)
+                var documentationUriScheme = new AttributeScheme("documentationUri", AttributeDataType.reference, false)
                 {
-                    Description = SampleConstants.DescriptionServiceProviderAuthenticationSchemesDocumentationUri,
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_AUTHENTICATION_SCHEMES_DOCUMENTATION_URI,
                     Mutability = Mutability.readOnly,
                 };
                 documentationUriScheme.AddReferenceTypes("external");

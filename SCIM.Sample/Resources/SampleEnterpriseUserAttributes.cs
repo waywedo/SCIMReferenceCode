@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,9 +10,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme managerScheme = new AttributeScheme("manager", AttributeDataType.complex, false)
+                var managerScheme = new AttributeScheme("manager", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionManager
+                    Description = SampleConstants.DESCRIPTION_MANAGER
                 };
                 managerScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
 
@@ -24,11 +24,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme employeeNumberScheme = new AttributeScheme("employeeNumber", AttributeDataType.@string, false)
+                return new("employeeNumber", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionEmployeeNumber
+                    Description = SampleConstants.DESCRIPTION_EMPLOYEE_NUMBER
                 };
-                return employeeNumberScheme;
             }
         }
 
@@ -36,11 +35,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme costCenterScheme = new AttributeScheme("costCenter", AttributeDataType.@string, false)
+                return new("costCenter", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionCostCenter
+                    Description = SampleConstants.DESCRIPTION_COST_CENTER
                 };
-                return costCenterScheme;
             }
         }
 
@@ -48,11 +46,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme organizationScheme = new AttributeScheme("organization", AttributeDataType.@string, false)
+                return new("organization", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionOrganization
+                    Description = SampleConstants.DESCRIPTION_ORGANIZATION
                 };
-                return organizationScheme;
             }
         }
 
@@ -60,11 +57,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme divisionScheme = new AttributeScheme("division", AttributeDataType.@string, false)
+                return new("division", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionDivision
+                    Description = SampleConstants.DESCRIPTION_DIVISION
                 };
-                return divisionScheme;
             }
         }
 
@@ -72,11 +68,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme departmentScheme = new AttributeScheme("department", AttributeDataType.@string, false)
+                return new("department", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.Descriptiondepartment
+                    Description = SampleConstants.DESCRIPTION_DEPARTMENT
                 };
-                return departmentScheme;
             }
         }
     }

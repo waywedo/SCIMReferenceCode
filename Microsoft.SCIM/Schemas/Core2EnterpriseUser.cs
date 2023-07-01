@@ -3,7 +3,7 @@
 //------------------------------------------------------------
 using System.Runtime.Serialization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     [DataContract(Name = DATA_CONTRACT_NAME)]
     public sealed class Core2EnterpriseUser : Core2EnterpriseUserBase

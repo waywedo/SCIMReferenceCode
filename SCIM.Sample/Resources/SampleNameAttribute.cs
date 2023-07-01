@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,11 +9,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme formattedNameScheme = new AttributeScheme("formatted", AttributeDataType.@string, false)
+                return new("formatted", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionFormattedName
+                    Description = SampleConstants.DESCRIPTION_FORMATTED_NAME
                 };
-                return formattedNameScheme;
             }
         }
 
@@ -22,11 +20,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme givenNameScheme = new AttributeScheme("givenName", AttributeDataType.@string, false)
+                return new("givenName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionGivenName
+                    Description = SampleConstants.DESCRIPTION_GIVEN_NAME
                 };
-                return givenNameScheme;
             }
         }
 
@@ -34,11 +31,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme familyNameScheme = new AttributeScheme("familyName", AttributeDataType.@string, false)
+                return new("familyName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionFamilyName
+                    Description = SampleConstants.DESCRIPTION_FAMILY_NAME
                 };
-                return familyNameScheme;
             }
         }
 
@@ -46,11 +42,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme honorificPrefixScheme = new AttributeScheme("honorificPrefix", AttributeDataType.@string, false)
+                return new("honorificPrefix", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionHonorificPrefix
+                    Description = SampleConstants.DESCRIPTION_HONORIFIC_PREFIX
                 };
-                return honorificPrefixScheme;
             }
         }
 
@@ -58,11 +53,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme honorificSuffixScheme = new AttributeScheme("honorificSuffix", AttributeDataType.@string, false)
+                return new("honorificSuffix", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionHonorificSuffix
+                    Description = SampleConstants.DESCRIPTION_HONORIFIC_SUFFIX
                 };
-                return honorificSuffixScheme;
             }
         }
     }

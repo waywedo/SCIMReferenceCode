@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public sealed class PatchRequest2 : PatchRequest2Base<PatchOperation2Combined>

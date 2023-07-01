@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,11 +10,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme idScheme = new AttributeScheme("id", AttributeDataType.@string, false)
+                return new("id", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionIdentifier
+                    Description = SampleConstants.DESCRIPTION_IDENTIFIER
                 };
-                return idScheme;
             }
         }
     }

@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     // Members are numerically ordered.
     internal static class ServiceNotificationIdentifiers

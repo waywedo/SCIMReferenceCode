@@ -2,8 +2,11 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 using System;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal abstract class BulkOperationStateBase<TPayload> : IBulkOperationState<TPayload> where TPayload : class
     {

@@ -1,6 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,14 +10,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme groupDisplayScheme = new AttributeScheme("displayName", AttributeDataType.@string, false)
+                return new("displayName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionGroupDisplayName,
+                    Description = SampleConstants.DESCRIPTION_GROUP_DISPLAY_NAME,
                     Required = true,
                     Uniqueness = Uniqueness.server
                 };
-
-                return groupDisplayScheme;
             }
         }
 
@@ -25,9 +23,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme membersScheme = new AttributeScheme("members", AttributeDataType.complex, true)
+                var membersScheme = new AttributeScheme("members", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionMemebers
+                    Description = SampleConstants.DESCRIPTION_MEMBERS
                 };
                 membersScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
                 membersScheme.AddSubAttribute(SampleMultivaluedAttributes.TypeSubAttributeScheme);

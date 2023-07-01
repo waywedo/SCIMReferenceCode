@@ -1,10 +1,14 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
+using Newtonsoft.Json;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal class BulkCreationOperationState : BulkOperationStateBase<Resource>, IBulkCreationOperationState
     {
@@ -217,7 +221,7 @@ namespace Microsoft.SCIM
             {
                 nextState = Context.FaultedState;
             }
-            else if (_typedContext.Subordinates.Any((IBulkUpdateOperationContext item) => !item.Completed))
+            else if (_typedContext.Subordinates.Any((item) => !item.Completed))
             {
                 nextState = _typedContext.PendingState;
             }

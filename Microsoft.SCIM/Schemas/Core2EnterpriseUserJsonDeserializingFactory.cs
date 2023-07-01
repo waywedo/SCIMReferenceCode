@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     public sealed class Core2EnterpriseUserJsonDeserializingFactory : JsonDeserializingFactory<Core2EnterpriseUser>
     {

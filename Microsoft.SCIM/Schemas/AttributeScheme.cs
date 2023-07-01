@@ -7,7 +7,7 @@ using System.Runtime.Serialization;
 using System.Linq;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     [DataContract]
     public sealed class AttributeScheme
@@ -181,7 +181,7 @@ namespace Microsoft.SCIM
         public void AddCanonicalValues(string canonicalValue)
         {
             var containsFunction = new Func<bool>(() =>
-                _canonicalValues.Any((string item) =>
+                _canonicalValues.Any((item) =>
                     string.Equals(item, canonicalValue, StringComparison.OrdinalIgnoreCase)
                 )
             );

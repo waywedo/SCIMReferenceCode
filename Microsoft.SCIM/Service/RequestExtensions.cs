@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
+using Newtonsoft.Json;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public static class RequestExtensions
     {
@@ -159,7 +162,7 @@ namespace Microsoft.SCIM
                 context.Relate(updates);
 
                 (IBulkOperationContext item, int index) firstDependent =
-                    operations.Select((IBulkOperationContext item, int index) => (item, index))
+                    operations.Select((item, index) => (item, index))
                         .Where(candidateItem => context.Dependents.Any(dependentItem => dependentItem == candidateItem.item))
                         .OrderBy((item) => item.index)
                         .FirstOrDefault();

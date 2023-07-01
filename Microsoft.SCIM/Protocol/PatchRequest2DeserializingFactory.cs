@@ -5,8 +5,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public abstract class PatchRequest2DeserializingFactory<TPatchRequest, TOperation> :
         ProtocolJsonDeserializingFactory<TPatchRequest>,
@@ -17,8 +19,8 @@ namespace Microsoft.SCIM
         public override TPatchRequest Create(IReadOnlyDictionary<string, object> json)
         {
             var normalized = Normalize(json).ToDictionary(
-                (KeyValuePair<string, object> item) => item.Key,
-                (KeyValuePair<string, object> item) => item.Value
+                (item) => item.Key,
+                (item) => item.Value
             );
 
             if (normalized.TryGetValue(ProtocolAttributeNames.OPERATIONS, out object operations))

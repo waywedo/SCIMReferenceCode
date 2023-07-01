@@ -2,8 +2,10 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 using System;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public class SchemaIdentifier : ISchemaIdentifier
     {

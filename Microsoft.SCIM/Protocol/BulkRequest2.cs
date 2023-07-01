@@ -3,7 +3,7 @@
 //------------------------------------------------------------
 using System.Runtime.Serialization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
 
     [DataContract]

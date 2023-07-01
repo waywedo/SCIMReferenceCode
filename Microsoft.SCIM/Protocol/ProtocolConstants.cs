@@ -1,11 +1,12 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Microsoft.SCIM.Schemas;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public static class ProtocolConstants
     {
@@ -21,7 +22,7 @@ namespace Microsoft.SCIM
         {
             return new JsonSerializerSettings
             {
-                Error = (object sender, ErrorEventArgs args) => args.ErrorContext.Handled = true
+                Error = (sender, args) => args.ErrorContext.Handled = true
             };
         }
     }

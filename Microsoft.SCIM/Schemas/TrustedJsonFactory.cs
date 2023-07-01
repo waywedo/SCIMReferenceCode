@@ -4,7 +4,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     public class TrustedJsonFactory : JsonFactory
     {

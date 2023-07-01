@@ -3,8 +3,9 @@
 //------------------------------------------------------------
 using System;
 using System.Net.Http;
+using Microsoft.SCIM.Protocol.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public abstract class Extension : IExtension
     {

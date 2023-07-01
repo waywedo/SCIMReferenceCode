@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Web;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public sealed class Filter : IFilter
     {
@@ -144,8 +147,8 @@ namespace Microsoft.SCIM
         {
             var result = ReservedCharacterEncodingsPerRfc39861.Value
                 .ToDictionary(
-                    (KeyValuePair<string, string> item) => item.Key,
-                    (KeyValuePair<string, string> item) => item.Value
+                    (item) => item.Key,
+                    (item) => item.Value
                 );
 
             result.Add(SPACE, ENCODING_SPACE_PER_2396);
@@ -228,7 +231,7 @@ namespace Microsoft.SCIM
                     rightHandSide = ComparisonValue;
                     break;
                 default:
-                    rightHandSide = string.Format( CultureInfo.InvariantCulture, COMPARISON_VALUE_TEMPLATE, ComparisonValue);
+                    rightHandSide = string.Format(CultureInfo.InvariantCulture, COMPARISON_VALUE_TEMPLATE, ComparisonValue);
                     break;
             }
 

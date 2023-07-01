@@ -1,20 +1,19 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
     public static class SampleTypeScheme
     {
-
         public static TypeScheme UserTypeScheme
         {
             get
             {
-                TypeScheme userType = new TypeScheme
+                var userType = new TypeScheme
                 {
-                    Description = SampleConstants.UserAccount,
-                    Identifier = $"{SampleConstants.Core2SchemaPrefix}{Types.USER}",
+                    Description = SampleConstants.USER_ACCOUNT,
+                    Identifier = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.USER}",
                     Name = Types.USER
                 };
                 userType.AddAttribute(SampleUserAttributes.UserNameAttributeScheme);
@@ -33,7 +32,6 @@ namespace SCIM.Sample.Resources
                 userType.AddAttribute(SampleUserAttributes.ImsAttributeScheme);
                 userType.AddAttribute(SampleUserAttributes.RolessAttributeScheme);
 
-
                 return userType;
             }
         }
@@ -42,11 +40,11 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                TypeScheme enterpriseType = new TypeScheme
+                var enterpriseType = new TypeScheme
                 {
-                    Description = SampleConstants.UserEnterprise,
-                    Identifier = SampleConstants.UserEnterpriseSchema,
-                    Name = SampleConstants.UserEnterpriseName
+                    Description = SampleConstants.USER_ENTERPRISE,
+                    Identifier = SampleConstants.USER_ENTERPRISE_SCHEMA,
+                    Name = SampleConstants.USER_ENTERPRISE_NAME
                 };
                 enterpriseType.AddAttribute(SampleEnterpriseUserAttributes.ManagerAttributeScheme);
                 enterpriseType.AddAttribute(SampleEnterpriseUserAttributes.EmployeeNumberAttributeScheme);
@@ -63,10 +61,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                TypeScheme groupType = new TypeScheme
+                var groupType = new TypeScheme
                 {
                     Description = Types.GROUP,
-                    Identifier = $"{SampleConstants.Core2SchemaPrefix}{Types.GROUP}",
+                    Identifier = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.GROUP}",
                     Name = Types.GROUP
                 };
                 groupType.AddAttribute(SampleGroupAttributes.GroupDisplayNameAttributeScheme);
@@ -79,10 +77,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                TypeScheme resourceTypesType = new TypeScheme
+                var resourceTypesType = new TypeScheme
                 {
-                    Description = SampleConstants.DescriptionResourceTypeSchema,
-                    Identifier = $"{SampleConstants.Core2SchemaPrefix}{Types.RESOURCE_TYPE}",
+                    Description = SampleConstants.DESCRIPTION_RESOURCE_TYPE_SCHEMA,
+                    Identifier = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.RESOURCE_TYPE}",
                     Name = Types.RESOURCE_TYPE
                 };
                 resourceTypesType.AddAttribute(SampleCommonAttributes.IdentiFierAttributeScheme);
@@ -98,10 +96,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                TypeScheme schemaType = new TypeScheme
+                var schemaType = new TypeScheme
                 {
-                    Description = SampleConstants.DescriptionScimSchema,
-                    Identifier = $"{SampleConstants.Core2SchemaPrefix}{Types.SCHEMA}",
+                    Description = SampleConstants.DESCRIPTION_SCIM_SCHEMA,
+                    Identifier = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.SCHEMA}",
                     Name = Types.SCHEMA
                 };
                 schemaType.AddAttribute(SampleCommonAttributes.IdentiFierAttributeScheme);
@@ -117,11 +115,11 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                TypeScheme serviceProviderConfigType = new TypeScheme
+                var serviceProviderConfigType = new TypeScheme
                 {
-                    Description = SampleConstants.DescriptionServiceProviderConfigSchema,
-                    Identifier = $"{SampleConstants.Core2SchemaPrefix}{Types.SERVICE_PROVIDER_CONFIGURATION}",
-                    Name = SampleConstants.ServiceProviderConfig
+                    Description = SampleConstants.DESCRIPTION_SERVICE_PROVIDER_CONFIG_SCHEMA,
+                    Identifier = $"{SampleConstants.CORE_2_SCHEMA_PREFIX}{Types.SERVICE_PROVIDER_CONFIGURATION}",
+                    Name = SampleConstants.SERVICE_PROVIDER_CONFIG
                 };
                 serviceProviderConfigType.AddAttribute(SampleServiceProviderConfigAttributes.DocumentationUriAttributeScheme);
                 serviceProviderConfigType.AddAttribute(SampleServiceProviderConfigAttributes.PatchAttributeScheme);

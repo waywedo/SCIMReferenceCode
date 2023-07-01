@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     [DataContract]
     public sealed class Core2ResourceType : Resource

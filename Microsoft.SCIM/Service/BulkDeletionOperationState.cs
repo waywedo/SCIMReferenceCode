@@ -3,8 +3,11 @@
 //------------------------------------------------------------
 using System;
 using System.Net;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal class BulkDeletionOperationState : BulkOperationStateBase<IResourceIdentifier>
     {

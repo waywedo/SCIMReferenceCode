@@ -5,7 +5,7 @@ using System;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     internal static class StringExtension
     {

@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,11 +9,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme valueScheme = new AttributeScheme("value", AttributeDataType.@string, false)
+                return new("value", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionValue,
+                    Description = SampleConstants.DESCRIPTION_VALUE,
                 };
-                return valueScheme;
             }
         }
 
@@ -22,9 +20,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                var typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionType,
+                    Description = SampleConstants.DESCRIPTION_TYPE,
                     Mutability = Mutability.immutable
                 };
                 typeScheme.AddCanonicalValues(Types.GROUP);
@@ -38,11 +36,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("display", AttributeDataType.@string, false)
+                return new("display", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionDisplay
+                    Description = SampleConstants.DESCRIPTION_DISPLAY
                 };
-                return typeScheme;
             }
         }
 
@@ -50,9 +47,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                var typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionType
+                    Description = SampleConstants.DESCRIPTION_TYPE
                 };
                 typeScheme.AddCanonicalValues("work");
                 typeScheme.AddCanonicalValues("home");
@@ -66,9 +63,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                var typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionType,
+                    Description = SampleConstants.DESCRIPTION_TYPE,
                     Required = true
                 };
                 typeScheme.AddCanonicalValues("oauth");
@@ -85,9 +82,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                var typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionType
+                    Description = SampleConstants.DESCRIPTION_TYPE
                 };
                 typeScheme.AddCanonicalValues("aim");
                 typeScheme.AddCanonicalValues("gtalk");
@@ -106,11 +103,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                return new("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionType,
+                    Description = SampleConstants.DESCRIPTION_TYPE,
                 };
-                return typeScheme;
             }
         }
 
@@ -118,11 +114,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("primary", AttributeDataType.boolean, false)
+                return new("primary", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionPrimary
+                    Description = SampleConstants.DESCRIPTION_PRIMARY
                 };
-                return typeScheme;
             }
         }
     }

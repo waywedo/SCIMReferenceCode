@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-namespace Microsoft.SCIM
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Schemas;
+
+namespace Microsoft.SCIM.Service
 {
     public static class ServiceConstants
     {

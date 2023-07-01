@@ -5,8 +5,9 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Resources;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     [DataContract]
     public abstract class QualifiedResource : Resource

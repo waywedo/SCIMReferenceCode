@@ -1,13 +1,17 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal class UniformResourceIdentifier : IUniformResourceIdentifier
     {

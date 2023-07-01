@@ -6,8 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public sealed class BulkRequestOperation : BulkOperation
@@ -73,7 +75,7 @@ namespace Microsoft.SCIM
 
             var paths = new List<Uri>(1);
 
-            foreach (var schemaIdentifier in data.Schemas.Select((string item) => new SchemaIdentifier(item)))
+            foreach (var schemaIdentifier in data.Schemas.Select((item) => new SchemaIdentifier(item)))
             {
                 Uri schemaIdentifierPath = null;
 
@@ -81,7 +83,7 @@ namespace Microsoft.SCIM
                 {
                     schemaIdentifierPath = new Uri(pathValue, UriKind.Relative);
 
-                    if (!paths.Any((Uri item) => Uri.Compare(item, schemaIdentifierPath, UriComponents.AbsoluteUri,
+                    if (!paths.Any((item) => Uri.Compare(item, schemaIdentifierPath, UriComponents.AbsoluteUri,
                         UriFormat.UriEscaped, StringComparison.OrdinalIgnoreCase) == 0))
                     {
                         paths.Add(schemaIdentifierPath);
@@ -90,7 +92,7 @@ namespace Microsoft.SCIM
 
                 if (data.TryGetPathIdentifier(out Uri resourcePath))
                 {
-                    if(!paths.Any((Uri item) => Uri.Compare(item, resourcePath, UriComponents.AbsoluteUri, UriFormat.UriEscaped,
+                    if (!paths.Any((item) => Uri.Compare(item, resourcePath, UriComponents.AbsoluteUri, UriFormat.UriEscaped,
                         StringComparison.OrdinalIgnoreCase) == 0))
                     {
                         paths.Add(resourcePath);

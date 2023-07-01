@@ -4,7 +4,7 @@
 using System;
 using System.Globalization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     internal static class DateTimeExtension
     {

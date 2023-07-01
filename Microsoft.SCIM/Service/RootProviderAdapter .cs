@@ -3,8 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public class RootProviderAdapter : ProviderAdapterTemplate<Resource>
     {

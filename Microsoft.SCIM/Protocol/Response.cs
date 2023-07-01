@@ -5,8 +5,9 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using Microsoft.SCIM.Protocol.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     internal class Response : IResponse
     {

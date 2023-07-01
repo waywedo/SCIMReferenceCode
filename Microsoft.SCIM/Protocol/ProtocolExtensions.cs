@@ -1,7 +1,6 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
-using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -15,8 +14,13 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service;
+using Newtonsoft.Json;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public static class ProtocolExtensions
     {
@@ -151,7 +155,7 @@ namespace Microsoft.SCIM
                                 foreach (Member member in membersToAdd)
                                 {
                                     //O(n) with the number of group members, so for large groups this is not optimal
-                                    if (!group.Members.Any((Member item) =>
+                                    if (!group.Members.Any((item) =>
                                             string.Equals(item.Value, member.Value, StringComparison.OrdinalIgnoreCase)))
                                     {
                                         buffer.Add(member);
@@ -883,7 +887,7 @@ namespace Microsoft.SCIM
                 return electronicMailAddresses;
             }
 
-            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
+            if (operation.Value != null && operation.Value.Count != 1 || operation.Value == null && operation.Name != OperationName.Remove)
             {
                 return electronicMailAddresses;
             }
@@ -994,7 +998,7 @@ namespace Microsoft.SCIM
                 return roles;
             }
 
-            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
+            if (operation.Value != null && operation.Value.Count != 1 || operation.Value == null && operation.Name != OperationName.Remove)
             {
                 return roles;
             }
@@ -1399,7 +1403,7 @@ namespace Microsoft.SCIM
                             value = JsonFactory.Instance.Create(values, AcceptLargeObjects);
                         }
 
-                        var line = string.Format( CultureInfo.InvariantCulture, TEMPLATE_HEADER, header.Key, value);
+                        var line = string.Format(CultureInfo.InvariantCulture, TEMPLATE_HEADER, header.Key, value);
 
                         await _innerWriter.WriteLineAsync(line).ConfigureAwait(false);
                     }

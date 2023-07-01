@@ -1,12 +1,14 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 
 namespace Microsoft.SCIM.EventToken.Schemas
 {

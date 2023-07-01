@@ -3,7 +3,7 @@
 //------------------------------------------------------------
 using System.Collections.Generic;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     internal static class DictionaryExtension
     {

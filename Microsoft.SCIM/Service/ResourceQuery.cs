@@ -1,12 +1,15 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 using Microsoft.AspNetCore.Http;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Service.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public sealed class ResourceQuery : IResourceQuery
     {
@@ -52,7 +55,7 @@ namespace Microsoft.SCIM
                 if (string.Equals(key, QueryKeys.COUNT, StringComparison.OrdinalIgnoreCase))
                 {
                     var action = new Action<IPaginationParameters, int>(
-                        (IPaginationParameters pagination, int paginationValue) => pagination.Count = paginationValue
+                        (pagination, paginationValue) => pagination.Count = paginationValue
                     );
                     ApplyPaginationParameter(query[key], action);
                 }
@@ -80,7 +83,7 @@ namespace Microsoft.SCIM
                 if (string.Equals(key, QueryKeys.START_INDEX, StringComparison.OrdinalIgnoreCase))
                 {
                     var action = new Action<IPaginationParameters, int>(
-                        (IPaginationParameters pagination, int paginationValue) => pagination.StartIndex = paginationValue
+                        (pagination, paginationValue) => pagination.StartIndex = paginationValue
                     );
                     ApplyPaginationParameter(query[key], action);
                 }

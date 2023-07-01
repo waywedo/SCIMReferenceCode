@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-using Microsoft.SCIM.Service;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
+using Newtonsoft.Json;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public sealed class SampleProvider : ProviderBase, ISampleProvider
     {

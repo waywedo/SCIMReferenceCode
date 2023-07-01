@@ -5,8 +5,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public sealed class QueryResponseJsonDeserializingFactory<T> : ProtocolJsonDeserializingFactory<QueryResponse<T>>
         where T : Resource
@@ -34,17 +35,17 @@ namespace Microsoft.SCIM
             {
                 var normalizedJson = Normalize(json);
                 var metadataJson = normalizedJson.Where(
-                    (KeyValuePair<string, object> item) => !string.Equals(ProtocolAttributeNames.RESOURCES,
+                    (item) => !string.Equals(ProtocolAttributeNames.RESOURCES,
                         item.Key, StringComparison.OrdinalIgnoreCase)
                 ).ToDictionary(
-                    (KeyValuePair<string, object> item) => item.Key,
-                    (KeyValuePair<string, object> item) => item.Value
+                    (item) => item.Key,
+                    (item) => item.Value
                 );
 
                 var result = base.Create(metadataJson);
 
                 var resourcesJson = normalizedJson.Where(
-                    (KeyValuePair<string, object> item) => string.Equals(ProtocolAttributeNames.RESOURCES,
+                    (item) => string.Equals(ProtocolAttributeNames.RESOURCES,
                     item.Key, StringComparison.OrdinalIgnoreCase)).ToArray();
 
                 if (resourcesJson.Any())

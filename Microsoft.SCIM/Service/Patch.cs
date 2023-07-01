@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 using System;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public sealed class Patch : IPatch
     {

@@ -3,8 +3,10 @@
 //------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal sealed class BulkUpdateOperationContext : BulkOperationContextBase<IPatch>, IBulkUpdateOperationContext
     {
@@ -27,7 +29,7 @@ namespace Microsoft.SCIM
             Initialize(_receivedState);
         }
 
-        public BulkUpdateOperationContext( IRequest<BulkRequest2> request, BulkRequestOperation operation,
+        public BulkUpdateOperationContext(IRequest<BulkRequest2> request, BulkRequestOperation operation,
             IBulkCreationOperationContext parent)
         {
             if (request == null)

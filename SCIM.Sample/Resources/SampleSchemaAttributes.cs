@@ -1,22 +1,21 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
-    public class SampleSchemaAttributes
+    public static class SampleSchemaAttributes
     {
         public static AttributeScheme NameAttributeScheme
         {
             get
             {
-                AttributeScheme nameScheme = new AttributeScheme("name", AttributeDataType.@string, false)
+                return new("name", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionSchemaName,
+                    Description = SampleConstants.DESCRIPTION_SCHEMA_NAME,
                     Mutability = Mutability.readOnly,
                     Required = true
                 };
-                return nameScheme;
             }
         }
 
@@ -24,12 +23,11 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme descriptionScheme = new AttributeScheme("description", AttributeDataType.@string, false)
+                return new("description", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionSchemaName,
+                    Description = SampleConstants.DESCRIPTION_SCHEMA_NAME,
                     Mutability = Mutability.readOnly,
                 };
-                return descriptionScheme;
             }
         }
 
@@ -37,9 +35,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme attributesScheme = new AttributeScheme("attributes", AttributeDataType.complex, true)
+                var attributesScheme = new AttributeScheme("attributes", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionSchemaAttributes,
+                    Description = SampleConstants.DESCRIPTION_SCHEMA_ATTRIBUTES,
                     Mutability = Mutability.readOnly,
                 };
                 attributesScheme.AddSubAttribute(NameSubAttributeScheme);
@@ -63,14 +61,13 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme nameScheme = new AttributeScheme("name", AttributeDataType.@string, false)
+                return new("name", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeName,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_NAME,
                     Mutability = Mutability.readOnly,
                     Required = true,
                     CaseExact = true
                 };
-                return nameScheme;
             }
         }
 
@@ -78,9 +75,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
+                var typeScheme = new AttributeScheme("type", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeType,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_TYPE,
                     Mutability = Mutability.readOnly,
                     Required = true,
                 };
@@ -99,13 +96,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme multiValuedScheme = new AttributeScheme("multiValued", AttributeDataType.boolean, false)
+                return new("multiValued", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeMultiValued,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_MULTI_VALUED,
                     Mutability = Mutability.readOnly,
                     Required = true,
                 };
-                return multiValuedScheme;
             }
         }
 
@@ -113,13 +109,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme descriptionScheme = new AttributeScheme("description", AttributeDataType.@string, false)
+                return new("description", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeDescription,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_DESCRIPTION,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
-                return descriptionScheme;
             }
         }
 
@@ -127,12 +122,11 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme requiredScheme = new AttributeScheme("required", AttributeDataType.boolean, false)
+                return new("required", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeRequired,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_REQUIRED,
                     Mutability = Mutability.readOnly,
                 };
-                return requiredScheme;
             }
         }
 
@@ -140,13 +134,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme canonicalValuesScheme = new AttributeScheme("canonicalValues", AttributeDataType.@string, true)
+                return new("canonicalValues", AttributeDataType.@string, true)
                 {
-                    Description = SampleConstants.DescriptionAttributeCanonicalValues,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_CANONICAL_VALUES,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
-                return canonicalValuesScheme;
             }
         }
 
@@ -154,12 +147,11 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme caseExactScheme = new AttributeScheme("caseExact", AttributeDataType.boolean, false)
+                return new("caseExact", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeCaseExact,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_CASE_EXACT,
                     Mutability = Mutability.readOnly,
                 };
-                return caseExactScheme;
             }
         }
 
@@ -167,9 +159,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme mutabilityScheme = new AttributeScheme("mutability", AttributeDataType.@string, false)
+                var mutabilityScheme = new AttributeScheme("mutability", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeMutability,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_MUTABILITY,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
@@ -186,9 +178,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme returnedScheme = new AttributeScheme("returned", AttributeDataType.@string, false)
+                var returnedScheme = new AttributeScheme("returned", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeReturned,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_RETURNED,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
@@ -205,9 +197,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme uniquenessScheme = new AttributeScheme("uniqueness", AttributeDataType.@string, false)
+                var uniquenessScheme = new AttributeScheme("uniqueness", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionAttributeUniqueness,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_UNIQUENESS,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
@@ -223,14 +215,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme referenceTypesScheme = new AttributeScheme("referenceTypes", AttributeDataType.@string, true)
+                return new("referenceTypes", AttributeDataType.@string, true)
                 {
-                    Description = SampleConstants.DescriptionAttributeReferenceTypes,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_REFERENCE_TYPES,
                     Mutability = Mutability.readOnly,
                     CaseExact = true
                 };
-
-                return referenceTypesScheme;
             }
         }
 
@@ -238,9 +228,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme subAttributesScheme = new AttributeScheme("subAttributes", AttributeDataType.complex, true)
+                var subAttributesScheme = new AttributeScheme("subAttributes", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionAttributeSubAttributes,
+                    Description = SampleConstants.DESCRIPTION_ATTRIBUTE_SUB_ATTRIBUTES,
                     Mutability = Mutability.readOnly,
                 };
                 subAttributesScheme.AddSubAttribute(NameSubAttributeScheme);

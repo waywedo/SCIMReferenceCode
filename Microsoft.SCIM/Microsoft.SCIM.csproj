@@ -18,17 +18,17 @@
     </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="ServiceResources.Designer.cs">
+    <Compile Update="Resources\ServiceResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>ServiceResources.resx</DependentUpon>
     </Compile>
-    <Compile Update="ProtocolResources.Designer.cs">
+    <Compile Update="Resources\ProtocolResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>ProtocolResources.resx</DependentUpon>
     </Compile>
-    <Compile Update="SchemasResources.Designer.cs">
+    <Compile Update="Resources\SchemasResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>SchemasResources.resx</DependentUpon>
@@ -36,17 +36,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="ServiceResources.resx">
+    <EmbeddedResource Update="Resources\ServiceResources.resx">
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>ServiceResources.Designer.cs</LastGenOutput>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Update="ProtocolResources.resx">
+    <EmbeddedResource Update="Resources\ProtocolResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>ProtocolResources.Designer.cs</LastGenOutput>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Update="SchemasResources.resx">
+    <EmbeddedResource Update="Resources\SchemasResources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>SchemasResources.Designer.cs</LastGenOutput>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

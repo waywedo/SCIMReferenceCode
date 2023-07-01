@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 
-namespace Microsoft.SCIM
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
+
+namespace Microsoft.SCIM.Service
 {
     public class Core2EnterpriseUserProviderAdapter : ProviderAdapterTemplate<Core2EnterpriseUser>
     {

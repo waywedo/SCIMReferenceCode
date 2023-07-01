@@ -5,7 +5,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Microsoft.SCIM;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 using Microsoft.SCIM.Service;
+using Microsoft.SCIM.Service.Contracts;
 
 namespace SCIM.Sample.Provider
 {
@@ -139,7 +144,7 @@ namespace SCIM.Sample.Provider
                             }
                         }
                         // FamilyName filter
-                        else if (andFilter.AttributePath.Equals(string.Concat(AttributeNames.NAME,".",AttributeNames.FAMILY_NAME), StringComparison.OrdinalIgnoreCase))
+                        else if (andFilter.AttributePath.Equals(string.Concat(AttributeNames.NAME, ".", AttributeNames.FAMILY_NAME), StringComparison.OrdinalIgnoreCase))
                         {
                             if (andFilter.FilterOperator != ComparisonOperator.Equals)
                             {

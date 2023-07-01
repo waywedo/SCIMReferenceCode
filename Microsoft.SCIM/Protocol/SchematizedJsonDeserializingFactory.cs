@@ -6,10 +6,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
-
     public sealed class SchematizedJsonDeserializingFactory : SchematizedJsonDeserializingFactoryBase
     {
         private ISchematizedJsonDeserializingFactory<PatchRequest2> patchSerializer;
@@ -129,7 +132,6 @@ namespace Microsoft.SCIM
                     throw new ArgumentException(
                         ProtocolResources.ExceptionUnidentifiableSchema);
             }
-
 
             if (TryCreateResourceFrom(normalizedJson, schemaIdentifiers, out Schematized result))
             {

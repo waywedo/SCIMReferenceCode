@@ -3,8 +3,11 @@
 //------------------------------------------------------------
 using System;
 using System.Net.Http;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal abstract class BulkOperationContextBase<TPayload> : IBulkOperationContext<TPayload> where TPayload : class
     {

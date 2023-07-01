@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     public sealed class JsonNormalizer : JsonNormalizerTemplate
     {
@@ -26,7 +26,7 @@ namespace Microsoft.SCIM
             var attributeNamesType = typeof(AttributeNames);
             var members = attributeNamesType.GetFields(BindingFlags.Public | BindingFlags.Static);
 
-            return members.Select((FieldInfo item) => item.GetValue(null)).Cast<string>().ToArray();
+            return members.Select((item) => item.GetValue(null)).Cast<string>().ToArray();
         }
     }
 }

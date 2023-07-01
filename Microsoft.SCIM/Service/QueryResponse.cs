@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     [DataContract]
     public sealed class QueryResponse : QueryResponseBase

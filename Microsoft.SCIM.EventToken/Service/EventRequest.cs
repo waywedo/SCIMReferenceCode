@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.SCIM.EventToken.Schemas;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Service;
 
 namespace Microsoft.SCIM.EventToken.Service
 {

@@ -1,11 +1,12 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
-    using System;
-    using System.Globalization;
-    using System.Runtime.Serialization;
+using System;
+using System.Globalization;
+using System.Runtime.Serialization;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public sealed class PatchOperation2SingleValued : PatchOperation2Base

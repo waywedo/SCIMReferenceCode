@@ -6,8 +6,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
     public abstract class JsonNormalizerTemplate : IJsonNormalizationBehavior
     {

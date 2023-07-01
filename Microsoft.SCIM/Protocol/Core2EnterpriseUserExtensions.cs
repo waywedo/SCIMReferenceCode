@@ -1,11 +1,12 @@
 ﻿//------------------------------------------------------------
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
+using Microsoft.SCIM.Schemas;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public static class Core2EnterpriseUserExtensions
     {
@@ -88,7 +89,7 @@ namespace Microsoft.SCIM
             }
 
             if (!string.IsNullOrWhiteSpace(operation.Path.SchemaIdentifier)
-                && (operation?.Path?.SchemaIdentifier?.Equals(SchemaIdentifiers.CORE_2_ENTERPRISE_USER, StringComparison.OrdinalIgnoreCase) == true))
+                && operation?.Path?.SchemaIdentifier?.Equals(SchemaIdentifiers.CORE_2_ENTERPRISE_USER, StringComparison.OrdinalIgnoreCase) == true)
             {
                 user.PatchEnterpriseExtension(operation);
                 return;
@@ -119,7 +120,7 @@ namespace Microsoft.SCIM
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((value == null) || string.Equals(user.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(user.DisplayName, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -148,7 +149,7 @@ namespace Microsoft.SCIM
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((value == null) || string.Equals(user.ExternalIdentifier, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(user.ExternalIdentifier, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -181,7 +182,7 @@ namespace Microsoft.SCIM
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((value == null) || string.Equals(user.PreferredLanguage, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(user.PreferredLanguage, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -210,7 +211,7 @@ namespace Microsoft.SCIM
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((value == null) || string.Equals(user.Title, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(user.Title, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -235,7 +236,7 @@ namespace Microsoft.SCIM
 
                     if (OperationName.Remove == operation.Name)
                     {
-                        if ((value == null) || string.Equals(user.UserName, value.Value, StringComparison.OrdinalIgnoreCase))
+                        if (value == null || string.Equals(user.UserName, value.Value, StringComparison.OrdinalIgnoreCase))
                         {
                             value = null;
                         }
@@ -286,7 +287,7 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
+            if (operation.Value != null && operation.Value.Count != 1 || operation.Value == null && operation.Name != OperationName.Remove)
             {
                 return;
             }
@@ -302,7 +303,7 @@ namespace Microsoft.SCIM
             if (user.Addresses != null)
             {
                 addressExisting = address = user.Addresses.SingleOrDefault(
-                    (Address item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                    (item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
                 );
             }
             else
@@ -391,8 +392,8 @@ namespace Microsoft.SCIM
                 }
             }
 
-            if (address == null || (string.IsNullOrWhiteSpace(address.Country) && string.IsNullOrWhiteSpace(address.Locality) && string.IsNullOrWhiteSpace(address.PostalCode)
-                && string.IsNullOrWhiteSpace(address.Region) && string.IsNullOrWhiteSpace(address.StreetAddress) && string.IsNullOrWhiteSpace(address.Formatted)))
+            if (address == null || string.IsNullOrWhiteSpace(address.Country) && string.IsNullOrWhiteSpace(address.Locality) && string.IsNullOrWhiteSpace(address.PostalCode)
+                && string.IsNullOrWhiteSpace(address.Region) && string.IsNullOrWhiteSpace(address.StreetAddress) && string.IsNullOrWhiteSpace(address.Formatted))
             {
                 if (addressExisting != null)
                 {
@@ -425,7 +426,7 @@ namespace Microsoft.SCIM
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((value == null) || string.Equals(extension.CostCenter, value.Value, StringComparison.OrdinalIgnoreCase))
+                if (value == null || string.Equals(extension.CostCenter, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -444,7 +445,7 @@ namespace Microsoft.SCIM
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((value == null) || string.Equals(extension.Department, value.Value, StringComparison.OrdinalIgnoreCase))
+                if (value == null || string.Equals(extension.Department, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -463,7 +464,7 @@ namespace Microsoft.SCIM
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((value == null) || string.Equals(extension.Division, value.Value, StringComparison.OrdinalIgnoreCase))
+                if (value == null || string.Equals(extension.Division, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -487,7 +488,7 @@ namespace Microsoft.SCIM
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((value == null) || string.Equals(extension.EmployeeNumber, value.Value, StringComparison.OrdinalIgnoreCase))
+                if (value == null || string.Equals(extension.EmployeeNumber, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -588,7 +589,7 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
+            if (operation.Value != null && operation.Value.Count != 1 || operation.Value == null && operation.Name != OperationName.Remove)
             {
                 return;
             }
@@ -659,7 +660,7 @@ namespace Microsoft.SCIM
 
             if (OperationName.Remove == operation.Name)
             {
-                if ((value == null) || string.Equals(extension.Organization, value.Value, StringComparison.OrdinalIgnoreCase))
+                if (value == null || string.Equals(extension.Organization, value.Value, StringComparison.OrdinalIgnoreCase))
                 {
                     value = null;
                 }
@@ -701,7 +702,7 @@ namespace Microsoft.SCIM
                 return;
             }
 
-            if ((operation.Value != null && operation.Value.Count != 1) || (operation.Value == null && operation.Name != OperationName.Remove))
+            if (operation.Value != null && operation.Value.Count != 1 || operation.Value == null && operation.Name != OperationName.Remove)
             {
                 return;
             }
@@ -725,7 +726,7 @@ namespace Microsoft.SCIM
             if (user.PhoneNumbers != null)
             {
                 phoneNumberExisting = phoneNumber = user.PhoneNumbers.SingleOrDefault(
-                    (PhoneNumber item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                    (item) => string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
                 );
             }
 
@@ -749,7 +750,7 @@ namespace Microsoft.SCIM
                 if (phoneNumberExisting != null)
                 {
                     user.PhoneNumbers = user.PhoneNumbers.Where(
-                        (PhoneNumber item) => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
+                        (item) => !string.Equals(subAttribute.ComparisonValue, item.ItemType, StringComparison.Ordinal)
                     ).ToArray();
                 }
                 return;

@@ -2,7 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
-namespace Microsoft.SCIM
+using Microsoft.SCIM.Protocol.Contracts;
+
+namespace Microsoft.SCIM.Protocol
 {
     public class PaginationParameters : IPaginationParameters
     {

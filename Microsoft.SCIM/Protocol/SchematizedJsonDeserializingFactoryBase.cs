@@ -3,8 +3,11 @@
 //------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public abstract class SchematizedJsonDeserializingFactoryBase :
         ProtocolJsonDeserializingFactory, ISchematizedJsonDeserializingFactory

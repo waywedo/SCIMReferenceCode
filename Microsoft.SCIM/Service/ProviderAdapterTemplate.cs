@@ -1,10 +1,14 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
 using Microsoft.AspNetCore.Http;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public abstract class ProviderAdapterTemplate<T> : IProviderAdapter<T> where T : Resource
     {
@@ -198,7 +202,7 @@ namespace Microsoft.SCIM
             return Provider.RetrieveAsync(retrievalRequest);
         }
 
-        public virtual Task Update( HttpRequest request, string identifier, PatchRequestBase patchRequest,
+        public virtual Task Update(HttpRequest request, string identifier, PatchRequestBase patchRequest,
             string correlationIdentifier)
         {
             if (request == null)

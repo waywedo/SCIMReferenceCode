@@ -2,7 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.SCIM;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service;
+using Microsoft.SCIM.Service.Contracts;
 using SCIM.Sample.Resources;
 
 namespace SCIM.Sample.Provider

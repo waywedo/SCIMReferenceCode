@@ -4,8 +4,9 @@
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Protocol.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
 
     [DataContract]
@@ -32,7 +33,7 @@ namespace Microsoft.SCIM
             }
 
             Name = operationName;
-            Path = SCIM.Path.Create(pathExpression);
+            Path = Protocol.Path.Create(pathExpression);
         }
 
         public OperationName Name
@@ -72,7 +73,7 @@ namespace Microsoft.SCIM
             {
                 if (_path == null && !string.IsNullOrWhiteSpace(_pathExpression))
                 {
-                    _path = SCIM.Path.Create(_pathExpression);
+                    _path = Protocol.Path.Create(_pathExpression);
                 }
 
                 return _path;

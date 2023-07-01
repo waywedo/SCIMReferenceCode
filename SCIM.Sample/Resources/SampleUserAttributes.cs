@@ -1,6 +1,5 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
@@ -10,13 +9,12 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme userNameScheme = new AttributeScheme("userName", AttributeDataType.@string, false)
+                return new("userName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionUserName,
+                    Description = SampleConstants.DESCRIPTION_USER_NAME,
                     Required = true,
                     Uniqueness = Uniqueness.server
                 };
-                return userNameScheme;
             }
         }
 
@@ -24,9 +22,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme nameScheme = new AttributeScheme("name", AttributeDataType.complex, false)
+                var nameScheme = new AttributeScheme("name", AttributeDataType.complex, false)
                 {
-                    Description = SampleConstants.DescriptionName
+                    Description = SampleConstants.DESCRIPTION_NAME
                 };
                 nameScheme.AddSubAttribute(SampleNameAttribute.FormattedNameAttributeScheme);
                 nameScheme.AddSubAttribute(SampleNameAttribute.GivenNameAttributeScheme);
@@ -42,11 +40,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme displayNameScheme = new AttributeScheme("displayName", AttributeDataType.@string, false)
+                return new("displayName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionDisplayName
+                    Description = SampleConstants.DESCRIPTION_DISPLAY_NAME
                 };
-                return displayNameScheme;
             }
         }
 
@@ -54,11 +51,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme nickNameScheme = new AttributeScheme("nickName", AttributeDataType.@string, false)
+                return new("nickName", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionNickName
+                    Description = SampleConstants.DESCRIPTION_NICK_NAME
                 };
-                return nickNameScheme;
             }
         }
 
@@ -66,11 +62,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme titleScheme = new AttributeScheme("title", AttributeDataType.@string, false)
+                return new("title", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionTitle
+                    Description = SampleConstants.DESCRIPTION_TITLE
                 };
-                return titleScheme;
             }
         }
 
@@ -78,11 +73,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme userTypeScheme = new AttributeScheme("userType", AttributeDataType.@string, false)
+                return new("userType", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionUserType
+                    Description = SampleConstants.DESCRIPTION_USER_TYPE
                 };
-                return userTypeScheme;
             }
         }
 
@@ -90,11 +84,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme preferredLanguageScheme = new AttributeScheme("preferredLanguage", AttributeDataType.@string, false)
+                return new("preferredLanguage", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionPreferredLanguage
+                    Description = SampleConstants.DESCRIPTION_PREFERRED_LANGUAGE
                 };
-                return preferredLanguageScheme;
             }
         }
 
@@ -102,11 +95,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme localeScheme = new AttributeScheme("locale", AttributeDataType.@string, false)
+                return new("locale", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionLocale
+                    Description = SampleConstants.DESCRIPTION_LOCALE
                 };
-                return localeScheme;
             }
         }
 
@@ -114,11 +106,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme timezoneScheme = new AttributeScheme("timezone", AttributeDataType.@string, false)
+                return new("timezone", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionTimeZone
+                    Description = SampleConstants.DESCRIPTION_TIME_ZONE
                 };
-                return timezoneScheme;
             }
         }
 
@@ -126,11 +117,10 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme activeScheme = new AttributeScheme("active", AttributeDataType.boolean, false)
+                return new("active", AttributeDataType.boolean, false)
                 {
-                    Description = SampleConstants.DescriptionActive
+                    Description = SampleConstants.DESCRIPTION_ACTIVE
                 };
-                return activeScheme;
             }
         }
 
@@ -138,9 +128,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme emailsScheme = new AttributeScheme("emails", AttributeDataType.complex, true)
+                var emailsScheme = new AttributeScheme("emails", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionEmails
+                    Description = SampleConstants.DESCRIPTION_EMAILS
                 };
                 emailsScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
                 emailsScheme.AddSubAttribute(SampleMultivaluedAttributes.Type2SubAttributeScheme);
@@ -154,9 +144,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme phoneNumbersScheme = new AttributeScheme("phoneNumbers", AttributeDataType.complex, true)
+                var phoneNumbersScheme = new AttributeScheme("phoneNumbers", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionPhoneNumbers
+                    Description = SampleConstants.DESCRIPTION_PHONE_NUMBERS
                 };
                 phoneNumbersScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
                 phoneNumbersScheme.AddSubAttribute(SampleMultivaluedAttributes.Type2SubAttributeScheme);
@@ -170,9 +160,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme addressesScheme = new AttributeScheme("addresses", AttributeDataType.complex, true)
+                var addressesScheme = new AttributeScheme("addresses", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionAddresses
+                    Description = SampleConstants.DESCRIPTION_ADDRESSES
                 };
                 addressesScheme.AddSubAttribute(SampleAddressesAttribute.FormattedAddressAttributeScheme);
                 addressesScheme.AddSubAttribute(SampleAddressesAttribute.StreetAddressAttributeScheme);
@@ -191,9 +181,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme imsScheme = new AttributeScheme("ims", AttributeDataType.complex, true)
+                var imsScheme = new AttributeScheme("ims", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionIms
+                    Description = SampleConstants.DESCRIPTION_IMS
                 };
                 imsScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
                 imsScheme.AddSubAttribute(SampleMultivaluedAttributes.TypeImsSubAttributeScheme);
@@ -207,9 +197,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme rolesScheme = new AttributeScheme("roles", AttributeDataType.complex, true)
+                var rolesScheme = new AttributeScheme("roles", AttributeDataType.complex, true)
                 {
-                    Description = SampleConstants.DescriptionRoles
+                    Description = SampleConstants.DESCRIPTION_ROLES
                 };
                 rolesScheme.AddSubAttribute(SampleMultivaluedAttributes.ValueSubAttributeScheme);
                 rolesScheme.AddSubAttribute(SampleMultivaluedAttributes.DisplaySubAttributeScheme);

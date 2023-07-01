@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     public abstract class PatchRequest2Base<TOperation> : PatchRequestBase where TOperation : PatchOperation2Base

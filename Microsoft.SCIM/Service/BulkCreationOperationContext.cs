@@ -3,8 +3,11 @@
 //------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Schemas;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     internal sealed class BulkCreationOperationContext : BulkOperationContextBase<Resource>, IBulkCreationOperationContext
     {

@@ -1,15 +1,18 @@
 // Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Logging;
-using Microsoft.Net.Http.Headers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public sealed class SchematizedTextOutputFormatter : TextOutputFormatter
     {

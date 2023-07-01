@@ -2,11 +2,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.SCIM;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas;
 using Microsoft.SCIM.Service;
+using Microsoft.SCIM.Service.Contracts;
 
 namespace SCIM.Sample.Provider
 {

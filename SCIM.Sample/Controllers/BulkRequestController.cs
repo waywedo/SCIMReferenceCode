@@ -5,7 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.SCIM;
+using Microsoft.SCIM.Controllers;
+using Microsoft.SCIM.Protocol;
+using Microsoft.SCIM.Service;
+using Microsoft.SCIM.Service.Contracts;
 using System;
 using System.Threading.Tasks;
 

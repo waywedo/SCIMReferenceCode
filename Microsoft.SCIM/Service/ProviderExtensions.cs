@@ -3,8 +3,10 @@
 //------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Service.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Service
 {
     public static class ProviderExtension
     {

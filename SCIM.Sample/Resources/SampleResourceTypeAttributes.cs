@@ -1,21 +1,18 @@
 ﻿// Copyright (c) Microsoft Corporation.// Licensed under the MIT license.
-
-using Microsoft.SCIM;
+using Microsoft.SCIM.Schemas;
 
 namespace SCIM.Sample.Resources
 {
     public static class SampleResourceTypeAttributes
     {
-
         public static AttributeScheme NameAttributeScheme
         {
             get
             {
-                AttributeScheme nameScheme = new AttributeScheme("name", AttributeDataType.@string, false)
+                return new("name", AttributeDataType.@string, false)
                 {
-                    Description = SampleConstants.DescriptionResourceTypeName
+                    Description = SampleConstants.DESCRIPTION_RESOURCE_TYPE_NAME
                 };
-                return nameScheme;
             }
         }
 
@@ -23,9 +20,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme endpointScheme = new AttributeScheme("endpoint", AttributeDataType.reference, false)
+                var endpointScheme = new AttributeScheme("endpoint", AttributeDataType.reference, false)
                 {
-                    Description = SampleConstants.DescriptionResourceTypeEndpoint,
+                    Description = SampleConstants.DESCRIPTION_RESOURCE_TYPE_ENDPOINT,
                     Required = true,
                     Mutability = Mutability.readOnly
                 };
@@ -39,9 +36,9 @@ namespace SCIM.Sample.Resources
         {
             get
             {
-                AttributeScheme schemaScheme = new AttributeScheme("schema", AttributeDataType.reference, false)
+                var schemaScheme = new AttributeScheme("schema", AttributeDataType.reference, false)
                 {
-                    Description = SampleConstants.DescriptionResourceTypeSchemaAttribute,
+                    Description = SampleConstants.DESCRIPTION_RESOURCE_TYPE_SCHEMA_ATTRIBUTE,
                     Required = true,
                     Mutability = Mutability.readOnly,
                     CaseExact = true

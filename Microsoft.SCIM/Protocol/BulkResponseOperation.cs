@@ -4,8 +4,10 @@
 using System;
 using System.Net;
 using System.Runtime.Serialization;
+using Microsoft.SCIM.Protocol.Contracts;
+using Microsoft.SCIM.Schemas;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     [DataContract]
     [KnownType(typeof(ErrorResponse))]

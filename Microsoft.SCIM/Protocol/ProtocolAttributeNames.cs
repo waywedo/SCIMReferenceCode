@@ -2,7 +2,9 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------
 
-namespace Microsoft.SCIM
+using Microsoft.SCIM.Schemas;
+
+namespace Microsoft.SCIM.Protocol
 {
     public static class ProtocolAttributeNames
     {

@@ -3,8 +3,9 @@
 //------------------------------------------------------------
 using System;
 using System.Collections.Generic;
+using Microsoft.SCIM.Protocol.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Protocol
 {
     public sealed class ResourceRetrievalParameters : RetrievalParameters, IResourceRetrievalParameters
     {

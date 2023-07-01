@@ -4,11 +4,12 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using Microsoft.SCIM.Resources;
+using Microsoft.SCIM.Schemas.Contracts;
 
-namespace Microsoft.SCIM
+namespace Microsoft.SCIM.Schemas
 {
-    public sealed class SCIMResourceIdentifier :
-        ISCIMResourceIdentifier
+    public sealed class SCIMResourceIdentifier : ISCIMResourceIdentifier
     {
         private const string SEPARATOR_SEGMENTS = "/";
 
@@ -25,7 +26,7 @@ namespace Microsoft.SCIM
 
             // System.Uri.Segments is not supported for relative identifiers.
             var segmentsIndexed = path.Split(SeperatorsSegments.Value, StringSplitOptions.None)
-                .Select((string item, int index) => new { Segment = item, Index = index })
+                .Select((item, index) => new { Segment = item, Index = index })
                 .ToArray();
 
             var segmentSystemForCrossDomainIdentityManagement = segmentsIndexed
