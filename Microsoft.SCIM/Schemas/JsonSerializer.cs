@@ -7,12 +7,13 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using Microsoft.SCIM.Schemas.Contracts;
+using Newtonsoft.Json;
 
 namespace Microsoft.SCIM.Schemas
 {
     internal class JsonSerializer : IJsonSerializable
     {
-        private static readonly Lazy<DataContractJsonSerializerSettings> _serializerSettings =
+        private static readonly Lazy<DataContractJsonSerializerSettings> SerializerSettings =
             new(() => new DataContractJsonSerializerSettings() { EmitTypeInformation = EmitTypeInformation.Never });
 
         private readonly object _dataContractValue;
@@ -26,13 +27,13 @@ namespace Microsoft.SCIM.Schemas
         public string Serialize()
         {
             var json = ToJson();
-            return JsonFactory.Instance.Create(json, true);
+            return JsonConvert.SerializeObject(json);
         }
 
         public Dictionary<string, object> ToJson()
         {
             var type = _dataContractValue.GetType();
-            var serializer = new DataContractJsonSerializer(type, _serializerSettings.Value);
+            var serializer = new DataContractJsonSerializer(type, SerializerSettings.Value);
 
             string json;
             MemoryStream stream = null;
@@ -64,11 +65,13 @@ namespace Microsoft.SCIM.Schemas
                 if (stream != null)
                 {
                     stream.Close();
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
                     stream = null;
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
                 }
             }
 
-            return JsonFactory.Instance.Create(json, true);
+            return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
         }
     }
 }

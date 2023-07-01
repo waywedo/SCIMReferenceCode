@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 using Microsoft.SCIM.Schemas.Contracts;
+using Newtonsoft.Json;
 
 namespace Microsoft.SCIM.Schemas
 {
@@ -92,7 +93,7 @@ namespace Microsoft.SCIM.Schemas
         {
             var json = ToJson();
 
-            return JsonFactory.Instance.Create(json, true);
+            return JsonConvert.SerializeObject(json);
         }
 
         public override string ToString()

@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Microsoft.SCIM.Protocol.Contracts;
 
-namespace Microsoft.SCIM.Protocol.Contracts
+namespace Microsoft.SCIM.Protocol
 {
-
     public static class IReadOnlyCollectionExtensions
     {
         public static IReadOnlyCollection<string> Encode(this IReadOnlyCollection<string> collection)
