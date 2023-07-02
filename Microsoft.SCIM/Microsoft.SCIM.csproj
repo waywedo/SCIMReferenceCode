@@ -3,6 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net7.0</TargetFramework>
     <NeutralLanguage>en</NeutralLanguage>
+      <PackageId>Microsoft.SCIM</PackageId>
+      <Version>0.0.1</Version>
+      <PackageProjectUrl>http://www.waywedo.com</PackageProjectUrl>
+      <Icon>https://nuget.org/Content/Images/packageDefaultIcon-50x50.png</Icon>
+      <RepositoryUrl>https://github.com/waywedo/SCIMReferenceCode</RepositoryUrl>
+      <Company>Way We Do</Company>
+      <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
     <ItemGroup>

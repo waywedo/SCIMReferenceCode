@@ -8,14 +8,14 @@ namespace Microsoft.SCIM.Schemas
     {
         public const string EXTENSION = "extension:";
 
-        private const string EXTENSION_ENTERPRISE_2 = EXTENSION + "enterprise:2.0:";
+        public const string EXTENSION_ENTERPRISE_2 = EXTENSION + "enterprise:2.0:";
 
         public const string NONE = "/";
 
         public const string PREFIX_TYPES_1 = "urn:scim:schemas:";
-        private const string PREFIX_TYPES_2 = "urn:ietf:params:scim:schemas:";
+        public const string PREFIX_TYPES_2 = "urn:ietf:params:scim:schemas:";
 
-        private const string VERSION_SCHEMAS_CORE_2 = "core:2.0:";
+        public const string VERSION_SCHEMAS_CORE_2 = "core:2.0:";
 
         public const string CORE_2_ENTERPRISE_USER = PREFIX_TYPES_2 + EXTENSION_ENTERPRISE_2 + Types.USER;
         public const string CORE_2_GROUP = PREFIX_TYPES_2 + VERSION_SCHEMAS_CORE_2 + Types.GROUP;
